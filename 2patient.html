@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediPulse Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#083751;min-height:100vh;font-family:'Poppins',sans-serif;color:#e2e8f0;overflow-x:hidden}
+.mp-wrap{display:flex;flex-direction:column;min-height:100vh}
+.mp-header{background:rgba(8,55,81,0.97);border-bottom:1px solid rgba(1,202,139,0.2);padding:12px 24px;display:flex;align-items:center;gap:16px;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
+.mp-logo-container{display:flex;align-items:center;gap:12px}
+.mp-logo-icon{width:42px;height:42px;background:linear-gradient(135deg, #01ca8b, #008f62);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 15px rgba(1,202,139,0.4)}
+.mp-logo-text{display:flex;flex-direction:column}
+.mp-logo-title{font-size:22px;font-weight:800;color:#fff;line-height:1.1}
+.mp-logo-title span{color:#01ca8b}
+.mp-logo-tagline{font-size:10.5px;color:#94a3b8;font-weight:500;letter-spacing:0.5px}
+.mp-search{flex:1;max-width:350px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:50px;padding:9px 18px;display:flex;align-items:center;gap:10px;margin-left:20px;transition:0.3s}
+.mp-search:focus-within{background:rgba(255,255,255,0.08);border-color:#01ca8b;box-shadow:0 0 10px rgba(1,202,139,0.1)}
+.mp-search input{background:none;border:none;outline:none;color:#e2e8f0;font-size:13px;width:100%;font-family:inherit}
+.mp-search input::placeholder{color:#64748b}
+.mp-hactions{margin-left:auto;display:flex;align-items:center;gap:12px}
+.mp-ibtn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;color:#94a3b8;transition:0.3s}
+.mp-ibtn:hover{background:rgba(1,202,139,0.15);color:#01ca8b;border-color:rgba(1,202,139,0.3)}
+.mp-ibtn .bdg{position:absolute;top:-2px;right:-2px;background:#ef4444;border-radius:50%;width:16px;height:16px;font-size:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;box-shadow:0 0 8px rgba(239,68,68,0.5)}
+.mp-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg, #01ca8b, #38bdf8);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#083751;cursor:pointer;box-shadow:0 0 10px rgba(1,202,139,0.3)}
+.mp-content{padding:24px;flex:1}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.scard{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;position:relative;overflow:hidden;transition:0.3s}
+.scard:hover{transform:translateY(-3px);background:rgba(255,255,255,0.05)}
+.scard::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.scard.s1::after{background:#01ca8b;box-shadow:0 0 10px #01ca8b}
+.scard.s2::after{background:#38bdf8;box-shadow:0 0 10px #38bdf8}
+.scard.s3::after{background:#a78bfa;box-shadow:0 0 10px #a78bfa}
+.scard.s4::after{background:#f87171;box-shadow:0 0 10px #f87171}
+.scard-label{font-size:12px;color:#94a3b8;margin-bottom:8px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px}
+.scard-val{font-size:34px;font-weight:800;line-height:1}
+.scard.s1 .scard-val{color:#01ca8b}
+.scard.s2 .scard-val{color:#38bdf8}
+.scard.s3 .scard-val{color:#a78bfa}
+.scard.s4 .scard-val{color:#f87171}
+.scard-sub{font-size:11px;color:#64748b;margin-top:6px}
+.scard-ico{position:absolute;top:20px;right:20px;opacity:0.1;font-size:30px}
+.mid-grid{display:grid;grid-template-columns:1fr 1.8fr;gap:16px;margin-bottom:16px}
+.panel{background:rgba(10,34,54,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:20px;backdrop-filter:blur(10px)}
+.ptitle{font-size:13px;font-weight:600;color:#01ca8b;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.ldot{width:8px;height:8px;border-radius:50%;background:#01ca8b;animation:lp 1.5s infinite;box-shadow:0 0 8px #01ca8b}
+@keyframes lp{0%,100%{opacity:1}50%{opacity:0.3}}
+.tok-box{background:linear-gradient(180deg, rgba(1,202,139,0.08) 0%, rgba(1,202,139,0.02) 100%);border:1px solid rgba(1,202,139,0.2);border-radius:16px;padding:24px;text-align:center;margin-bottom:16px}
+.tok-lbl{font-size:11px;color:#94a3b8;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;font-weight:600}
+.tok-num{font-size:72px;font-weight:800;color:#01ca8b;line-height:1;text-shadow:0 0 20px rgba(1,202,139,0.3)}
+.tok-name{font-size:15px;color:#cbd5e1;margin-top:8px;font-weight:500}
+.tok-wait{font-size:12px;color:#38bdf8;margin-top:4px}
+.next-row{display:flex;gap:10px;margin-bottom:16px}
+.ntpill{flex:1;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:12px;text-align:center}
+.ntpill .nn{font-size:24px;font-weight:700;color:#fff}
+.ntpill .nl{font-size:10px;color:#64748b;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px}
+.emg-box{background:linear-gradient(90deg, rgba(239,68,68,0.1) 0%, transparent 100%);border-left:3px solid #ef4444;border-radius:8px;padding:14px}
+.emg-hd{font-size:12px;color:#f87171;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.5px}
+.emg-row{font-size:13px;color:#fca5a5;padding:6px 0;display:flex;justify-content:space-between;align-items:center;border-bottom:1px dashed rgba(239,68,68,0.2)}
+.emg-row:last-child{border-bottom:none}
+.emg-badge{background:#ef4444;color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:6px;letter-spacing:0.5px}
+.phead{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.add-btn{background:linear-gradient(135deg, #01ca8b, #008f62);color:#fff;border:none;border-radius:50px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit;transition:0.3s;box-shadow:0 4px 15px rgba(1,202,139,0.3)}
+.add-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(1,202,139,0.4)}
+.ptbl{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.ptbl th{color:#94a3b8;font-weight:600;padding:10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.1);font-size:11px;letter-spacing:0.5px;text-transform:uppercase}
+.ptbl td{padding:12px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:#cbd5e1;vertical-align:middle}
+.ptbl tr:hover td{background:rgba(255,255,255,0.02)}
+.sbadge{padding:4px 10px;border-radius:50px;font-size:11px;font-weight:600}
+.sw{background:rgba(250,204,21,0.1);color:#fde047;border:1px solid rgba(250,204,21,0.2)}
+.sa{background:rgba(1,202,139,0.1);color:#01ca8b;border:1px solid rgba(1,202,139,0.2)}
+.se{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2)}
+.del-btn{background:transparent;border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:8px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:inherit;transition:0.3s;white-space:nowrap}
+.del-btn:hover{background:rgba(239,68,68,0.15);border-color:#ef4444}
+.bot-grid{display:grid;grid-template-columns:250px 1fr;gap:16px}
+.qa-btn{width:100%;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px 16px;margin-bottom:10px;color:#e2e8f0;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:12px;text-align:left;font-family:inherit;transition:0.3s}
+.qa-btn:hover{background:rgba(1,202,139,0.05);border-color:rgba(1,202,139,0.4);transform:translateX(4px)}
+.qa-btn.qd:hover{background:rgba(239,68,68,0.05);border-color:rgba(239,68,68,0.4)}
+.qico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qi1{background:rgba(1,202,139,0.15);color:#01ca8b}
+.qi2{background:rgba(56,189,248,0.15);color:#38bdf8}
+.qi3{background:rgba(167,139,250,0.15);color:#a78bfa}
+.qi4{background:rgba(248,113,113,0.15);color:#f87171}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chart-lbl{font-size:12px;color:#94a3b8;margin-bottom:12px;font-weight:500}
+
+.ov-wrap{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);backdrop-filter:blur(5px);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:0.3s ease}
+.ov-wrap.open{opacity:1;pointer-events:all}
+.modal{background:linear-gradient(145deg, #0a2236, #061928);border:1px solid rgba(1,202,139,0.3);box-shadow:0 10px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);border-radius:24px;padding:32px;width:480px;transform:translateY(20px);transition:0.3s ease}
+.ov-wrap.open .modal{transform:translateY(0)}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.modal-hd h3{color:#fff;font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px;text-shadow:0 0 10px rgba(1,202,139,0.4)}
+.close-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#94a3b8;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:0.3s}
+.close-btn:hover{background:rgba(239,68,68,0.15);color:#f87171;border-color:rgba(239,68,68,0.3);transform:rotate(90deg)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.fg{display:flex;flex-direction:column;gap:8px}
+.fg.full{grid-column:1/-1}
+.fg label{font-size:11px;color:#94a3b8;font-weight:600;letter-spacing:0.5px;text-transform:uppercase}
+.fg input:not([type="radio"]),.fg select{background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 16px;color:#fff;font-size:13px;outline:none;font-family:inherit;transition:0.3s;box-shadow:inset 0 2px 5px rgba(0,0,0,0.2)}
+.fg input::placeholder{color:#475569}
+.fg input:not([type="radio"]):focus,.fg select:focus{border-color:#01ca8b;background:rgba(1,202,139,0.05);box-shadow:0 0 0 3px rgba(1,202,139,0.15), inset 0 2px 5px rgba(0,0,0,0.2)}
+.fg select option{background:#0a2236;color:#e2e8f0}
+.radio-group{display:flex;gap:20px;padding:10px 0;align-items:center}
+.radio-group label{font-size:13px!important;color:#cbd5e1!important;text-transform:none!important;font-weight:400!important;display:flex;align-items:center;gap:8px;cursor:pointer}
+.radio-group input[type="radio"]{accent-color:#01ca8b;width:16px;height:16px;cursor:pointer}
+.prio-row{display:flex;gap:12px;margin-bottom:24px;margin-top:20px}
+.prio-opt{flex:1;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;text-align:center;cursor:pointer;transition:0.3s;font-size:13px;font-weight:500;color:#94a3b8;background:rgba(0,0,0,0.2)}
+.prio-opt:hover{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.05)}
+.prio-opt.sel-normal{border-color:#01ca8b;background:rgba(1,202,139,0.1);color:#01ca8b;box-shadow:0 4px 15px rgba(1,202,139,0.15)}
+.prio-opt.sel-emergency{border-color:#ef4444;background:rgba(239,68,68,0.1);color:#f87171;box-shadow:0 4px 15px rgba(239,68,68,0.15)}
+.prio-ico{font-size:20px;display:block;margin-bottom:6px}
+.modal-actions{display:flex;gap:12px}
+.mbtn-pri{flex:1;background:linear-gradient(135deg, #01ca8b, #008f62);color:#fff;border:none;border-radius:50px;padding:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:0.3s;box-shadow:0 4px 15px rgba(1,202,139,0.3)}
+.mbtn-pri:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(1,202,139,0.4)}
+.mbtn-sec{flex:0 0 100px;background:rgba(255,255,255,0.05);color:#cbd5e1;border:1px solid rgba(255,255,255,0.1);border-radius:50px;padding:14px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:0.3s}
+.mbtn-sec:hover{background:rgba(255,255,255,0.1)}
+.toast{position:fixed;bottom:24px;right:24px;background:#01ca8b;color:#083751;border-radius:12px;padding:14px 24px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,0.3);transform:translateY(100px);opacity:0;transition:0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);z-index:200}
+.toast.err{background:#ef4444;color:#fff}
+.toast.show{transform:translateY(0);opacity:1}
+.del-confirm-wrap{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);backdrop-filter:blur(5px);z-index:150;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:0.3s}
+.del-confirm-wrap.open{opacity:1;pointer-events:all}
+.del-modal{background:#0a2236;border:1px solid rgba(239,68,68,0.4);box-shadow:0 0 30px rgba(239,68,68,0.2);border-radius:24px;padding:32px;width:380px;text-align:center;transform:scale(0.95);transition:0.3s}
+.del-confirm-wrap.open .del-modal{transform:scale(1)}
+.del-modal h3{color:#fff;font-size:18px;font-weight:700;margin-bottom:12px}
+.del-modal p{color:#94a3b8;font-size:14px;margin-bottom:24px;line-height:1.5}
+.del-acts{display:flex;gap:12px;justify-content:center}
+.dbtn-yes{background:#ef4444;color:#fff;border:none;border-radius:50px;padding:12px 32px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:0.3s;box-shadow:0 4px 15px rgba(239,68,68,0.3)}
+.dbtn-yes:hover{background:#dc2626;transform:translateY(-2px)}
+.dbtn-no{background:rgba(255,255,255,0.05);color:#cbd5e1;border:1px solid rgba(255,255,255,0.1);border-radius:50px;padding:12px 32px;font-size:14px;cursor:pointer;font-family:inherit;transition:0.3s}
+.dbtn-no:hover{background:rgba(255,255,255,0.1)}
+</style>
+</head>
+<body>
+
+<div class="mp-wrap">
+  <div class="mp-header">
+    <div class="mp-logo-container">
+      <div class="mp-logo-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+        </svg>
+      </div>
+      <div class="mp-logo-text">
+        <div class="mp-logo-title">Medi<span>Pulse</span></div>
+        <div class="mp-logo-tagline">Where Patient Flow Meets Smart Technology</div>
+      </div>
+    </div>
+    
+    <div class="mp-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#01ca8b" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search patient, token..." id="srch" oninput="filterP(this.value)">
+    </div>
+    
+    <div class="mp-hactions">
+      <div class="mp-ibtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="bdg">3</div>
+      </div>
+      <div class="mp-avatar">SR</div>
+    </div>
+  </div>
+
+  <div class="mp-content">
+    <div id="toastEl" class="toast">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      <span id="toastMsg"></span>
+    </div>
+
+    <div class="stats-grid">
+      <div class="scard s1">
+        <div class="scard-ico"><svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+        <div class="scard-label">Total Patients Today</div>
+        <div class="scard-val" id="sc1">47</div>
+        <div class="scard-sub">+8 in last hour</div>
+      </div>
+      <div class="scard s2">
+        <div class="scard-ico"><svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zM6 10h2v2H6zm0 4h8v2H6zm10 0h2v2h-2zm-6-4h8v2h-8z"/></svg></div>
+        <div class="scard-label">Current Token</div>
+        <div class="scard-val" id="sc2">T-12</div>
+        <div class="scard-sub">Being served now</div>
+      </div>
+      <div class="scard s3">
+        <div class="scard-ico"><svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg></div>
+        <div class="scard-label">Available Beds</div>
+        <div class="scard-val" id="sc3">14</div>
+        <div class="scard-sub">of 30 total</div>
+      </div>
+      <div class="scard s4">
+        <div class="scard-ico"><svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V9h2v4z"/></svg></div>
+        <div class="scard-label">Emergency Cases</div>
+        <div class="scard-val" id="sc4">3</div>
+        <div class="scard-sub">Active right now</div>
+      </div>
+    </div>
+
+    <div class="mid-grid">
+      <div class="panel">
+        <div class="ptitle"><div class="ldot"></div>Live Queue</div>
+        <div class="tok-box">
+          <div class="tok-lbl">Now Serving</div>
+          <div class="tok-num" id="tokNum">12</div>
+          <div class="tok-name" id="tokName">Ramesh Kumar</div>
+          <div class="tok-wait" id="tokWait">Avg wait: ~8 min</div>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:10px;letter-spacing:0.5px;text-transform:uppercase;font-weight:600">Up Next</div>
+        <div class="next-row">
+          <div class="ntpill"><div class="nn" id="nt1">13</div><div class="nl">Next</div></div>
+          <div class="ntpill"><div class="nn" id="nt2">14</div><div class="nl">After</div></div>
+          <div class="ntpill"><div class="nn" id="nt3">15</div><div class="nl">Soon</div></div>
+        </div>
+        <div class="emg-box">
+          <div class="emg-hd">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#f87171"><path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V9h2v4z"/></svg>
+            Emergency Priority
+          </div>
+          <div class="emg-row"><span>Sunita Devi — Chest Pain</span><span class="emg-badge">CRIT</span></div>
+          <div class="emg-row"><span>Anil Sharma — Head Injury</span><span class="emg-badge">HIGH</span></div>
+          <div class="emg-row"><span>Baby (6mo) — High Fever</span><span class="emg-badge">HIGH</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="phead">
+          <div class="ptitle" style="margin-bottom:0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#01ca8b" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Patient Records
+          </div>
+          <button class="add-btn" onclick="openAdd()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Add Patient
+          </button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="ptbl">
+            <thead>
+              <tr>
+                <th style="width:20%">Name</th>
+                <th style="width:10%">Token</th>
+                <th style="width:18%">Problem</th>
+                <th style="width:14%">Doctor</th>
+                <th style="width:12%">Ward</th>
+                <th style="width:12%">Status</th>
+                <th style="width:14%">Action</th>
+              </tr>
+            </thead>
+            <tbody id="ptbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="bot-grid">
+      <div class="panel">
+        <div class="ptitle" style="margin-bottom:16px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#01ca8b" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Quick Actions
+        </div>
+        <button class="qa-btn" onclick="openAdd()">
+          <div class="qico qi1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></div>
+          Add Patient
+        </button>
+        <button class="qa-btn" onclick="genTok()">
+          <div class="qico qi2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+          Generate Token
+        </button>
+        <button class="qa-btn" onclick="admitPt()">
+          <div class="qico qi3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+          Admit Patient
+        </button>
+        <button class="qa-btn qd" onclick="markEmg()">
+          <div class="qico qi4"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V9h2v4z"/></svg></div>
+          Mark Emergency
+        </button>
+      </div>
+
+      <div class="panel">
+        <div class="ptitle" style="margin-bottom:16px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#01ca8b" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Live Analytics
+        </div>
+        <div class="chart-grid">
+          <div>
+            <div class="chart-lbl">Patients per hour</div>
+            <div style="position:relative;height:140px"><canvas id="hc"></canvas></div>
+          </div>
+          <div>
+            <div class="chart-lbl">Queue length trend</div>
+            <div style="position:relative;height:140px"><canvas id="qc"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="addModal" class="ov-wrap">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#01ca8b" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        Register New Patient
+      </h3>
+      <button class="close-btn" onclick="closeAdd()">✕</button>
+    </div>
+    
+    <div class="form-grid">
+      <div class="fg">
+        <label>Full Name</label>
+        <input type="text" id="fn" placeholder="e.g. Priya Singh">
+      </div>
+      <div class="fg">
+        <label>Age</label>
+        <input type="number" id="fage" placeholder="e.g. 34" min="1" max="120">
+      </div>
+      
+      <div class="fg">
+        <label>Gender</label>
+        <div class="radio-group">
+          <label><input type="radio" name="gender" value="Male"> Male</label>
+          <label><input type="radio" name="gender" value="Female"> Female</label>
+        </div>
+      </div>
+      
+      <div class="fg">
+        <label>Phone</label>
+        <input type="text" id="fphone" placeholder="+91 98765...">
+      </div>
+      <div class="fg full">
+        <label>Problem / Complaint</label>
+        <input type="text" id="fprob" placeholder="e.g. High fever, Back pain, Chest tightness...">
+      </div>
+      <div class="fg">
+        <label>Assign Doctor</label>
+        <select id="fdoc">
+          <option>Dr. Mehta</option>
+          <option>Dr. Sharma</option>
+          <option>Dr. Rao</option>
+          <option>Dr. Verma</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Ward</label>
+        <select id="fward">
+          <option>General OPD</option>
+          <option>ICU</option>
+          <option>Private</option>
+          <option>Pediatrics</option>
+        </select>
+      </div>
+    </div>
+    
+    <div style="font-size:11px;color:#94a3b8;letter-spacing:0.5px;text-transform:uppercase;font-weight:600;margin-top:16px;">Priority Level</div>
+    <div class="prio-row">
+      <div class="prio-opt sel-normal" id="poNormal" onclick="selPrio('normal')">
+        <span class="prio-ico">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </span>Normal Queue
+      </div>
+      <div class="prio-opt" id="poEmrg" onclick="selPrio('emergency')">
+        <span class="prio-ico">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V9h2v4z"/></svg>
+        </span>Emergency
+      </div>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="mbtn-sec" onclick="closeAdd()">Cancel</button>
+      <button class="mbtn-pri" onclick="submitPt()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:6px"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        Register Patient
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="delModal" class="del-confirm-wrap">
+  <div class="del-modal">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="#ef4444" style="margin-bottom:16px"><path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V9h2v4z"/></svg>
+    <h3>Confirm Delete</h3>
+    <p id="delMsg">Are you sure you want to remove this patient record?</p>
+    <div class="del-acts">
+      <button class="dbtn-no" onclick="closeDelModal()">Cancel</button>
+      <button class="dbtn-yes" onclick="confirmDel()">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+  // Simple frontend logic setup
+  let tokNum = 12, nextTok = 16, totalPts = 47, beds = 14, emgCnt = 3;
+  let selPrioVal = 'normal';
+  let pendingDelIdx = null;
+
+  const namePool = ['Ramesh Kumar','Kavya Mehta','Deepak Rao','Neha Singh','Vijay Tiwari','Priya Sharma','Suresh Verma','Anita Devi'];
+
+  let patients = [
+    {name:'Ramesh Kumar',token:'T-12',age:45,problem:'BP High',doctor:'Dr. Mehta',ward:'General OPD',status:'waiting'},
+    {name:'Kavya Mehta',token:'T-13',age:28,problem:'Fever',doctor:'Dr. Sharma',ward:'General OPD',status:'waiting'},
+    {name:'Deepak Rao',token:'T-10',age:55,problem:'Diabetes Check',doctor:'Dr. Rao',ward:'Private',status:'admitted'},
+    {name:'Neha Singh',token:'T-09',age:32,problem:'Headache',doctor:'Dr. Verma',ward:'General OPD',status:'admitted'},
+    {name:'Vijay Tiwari',token:'T-11',age:41,problem:'Back Pain',doctor:'Dr. Mehta',ward:'General OPD',status:'waiting'},
+    {name:'Sunita Devi',token:'T-E1',age:62,problem:'Chest Pain',doctor:'Dr. Rao',ward:'ICU',status:'emergency'},
+  ];
+
+  // Function to render table
+  function renderTbl(list) {
+    document.getElementById('ptbody').innerHTML = list.map((p, i) => `
+      <tr>
+        <td style="font-weight:500;color:#f8fafc">${p.name}</td>
+        <td style="color:#01ca8b;font-weight:700">${p.token}</td>
+        <td>${p.problem}</td>
+        <td style="color:#94a3b8">${p.doctor}</td>
+        <td style="color:#94a3b8">${p.ward}</td>
+        <td><span class="sbadge s${p.status[0]}">${p.status}</span></td>
+        <td>
+          <button class="del-btn" onclick="openDelModal(${patients.indexOf(p)})">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+            Delete
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // Filter for search
+  function filterP(q) {
+    renderTbl(patients.filter(p =>
+      p.name.toLowerCase().includes(q.toLowerCase()) ||
+      p.token.toLowerCase().includes(q.toLowerCase()) ||
+      p.problem.toLowerCase().includes(q.toLowerCase())
+    ));
+  }
+
+  renderTbl(patients);
+
+  // Modal Handlers
+  function openAdd() { document.getElementById('addModal').classList.add('open'); }
+  function closeAdd() { document.getElementById('addModal').classList.remove('open'); }
+
+  function selPrio(v) {
+    selPrioVal = v;
+    document.getElementById('poNormal').className = 'prio-opt' + (v === 'normal' ? ' sel-normal' : '');
+    document.getElementById('poEmrg').className = 'prio-opt' + (v === 'emergency' ? ' sel-emergency' : '');
+  }
+
+  // Form Submit Handler
+  function submitPt() {
+    const name = document.getElementById('fn').value.trim();
+    const age = document.getElementById('fage').value.trim();
+    const problem = document.getElementById('fprob').value.trim();
+    const doctor = document.getElementById('fdoc').value;
+    const ward = document.getElementById('fward').value;
+    
+    // Getting value from selected radio button
+    const genderInput = document.querySelector('input[name="gender"]:checked');
+    const gender = genderInput ? genderInput.value : '';
+
+    if (!name || !problem || !age || !gender) {
+      showToast('Please fill all required fields', 'err');
+      return;
+    }
+
+    const token = selPrioVal === 'emergency' ? 'T-E' + (++emgCnt) : 'T-' + nextTok++;
+    const pt = { name, token, age, problem, doctor, ward, status: selPrioVal === 'emergency' ? 'emergency' : 'waiting' };
+    
+    patients.unshift(pt);
+    totalPts++;
+    
+    document.getElementById('sc1').textContent = totalPts;
+    if (selPrioVal === 'emergency') document.getElementById('sc4').textContent = emgCnt;
+    
+    renderTbl(patients);
+    
+    // Reset Form
+    ['fn', 'fage', 'fphone', 'fprob'].forEach(id => document.getElementById(id).value = '');
+    if(genderInput) genderInput.checked = false;
+    selPrio('normal');
+    closeAdd();
+    showToast('Patient registered — Token: ' + token);
+  }
+
+  // Delete Handlers
+  function openDelModal(idx) {
+    pendingDelIdx = idx;
+    document.getElementById('delMsg').textContent = 'Remove "' + patients[idx].name + '" (' + patients[idx].token + ') from records?';
+    document.getElementById('delModal').classList.add('open');
+  }
+  
+  function closeDelModal() { 
+    document.getElementById('delModal').classList.remove('open'); 
+    pendingDelIdx = null; 
+  }
+  
+  function confirmDel() {
+    if (pendingDelIdx === null) return;
+    const p = patients[pendingDelIdx];
+    patients.splice(pendingDelIdx, 1);
+    
+    if (p.status === 'admitted') { beds++; document.getElementById('sc3').textContent = beds; }
+    if (p.status === 'emergency') { emgCnt--; document.getElementById('sc4').textContent = emgCnt; }
+    
+    totalPts--;
+    document.getElementById('sc1').textContent = totalPts;
+    renderTbl(patients);
+    closeDelModal();
+    showToast('Record deleted: ' + p.name, 'err');
+  }
+
+  // Quick Action Handlers
+  function genTok() { 
+    nextTok++; 
+    showToast('Token generated: T-' + nextTok); 
+  }
+  
+  function admitPt() {
+    const w = patients.find(p => p.status === 'waiting');
+    if (w) {
+      w.status = 'admitted';
+      beds--;
+      if (beds < 0) beds = 0;
+      document.getElementById('sc3').textContent = beds;
+      renderTbl(patients);
+      showToast(w.name + ' admitted to ward');
+    } else {
+      showToast('No waiting patients', 'err');
+    }
+  }
+  
+  function markEmg() {
+    const p = patients.find(x => x.status === 'waiting');
+    if (p) {
+      p.status = 'emergency';
+      emgCnt++;
+      document.getElementById('sc4').textContent = emgCnt;
+      renderTbl(patients);
+      showToast(p.name + ' marked emergency!');
+    } else {
+        showToast('No waiting patients to mark', 'err');
+    }
+  }
+
+  // Toast Notification
+  function showToast(msg, type) {
+    const t = document.getElementById('toastEl');
+    const m = document.getElementById('toastMsg');
+    m.textContent = msg;
+    t.className = 'toast show' + (type === 'err' ? ' err' : '');
+    setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  // Simple Chart Initializations
+  Chart.defaults.color = '#94a3b8';
+  Chart.defaults.font.family = "'Poppins', sans-serif";
+
+  new Chart(document.getElementById('hc'), {
+    type: 'bar',
+    data: {
+        labels: ['8am', '9am', '10am', '11am', '12pm', '1pm', '2pm', '3pm'],
+        datasets: [{
+            data: [4, 7, 11, 15, 9, 13, 18, 12],
+            backgroundColor: 'rgba(1, 202, 139, 0.4)',
+            borderColor: '#01ca8b',
+            borderWidth: 1,
+            borderRadius: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+        }
+    }
+  });
+
+  new Chart(document.getElementById('qc'), {
+    type: 'line',
+    data: {
+        labels: ['8am', '9am', '10am', '11am', '12pm', '1pm', '2pm', '3pm'],
+        datasets: [{
+            data: [2, 5, 8, 12, 7, 10, 14, 9],
+            borderColor: '#38bdf8',
+            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointBackgroundColor: '#38bdf8'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+        }
+    }
+  });
+</script>
+</body>
+</html>
