@@ -416,6 +416,34 @@
             font-weight: 700;
             letter-spacing: 0.5px;
         }
+
+        /* Responsive Styles */
+        @media (max-width: 991px) {
+            .header-container { padding: 0 15px; }
+            .menu { display: none; }
+            .banner-content { width: 100%; text-align: center; }
+            .banner-content h1 { font-size: 50px; }
+            .banner-content p { font-size: 18px; margin-bottom: 30px; }
+            .dashboard-container { padding: 20px 10px; }
+            #navSearch { width: 140px !important; }
+        }
+
+        @media (max-width: 768px) {
+            .banner-content h1 { font-size: 40px; }
+            .section-title h2 { font-size: 32px; }
+            .product-card { padding: 25px 20px; }
+            .icon-box { margin: 0 auto 20px; }
+            .product-card h3 { text-align: center; }
+            .feature-list li { justify-content: flex-start; }
+            .btn-cta { padding: 14px 35px; font-size: 16px; }
+        }
+
+        @media (max-width: 480px) {
+            .logo { font-size: 20px; }
+            .social-icons a { width: 30px; height: 30px; font-size: 14px; }
+            .btn-green { padding: 8px 15px; font-size: 12px; }
+            .product-intro { padding: 60px 0; }
+        }
     </style>
 </head>
 
@@ -594,9 +622,9 @@
                     <h3 style="color: white; font-weight: 800; font-size: 24px; margin-bottom: 20px;"><i class="fas fa-heartbeat" style="color: #01ca8b;"></i> Medi<span style="color: #01ca8b;">Pulse</span></h3>
                     <p style="font-size: 14px; line-height: 1.6; opacity: 0.8; margin-bottom: 20px;">Revolutionizing healthcare management with advanced, seamless, and intelligent digital modules designed for modern hospitals.</p>
                     <div style="display:flex; gap:15px;">
-                        <a href="#" style="color:white; font-size:18px; opacity:0.8; transition:0.3s;" onmouseover="this.style.color='#01ca8b'; this.style.opacity='1'" onmouseout="this.style.color='white'; this.style.opacity='0.8'"><i class="fab fa-twitter"></i></a>
-                        <a href="#" style="color:white; font-size:18px; opacity:0.8; transition:0.3s;" onmouseover="this.style.color='#01ca8b'; this.style.opacity='1'" onmouseout="this.style.color='white'; this.style.opacity='0.8'"><i class="fab fa-linkedin-in"></i></a>
-                        <a href="#" style="color:white; font-size:18px; opacity:0.8; transition:0.3s;" onmouseover="this.style.color='#01ca8b'; this.style.opacity='1'" onmouseout="this.style.color='white'; this.style.opacity='0.8'"><i class="fab fa-instagram"></i></a>
+                        <a href="javascript:showToast('Our Twitter handle will be live soon!')" style="color:white; font-size:18px; opacity:0.8; transition:0.3s;" onmouseover="this.style.color='#01ca8b'; this.style.opacity='1'" onmouseout="this.style.color='white'; this.style.opacity='0.8'"><i class="fab fa-twitter"></i></a>
+                        <a href="javascript:showToast('Our LinkedIn page will be live soon!')" style="color:white; font-size:18px; opacity:0.8; transition:0.3s;" onmouseover="this.style.color='#01ca8b'; this.style.opacity='1'" onmouseout="this.style.color='white'; this.style.opacity='0.8'"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="javascript:showToast('Follow us on Instagram: @medipulse')" style="color:white; font-size:18px; opacity:0.8; transition:0.3s;" onmouseover="this.style.color='#01ca8b'; this.style.opacity='1'" onmouseout="this.style.color='white'; this.style.opacity='0.8'"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
                 <div class="col-md-4 mb-4" style="padding-left: 40px;">
