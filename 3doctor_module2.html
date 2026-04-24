@@ -289,7 +289,11 @@ async function initDropdowns() {
     
     let autoDoc = null;
     if (role === 'doctor' && uid) {
-        autoDoc = allDocsForLogin.find(d => d.doctorId === uid || d.id === uid || d._id === uid);
+        const cleanUid = uid.replace(/-/g, '').toLowerCase();
+        autoDoc = allDocsForLogin.find(d => {
+            const cleanId = (d.doctorId || d.id || '').replace(/-/g, '').toLowerCase();
+            return cleanId === cleanUid;
+        });
     }
     
     const sel = document.getElementById('doctorNameSelect');

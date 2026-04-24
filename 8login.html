@@ -291,54 +291,86 @@
     </div>
 
     <script>
-        function handleLogin(event) {
+        async function handleLogin(event) {
             event.preventDefault(); // Prevent form reload
             
             const role = document.getElementById('roleInput').value;
             const uid = document.getElementById('idInput').value.trim();
             const pass = document.getElementById('passInput').value;
 
-            // Simple validation simulation
+            // Guest validation
+            if (role === 'guest') {
+                localStorage.setItem('userRole', role);
+                localStorage.setItem('userName', 'GUEST');
+                window.location.href = '1index.html';
+                return;
+            }
+
+            // Normal user validation
             if(!role || !uid || !pass) {
                 alert("Please fill out all credentials.");
                 return;
             }
 
-            // Simulate loading state
             const btn = document.querySelector('.btn-login');
             btn.innerHTML = 'Authenticating... <i class="fas fa-spinner fa-spin"></i>';
             btn.style.opacity = '0.8';
 
-            // Simulate network delay then route internally
-            setTimeout(() => {
-                localStorage.setItem('userRole', role);
-                localStorage.setItem('userName', uid);
-
-                switch(role) {
-                    case 'guest':
-                        window.location.href = '1index.html';
-                        break;
-                    case 'admin':
-                        window.location.href = '9admin_dashboard.html';
-                        break;
-                    case 'doctor':
-                        // Direct to Doctor's Live Portal
-                        window.location.href = '3doctor_module2.html';
-                        break;
-                    case 'receptionist':
-                        // Direct to Reception Dashboard
-                        window.location.href = '2patient.html';
-                        break;
-                    case 'pharmacy':
-                        // Direct to Medicine POS Module
-                        window.location.href = '5medicine.html';
-                        break;
-                    default:
-                        alert('Unknown role routing.');
-                        btn.innerHTML = 'Secure Login <i class="fas fa-arrow-right"></i>';
-                        btn.style.opacity = '1';
+            // Verify UID with backend
+            try {
+                const res = await fetch('/api/admin/staff');
+                const staffList = await res.json();
+                
+                const cleanUid = uid.replace(/-/g, '').toLowerCase();
+                const matchedUser = staffList.find(s => {
+                    const cleanId = (s.id || '').replace(/-/g, '').toLowerCase();
+                    return cleanId === cleanUid;
+                });
+                
+                let roleMatch = false;
+                if (matchedUser) {
+                    const userRole = (matchedUser.role || '').toLowerCase();
+                    if (role === 'doctor' && userRole.includes('doctor')) roleMatch = true;
+                    else if (role === 'admin' && userRole.includes('admin')) roleMatch = true;
+                    else if (role === 'receptionist' && userRole.includes('receptionist')) roleMatch = true;
+                    else if (role === 'pharmacy' && userRole.includes('pharmacy')) roleMatch = true;
                 }
-            }, 800);
+                
+                if (!matchedUser || !roleMatch) {
+                    alert(`Authentication Failed: No registered ${role} found with ID '${uid}'`);
+                    btn.innerHTML = 'Secure Login <i class="fas fa-arrow-right"></i>';
+                    btn.style.opacity = '1';
+                    return;
+                }
+            } catch(e) {
+                console.error('Validation error:', e);
+                alert("Unable to verify credentials with server.");
+                btn.innerHTML = 'Secure Login <i class="fas fa-arrow-right"></i>';
+                btn.style.opacity = '1';
+                return;
+            }
+
+            localStorage.setItem('userRole', role);
+            localStorage.setItem('userName', uid);
+
+            switch(role) {
+                case 'admin':
+                    window.location.href = '9admin_dashboard.html';
+                    break;
+                case 'doctor':
+                    window.location.href = '3doctor_module2.html';
+                    break;
+                case 'receptionist':
+                    window.location.href = '2patient.html';
+                    break;
+                case 'pharmacy':
+                    window.location.href = '5medicine.html';
+                    break;
+                default:
+                    alert('Unknown role routing.');
+                    btn.innerHTML = 'Secure Login <i class="fas fa-arrow-right"></i>';
+                    btn.style.opacity = '1';
+            }
         }
     </script>
 </body>
