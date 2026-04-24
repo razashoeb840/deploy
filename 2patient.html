@@ -169,6 +169,37 @@ body{
 .dbtn-yes:hover{background:#dc2626}
 .dbtn-no{background:#ffffff;color:#475569;border:1px solid #cbd5e1;border-radius:8px;padding:12px 32px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:0.2s;flex:1}
 .dbtn-no:hover{background:#f8fafc;color:#0f172a}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 1200px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .bot-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 992px) {
+  .mid-grid { grid-template-columns: 1fr; }
+  .chart-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .mp-header { flex-wrap: wrap; gap: 10px; padding: 10px 15px; }
+  .mp-search { max-width: 100%; margin-left: 0; order: 3; }
+  .mp-hactions { margin-left: auto; order: 2; }
+  .mp-content { padding: 15px; }
+  
+  .stats-grid { grid-template-columns: 1fr; }
+  
+  .next-row { flex-direction: column; }
+  .bot-grid { gap: 15px; }
+  .form-grid { grid-template-columns: 1fr; }
+  
+  .ptbl { min-width: 800px; }
+  .panel > div[style*="overflow-x:auto"] { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  
+  .del-modal { width: 90%; padding: 20px; }
+  .modal { padding: 20px; width: 95%; }
+  .prio-row { flex-direction: column; }
+}
 </style>
 </head>
 <body>

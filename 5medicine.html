@@ -168,6 +168,43 @@ body{
 .toastbox{position:fixed;bottom:24px;right:24px;background:#01ca8b;color:#ffffff;border-radius:10px;padding:14px 24px;font-size:14px;font-weight:600;box-shadow:0 8px 25px rgba(1,202,139,0.3);transform:translateY(100px);opacity:0;transition:0.4s cubic-bezier(0.175,0.885,0.32,1.275);z-index:999}
 .toastbox.err{background:#ef4444;box-shadow:0 8px 25px rgba(239,68,68,0.3)}
 .toastbox.show{transform:translateY(0);opacity:1}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 1200px) {
+  .med-grid { grid-template-columns: repeat(2, 1fr); }
+  .billing-section { width: 350px; }
+}
+
+@media (max-width: 992px) {
+  .pos-layout { flex-direction: column; height: auto; }
+  .billing-section { width: 100%; }
+  .inventory-section { padding-right: 0; overflow-y: visible; }
+  .med-grid { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+}
+
+@media (max-width: 768px) {
+  .mp-header { flex-wrap: wrap; padding: 10px 15px; }
+  .mp-hactions { margin-left: 0; margin-top: 10px; width: 100%; justify-content: space-between; }
+  .pos-layout { padding: 15px; }
+  
+  .sales-bar { flex-direction: column; text-align: center; }
+  .sale-stat { border-right: none; padding-right: 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; width: 100%; }
+  .sale-stat:last-of-type { border-bottom: none; padding-bottom: 0; }
+  
+  .section-header { flex-direction: column; align-items: stretch; }
+  .filter-row { flex-wrap: wrap; justify-content: center; }
+  .sh-actions { flex-direction: column; }
+  .search-box { width: 100%; }
+  .btn-prescriptions, .btn-add-new { width: 100%; justify-content: center; }
+  
+  .modal-content { width: 95%; padding: 20px; }
+  .modal-content.wide { width: 95%; }
+  .history-table, .history-table tbody, .history-table tr, .history-table td, .history-table th { display: block; width: 100%; }
+  .history-table tr { margin-bottom: 15px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; }
+  .history-table td { border: none; padding: 5px; text-align: right; }
+  .history-table td::before { content: attr(data-label); float: left; font-weight: 600; color: #64748b; }
+  .history-table th { display: none; }
+}
 </style>
 </head>
 <body>

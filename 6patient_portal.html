@@ -63,8 +63,18 @@
         .token-display { font-size: 40px; font-weight: 800; color: #0f172a; background: #f1f5f9; padding: 20px; border-radius: 16px; margin: 20px 0; letter-spacing: 2px; }
         
         @media(max-width: 900px) {
-            .split-layout { flex-direction: column; }
-            .left-panel { display: none; }
+            .split-layout { flex-direction: column; height: auto; min-height: 100vh; }
+            .left-panel { padding: 30px 20px; text-align: center; justify-content: center; }
+            .left-content { text-align: center; }
+            .left-content button { margin: 20px auto 0; }
+            .left-content h1 { font-size: 36px; }
+            .right-panel { padding: 20px 15px; }
+        }
+        
+        @media(max-width: 480px) {
+            .card { padding: 25px 20px; }
+            .left-content h1 { font-size: 28px; }
+            .left-content p { font-size: 15px; }
         }
     </style>
 </head>

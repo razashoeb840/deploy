@@ -64,6 +64,29 @@
         .btn-outline:hover { background: #ecfdf5; }
         
         .cat-title { font-size: 15px; color: #064e3b; margin: 25px 0 10px 0; font-weight: 700; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px;}
+        
+        /* --- Responsive Adjustments --- */
+        @media(max-width: 900px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-grid { grid-template-columns: 1fr !important; }
+        }
+        
+        @media(max-width: 768px) {
+            .top-nav { flex-direction: column; gap: 15px; padding: 15px; text-align: center; }
+            .container { padding: 15px; }
+            .page-header { flex-direction: column; gap: 15px; }
+            .page-header > div:last-child { width: 100%; }
+            .page-header button { width: 100%; margin-left: 0; }
+            
+            .stats-grid { grid-template-columns: 1fr; }
+            
+            .action-flex { flex-direction: column; align-items: stretch; gap: 15px; text-align: center; }
+            .action-flex > div { display: flex; flex-direction: column; gap: 10px; }
+            .action-flex button { margin-left: 0; }
+            
+            table { min-width: 500px; }
+            .modal-content { padding: 20px; width: 95%; }
+        }
     </style>
 </head>
 <body>

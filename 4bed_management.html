@@ -115,6 +115,34 @@ body{
 .toastbox{position:fixed;bottom:24px;right:24px;background:#01ca8b;color:#ffffff;border-radius:10px;padding:14px 24px;font-size:14px;font-weight:600;box-shadow:0 8px 25px rgba(1,202,139,0.3);transform:translateY(100px);opacity:0;transition:0.4s cubic-bezier(0.175,0.885,0.32,1.275);z-index:999}
 .toastbox.show{transform:translateY(0);opacity:1}
 
+/* --- Responsive Adjustments --- */
+@media (max-width: 1200px) {
+  .bm-layout { flex-direction: column; }
+  .bm-sidebar { width: 100%; position: static; }
+}
+
+@media (max-width: 992px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .grid-icu { grid-template-columns: repeat(4, 1fr); }
+  .grid-gen { grid-template-columns: repeat(6, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .mp-header { flex-wrap: wrap; padding: 10px 15px; }
+  .mp-hactions { margin-left: 0; margin-top: 10px; width: 100%; justify-content: space-between; }
+  .bm-layout { padding: 15px; }
+  
+  .grid-icu { grid-template-columns: repeat(3, 1fr); }
+  .grid-gen { grid-template-columns: repeat(4, 1fr); }
+  .grid-pvt { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .grid-icu { grid-template-columns: repeat(2, 1fr); }
+  .grid-gen { grid-template-columns: repeat(3, 1fr); }
+  .grid-pvt { grid-template-columns: repeat(2, 1fr); }
+}
 </style>
 </head>
 <body>

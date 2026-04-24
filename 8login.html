@@ -203,13 +203,36 @@
         @media(max-width: 900px) {
             .login-container {
                 flex-direction: column;
+                height: auto;
+                min-height: 100vh;
             }
             .login-left {
-                display: none; /* Hide banner on small screens */
+                padding: 40px 20px;
+                text-align: center;
+                justify-content: center;
+            }
+            .login-left-content {
+                text-align: center;
+            }
+            .login-left-content h1 {
+                font-size: 40px;
+            }
+            .login-left-content p {
+                font-size: 16px;
+                margin-bottom: 0;
             }
             .login-right {
-                padding: 20px;
+                padding: 30px 20px;
             }
+            .login-box {
+                padding: 30px 20px;
+            }
+        }
+        
+        @media(max-width: 480px) {
+            .login-left-content h1 { font-size: 32px; }
+            .login-box h2 { font-size: 28px; }
+            .login-box p { font-size: 14px; }
         }
     </style>
 </head>
