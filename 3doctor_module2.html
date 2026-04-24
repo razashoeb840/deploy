@@ -283,10 +283,27 @@ async function initDropdowns() {
   try {
     const res = await fetch(`${API_BASE}/doctors`);
     allDocsForLogin = await res.json();
+    
+    const role = localStorage.getItem('userRole');
+    const uid = localStorage.getItem('userName');
+    
+    let autoDoc = null;
+    if (role === 'doctor' && uid) {
+        autoDoc = allDocsForLogin.find(d => d.doctorId === uid || d.id === uid || d._id === uid);
+    }
+    
     const sel = document.getElementById('doctorNameSelect');
-    if(sel) {
-      sel.innerHTML = '<option value="">-- Select Your Profile --</option>' + 
-        allDocsForLogin.map(d => `<option value="${d.name}">${d.name} (${d.specialization})</option>`).join('');
+    if (autoDoc && sel) {
+        sel.innerHTML = `<option value="${autoDoc.name}">${autoDoc.name}</option>`;
+        sel.value = autoDoc.name;
+        document.getElementById('loginOverlay').style.opacity = '0';
+        document.getElementById('loginOverlay').style.pointerEvents = 'none';
+        loginDoctor();
+    } else {
+        if(sel) {
+          sel.innerHTML = '<option value="">-- Select Your Profile --</option>' + 
+            allDocsForLogin.map(d => `<option value="${d.name}">${d.name} (${d.specialization})</option>`).join('');
+        }
     }
   } catch(e) {}
   
