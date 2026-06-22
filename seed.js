@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const Doctor = require('./models/Doctor');
 const Bed = require('./models/Bed');
 const Medicine = require('./models/Medicine');
@@ -6,7 +7,8 @@ const Staff = require('./models/Staff');
 
 async function seed() {
     try {
-        await mongoose.connect('mongodb://localhost:27017/smartcare_hms');
+        const mongoURI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/smartcare_hms';
+        await mongoose.connect(mongoURI);
 
         console.log('Connected to MongoDB for seeding...');
 
@@ -14,20 +16,24 @@ async function seed() {
         await mongoose.connection.db.dropDatabase();
         console.log('Database cleared.');
 
+        // Generate default password hash
+        const salt = await bcrypt.genSalt(10);
+        const defaultPasswordHash = await bcrypt.hash('123456', salt);
+
         // Seed Doctors
         const doctors = [
-            { doctorId: 'DOC-101', name: 'Dr. Rohan Sharma', specialization: 'Cardiology' },
-            { doctorId: 'DOC-102', name: 'Dr. Anjali Verma', specialization: 'Neurology' },
-            { doctorId: 'DOC-103', name: 'Dr. Prakash Iyer', specialization: 'General Physician' }
+            { doctorId: 'DOC-101', name: 'Dr. Rohan Sharma', specialization: 'Cardiology', password: defaultPasswordHash, plainPassword: '123456' },
+            { doctorId: 'DOC-102', name: 'Dr. Anjali Verma', specialization: 'Neurology', password: defaultPasswordHash, plainPassword: '123456' },
+            { doctorId: 'DOC-103', name: 'Dr. Prakash Iyer', specialization: 'General Physician', password: defaultPasswordHash, plainPassword: '123456' }
         ];
         await Doctor.insertMany(doctors);
         console.log('Doctors seeded.');
 
         // Seed Staff
         const staffList = [
-            { staffId: 'ADM-001', name: 'Ravi Kumar', role: 'admin' },
-            { staffId: 'REC-001', name: 'Priya Desai', role: 'receptionist' },
-            { staffId: 'PHA-001', name: 'Vikram Singh', role: 'pharmacy' }
+            { staffId: 'ADM-001', name: 'Ravi Kumar', role: 'admin', password: defaultPasswordHash, plainPassword: '123456' },
+            { staffId: 'REC-001', name: 'Priya Desai', role: 'receptionist', password: defaultPasswordHash, plainPassword: '123456' },
+            { staffId: 'PHA-001', name: 'Vikram Singh', role: 'pharmacy', password: defaultPasswordHash, plainPassword: '123456' }
         ];
         await Staff.insertMany(staffList);
         console.log('Staff seeded.');

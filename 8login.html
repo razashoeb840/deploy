@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <title>MediPulse - Login Portal</title>
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -13,7 +16,8 @@
             padding: 0;
         }
 
-        body, html {
+        body,
+        html {
             height: 100%;
             font-family: 'Poppins', sans-serif;
             background-color: #f4f7f6;
@@ -28,7 +32,7 @@
         /* Left Side: Banner */
         .login-left {
             flex: 1;
-            background-image: linear-gradient(135deg, rgba(8, 55, 81, 0.8), rgba(1, 202, 139, 0.4)), url('login_bg.png');
+            background-image: linear-gradient(135deg, rgba(8, 55, 81, 0.8), rgba(1, 202, 139, 0.4)), url('login_bg.webp');
             background-position: center;
             background-size: cover;
             background-repeat: no-repeat;
@@ -42,8 +46,11 @@
         .login-left::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.2);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.2);
         }
 
         .login-left-content {
@@ -129,7 +136,8 @@
             letter-spacing: 0.5px;
         }
 
-        .form-group input, .form-group select {
+        .form-group input,
+        .form-group select {
             width: 100%;
             padding: 15px 16px 15px 45px;
             border: 2px solid transparent;
@@ -142,7 +150,8 @@
             color: #0f172a;
         }
 
-        .form-group input:focus, .form-group select:focus {
+        .form-group input:focus,
+        .form-group select:focus {
             background: white;
             border-color: #01ca8b;
             box-shadow: 0 10px 25px rgba(1, 202, 139, 0.1);
@@ -156,8 +165,9 @@
             font-size: 18px;
             transition: 0.3s;
         }
-        
-        .form-group input:focus ~ i, .form-group select:focus ~ i {
+
+        .form-group input:focus~i,
+        .form-group select:focus~i {
             color: #01ca8b;
         }
 
@@ -206,55 +216,80 @@
                 height: auto;
                 min-height: 100vh;
             }
+
             .login-left {
                 padding: 40px 20px;
                 text-align: center;
                 justify-content: center;
             }
+
             .login-left-content {
                 text-align: center;
             }
+
             .login-left-content h1 {
                 font-size: 40px;
             }
+
             .login-left-content p {
                 font-size: 16px;
                 margin-bottom: 0;
             }
+
             .login-right {
                 padding: 30px 20px;
             }
+
             .login-box {
                 padding: 30px 20px;
             }
         }
-        
+
         @media(max-width: 480px) {
-            .login-left-content h1 { font-size: 32px; }
-            .login-box h2 { font-size: 28px; }
-            .login-box p { font-size: 14px; }
+            .login-left-content h1 {
+                font-size: 32px;
+            }
+
+            .login-box h2 {
+                font-size: 28px;
+            }
+
+            .login-box p {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
+
 <body>
 
+    <div class="theme-selector-container" style="position: absolute; top: 20px; right: 20px; z-index: 1000;">
+        <select id="themeSelector" class="theme-select" onchange="setTheme(this.value)">
+            <option value="theme-default">Default Theme</option>
+            <option value="theme-dark-1">Sci-Fi (3D)</option>
+            <option value="theme-dark-2">Bio-Medical (Video)</option>
+        </select>
+    </div>
+
     <div class="login-container">
-        
+
         <!-- Background Banner Section -->
         <div class="login-left">
             <div class="login-left-content">
                 <h1>Login to<br><i class="fas fa-heartbeat"></i> Medi<span>Pulse</span></h1>
-                <p>Secure authentication portal for Healthcare Professionals. Please log in to securely access your hospital modules.</p>
+                <p>Secure authentication portal for Healthcare Professionals. Please log in to securely access your
+                    hospital modules.</p>
             </div>
         </div>
 
         <!-- Login Form Section -->
         <div class="login-right">
             <div class="login-box">
-                <h2>Sign In</h2>
-                <p>Select your role to access your dashboard</p>
+                <h2 id="formTitle">Sign In</h2>
+                <p id="formSubtitle">Select your role to access your dashboard</p>
 
-                <form onsubmit="handleLogin(event)">
+                <!-- LOGIN FORM -->
+                <form id="loginForm" onsubmit="handleLogin(event)">
                     <div class="form-group">
                         <label>Account Role</label>
                         <i class="fas fa-user-tag"></i>
@@ -280,9 +315,53 @@
                         <input type="password" id="passInput" placeholder="Enter your password" required>
                     </div>
 
-                    <button type="submit" class="btn-login">Secure Login <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></button>
-                    
+                    <button type="submit" class="btn-login" id="loginBtn">Secure Login <i class="fas fa-arrow-right"
+                            style="margin-left: 5px;"></i></button>
+
+                    <div style="text-align: center; margin-top: 15px;">
+                        <a href="#" onclick="toggleForm('change')" style="color: #01ca8b; font-size: 14px; text-decoration: none; font-weight: 600;">Change Auto-Generated Password?</a>
+                    </div>
                     <a href="1index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Homepage</a>
+                </form>
+
+                <!-- CHANGE PASSWORD FORM -->
+                <form id="changePasswordForm" onsubmit="handleChangePassword(event)" style="display: none;">
+                    <div class="form-group">
+                        <label>Account Role</label>
+                        <i class="fas fa-user-tag"></i>
+                        <select id="cpRoleInput" required>
+                            <option value="">Select Role</option>
+                            <option value="admin">Hospital Administrator</option>
+                            <option value="doctor">Doctor</option>
+                            <option value="receptionist">Receptionist</option>
+                            <option value="pharmacy">Pharmacy / Inventory</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Unique ID</label>
+                        <i class="fas fa-id-badge"></i>
+                        <input type="text" id="cpIdInput" placeholder="Enter your ID" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Old Password</label>
+                        <i class="fas fa-unlock"></i>
+                        <input type="password" id="cpOldPassInput" placeholder="Enter current password" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="cpNewPassInput" placeholder="Enter new password" required>
+                    </div>
+
+                    <button type="submit" class="btn-login" id="cpBtn">Update Password <i class="fas fa-check"
+                            style="margin-left: 5px;"></i></button>
+
+                    <div style="text-align: center; margin-top: 15px;">
+                        <a href="#" onclick="toggleForm('login')" style="color: #64748b; font-size: 14px; text-decoration: none; font-weight: 500;"><i class="fas fa-arrow-left"></i> Back to Login</a>
+                    </div>
                 </form>
 
             </div>
@@ -291,87 +370,126 @@
     </div>
 
     <script>
+        function toggleForm(type) {
+            if (type === 'change') {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('changePasswordForm').style.display = 'block';
+                document.getElementById('formTitle').innerText = 'Change Password';
+                document.getElementById('formSubtitle').innerText = 'Update your security credentials';
+            } else {
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('changePasswordForm').style.display = 'none';
+                document.getElementById('formTitle').innerText = 'Sign In';
+                document.getElementById('formSubtitle').innerText = 'Select your role to access your dashboard';
+            }
+        }
+
+        async function handleChangePassword(event) {
+            event.preventDefault();
+            const role = document.getElementById('cpRoleInput').value;
+            const uid = document.getElementById('cpIdInput').value.trim();
+            const oldPass = document.getElementById('cpOldPassInput').value;
+            const newPass = document.getElementById('cpNewPassInput').value;
+
+            if (!role || !uid || !oldPass || !newPass) {
+                alert("Please fill out all fields.");
+                return;
+            }
+
+            const btn = document.getElementById('cpBtn');
+            btn.innerHTML = 'Updating... <i class="fas fa-spinner fa-spin"></i>';
+            btn.style.opacity = '0.8';
+
+            try {
+                const response = await fetch('/api/auth/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: uid, oldPassword: oldPass, newPassword: newPass, role })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert("Password updated successfully! Please login with your new password.");
+                    document.getElementById('changePasswordForm').reset();
+                    toggleForm('login');
+                } else {
+                    alert(data.message || 'Failed to update password.');
+                }
+            } catch (error) {
+                console.error("Change password error:", error);
+                alert("Server connection error. Please try again later.");
+            }
+            
+            btn.innerHTML = 'Update Password <i class="fas fa-check" style="margin-left: 5px;"></i>';
+            btn.style.opacity = '1';
+        }
+
         async function handleLogin(event) {
             event.preventDefault(); // Prevent form reload
-            
+
             const role = document.getElementById('roleInput').value;
             const uid = document.getElementById('idInput').value.trim();
             const pass = document.getElementById('passInput').value;
 
-            // Guest validation
-            if (role === 'guest') {
-                localStorage.setItem('userRole', role);
-                localStorage.setItem('userName', 'GUEST');
-                window.location.href = '1index.html';
-                return;
-            }
-
-            // Normal user validation
-            if(!role || !uid || !pass) {
+            // Simple validation
+            if (!role || !uid || !pass) {
                 alert("Please fill out all credentials.");
                 return;
             }
 
-            const btn = document.querySelector('.btn-login');
+            const btn = document.getElementById('loginBtn');
             btn.innerHTML = 'Authenticating... <i class="fas fa-spinner fa-spin"></i>';
             btn.style.opacity = '0.8';
 
-            // Verify UID with backend
             try {
-                const res = await fetch('/api/admin/staff');
-                const staffList = await res.json();
-                
-                const cleanUid = uid.replace(/-/g, '').toLowerCase();
-                const matchedUser = staffList.find(s => {
-                    const cleanId = (s.id || '').replace(/-/g, '').toLowerCase();
-                    return cleanId === cleanUid;
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: uid, password: pass, role })
                 });
-                
-                let roleMatch = false;
-                if (matchedUser) {
-                    const userRole = (matchedUser.role || '').toLowerCase();
-                    if (role === 'doctor' && userRole.includes('doctor')) roleMatch = true;
-                    else if (role === 'admin' && userRole.includes('admin')) roleMatch = true;
-                    else if (role === 'receptionist' && userRole.includes('receptionist')) roleMatch = true;
-                    else if (role === 'pharmacy' && userRole.includes('pharmacy')) roleMatch = true;
-                }
-                
-                if (!matchedUser || !roleMatch) {
-                    alert(`Authentication Failed: No registered ${role} found with ID '${uid}'`);
+
+                const data = await response.json();
+
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userRole', data.role);
+                    localStorage.setItem('userName', data.userName || uid);
+
+                    switch (role) {
+                        case 'guest':
+                            window.location.href = '1index.html';
+                            break;
+                        case 'admin':
+                            window.location.href = '9admin_dashboard.html';
+                            break;
+                        case 'doctor':
+                            window.location.href = '3doctor_module2.html';
+                            break;
+                        case 'receptionist':
+                            window.location.href = '2patient.html';
+                            break;
+                        case 'pharmacy':
+                            window.location.href = '5medicine.html';
+                            break;
+                        default:
+                            alert('Unknown role routing.');
+                            btn.innerHTML = 'Secure Login <i class="fas fa-arrow-right"></i>';
+                            btn.style.opacity = '1';
+                    }
+                } else {
+                    alert(data.message || 'Authentication failed. Please check your credentials.');
                     btn.innerHTML = 'Secure Login <i class="fas fa-arrow-right"></i>';
                     btn.style.opacity = '1';
-                    return;
                 }
-            } catch(e) {
-                console.error('Validation error:', e);
-                alert("Unable to verify credentials with server.");
+            } catch (error) {
+                console.error("Login error:", error);
+                alert("Server connection error. Please try again later.");
                 btn.innerHTML = 'Secure Login <i class="fas fa-arrow-right"></i>';
                 btn.style.opacity = '1';
-                return;
-            }
-
-            localStorage.setItem('userRole', role);
-            localStorage.setItem('userName', uid);
-
-            switch(role) {
-                case 'admin':
-                    window.location.href = '9admin_dashboard.html';
-                    break;
-                case 'doctor':
-                    window.location.href = '3doctor_module2.html';
-                    break;
-                case 'receptionist':
-                    window.location.href = '2patient.html';
-                    break;
-                case 'pharmacy':
-                    window.location.href = '5medicine.html';
-                    break;
-                default:
-                    alert('Unknown role routing.');
-                    btn.innerHTML = 'Secure Login <i class="fas fa-arrow-right"></i>';
-                    btn.style.opacity = '1';
             }
         }
     </script>
 </body>
+
 </html>

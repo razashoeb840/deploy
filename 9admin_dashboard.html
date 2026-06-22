@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediPulse - Admin Dashboard</title>
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -87,6 +89,26 @@
             table { min-width: 500px; }
             .modal-content { padding: 20px; width: 95%; }
         }
+
+        /* Smart Alerts & Leaves styling */
+        .alert-item { padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; border-left: 4px solid #dc2626; background: #fef2f2; color: #991b1b; }
+        .alert-item.warn { border-left-color: #d97706; background: #fffbeb; color: #92400e; }
+        .leave-item { padding: 12px; border-radius: 8px; font-size: 13px; border: 1px solid #e2e8f0; background: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
+        .leave-info { display: flex; flex-direction: column; gap: 4px; }
+        .leave-actions { display: flex; gap: 8px; }
+        .btn-approve { background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .btn-approve:hover { background: #059669; }
+        .btn-reject { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .btn-reject:hover { background: #dc2626; }
+        
+        .clickable-doc {
+            color: #043f77;
+            transition: all 0.2s ease;
+        }
+        .clickable-doc:hover {
+            color: #10b981;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -95,8 +117,15 @@
         <div class="logo">
             <i class="fas fa-heartbeat"></i> Medi<span>Pulse</span> <span style="font-size: 16px; opacity: 0.9; font-weight: 500; color: #cbd5e1; margin-left: 5px;">| Control Center</span>
         </div>
-        <div>
-            <span style="font-size: 14px; margin-right: 15px;">Logged in as: <strong>Admin</strong></span>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="theme-selector-container">
+                <select id="themeSelector" class="theme-select" onchange="setTheme(this.value)">
+                    <option value="theme-default">Default Theme</option>
+                    <option value="theme-dark-1">Sci-Fi (3D)</option>
+                    <option value="theme-dark-2">Bio-Medical (Video)</option>
+                </select>
+            </div>
+            <span style="font-size: 14px;">Logged in as: <strong>Admin</strong></span>
             <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
     </div>
@@ -107,7 +136,8 @@
                 <h1>Hospital Analytics & Staff Directory</h1>
                 <p>Live "Lekha Jokha" of total hospital metrics and secure staff registry.</p>
             </div>
-            <div>
+            <div style="display:flex; gap: 10px;">
+                <button class="btn-outline" onclick="openModal('performanceModal')"><i class="fas fa-chart-line"></i> See Doctor Performance</button>
                 <button class="btn-outline" onclick="window.location.href='7patient_history.html'"><i class="fas fa-history"></i> Patient History</button>
             </div>
         </div>
@@ -144,6 +174,25 @@
             </div>
         </div>
 
+        <!-- ALERTS & LEAVES GRID -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;" id="alertsLeavesGrid">
+            <!-- SMART ALERTS -->
+            <div class="panel">
+                <h3 style="color:#b91c1c; display:flex; align-items:center; gap:8px; border-bottom:1px solid #fecaca; margin-bottom:15px; padding-bottom:10px;"><i class="fas fa-bell"></i> Live Hospital Smart Alerts</h3>
+                <div id="alertsContainer" style="display:flex; flex-direction:column; gap:12px; max-height: 250px; overflow-y:auto; padding-right:5px;">
+                    <p style="color:#64748b; font-size:13px;">No active alerts. System healthy.</p>
+                </div>
+            </div>
+
+            <!-- LEAVE REQUESTS -->
+            <div class="panel">
+                <h3 style="color:#d97706; display:flex; align-items:center; gap:8px; border-bottom:1px solid #fde68a; margin-bottom:15px; padding-bottom:10px;"><i class="fas fa-calendar-times"></i> Leave Approval Requests</h3>
+                <div id="leavesContainer" style="display:flex; flex-direction:column; gap:12px; max-height: 250px; overflow-y:auto; padding-right:5px;">
+                    <p style="color:#64748b; font-size:13px;">No pending leave requests.</p>
+                </div>
+            </div>
+        </div>
+
         <!-- STAFF SECTIONS -->
         <div class="panel" style="margin-top: 20px;">
             <div class="action-flex">
@@ -159,7 +208,7 @@
                 <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 30px;">
                     <table>
                         <thead>
-                            <tr><th>ID</th><th>Name</th><th>Specialization</th><th style="width: 80px;">Action</th></tr>
+                            <tr><th>ID</th><th>Name</th><th>Specialization</th><th>Password</th><th style="width: 80px;">Action</th></tr>
                         </thead>
                         <tbody id="docTableBody"><tr><td colspan="4">Loading...</td></tr></tbody>
                     </table>
@@ -169,9 +218,9 @@
                 <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 30px;">
                     <table>
                         <thead>
-                            <tr><th>ID</th><th>Name</th><th>Role</th><th style="width: 80px;">Action</th></tr>
+                            <tr><th>ID</th><th>Name</th><th>Role</th><th>Password</th><th style="width: 80px;">Action</th></tr>
                         </thead>
-                        <tbody id="recTableBody"><tr><td colspan="4">Loading...</td></tr></tbody>
+                        <tbody id="recTableBody"><tr><td colspan="5">Loading...</td></tr></tbody>
                     </table>
                 </div>
 
@@ -179,9 +228,9 @@
                 <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 10px;">
                     <table>
                         <thead>
-                            <tr><th>ID</th><th>Name</th><th>Role</th><th style="width: 80px;">Action</th></tr>
+                            <tr><th>ID</th><th>Name</th><th>Role</th><th>Password</th><th style="width: 80px;">Action</th></tr>
                         </thead>
-                        <tbody id="pharTableBody"><tr><td colspan="4">Loading...</td></tr></tbody>
+                        <tbody id="pharTableBody"><tr><td colspan="5">Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -268,14 +317,64 @@
         </div>
     </div>
 
+    <!-- DOCTOR PERFORMANCE MODAL -->
+    <div class="modal-overlay" id="performanceModal">
+        <div class="modal-content" style="max-width: 900px; width: 95%;">
+            <button class="close-modal" onclick="closeModal('performanceModal')">&times;</button>
+            <h3 style="margin-bottom:20px; font-size:18px; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-chart-line" style="color: #043f77;"></i> Doctor Performance Analytics
+            </h3>
+            <div style="overflow-x: auto;">
+                <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Doctor ID</th>
+                                <th>Doctor Name</th>
+                                <th>Specialization</th>
+                                <th style="text-align: center;">Patients Handled</th>
+                                <th style="text-align: center;">Avg Consultation Time</th>
+                                <th>Revenue Generated</th>
+                            </tr>
+                        </thead>
+                        <tbody id="performanceTableBody">
+                            <tr><td colspan="6" style="text-align: center; padding: 20px; color: #94a3b8;">Loading analytics...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOCTOR PATIENTS HISTORY MODAL -->
+    <div class="modal-overlay" id="doctorPatientsModal" style="z-index: 1005;">
+        <div class="modal-content" style="max-width: 700px; width: 95%;">
+            <button class="close-modal" onclick="closeModal('doctorPatientsModal')">&times;</button>
+            <h3 id="docPatientsTitle" style="margin-bottom:20px; font-size:18px; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-user-injured" style="color: #043f77;"></i> Patients Handled
+            </h3>
+            <div style="overflow-y: auto; max-height: 400px; border: 1px solid #e2e8f0; border-radius: 12px;">
+                <table style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Patient Name</th>
+                            <th>Date & Time Seen</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="docPatientsTableBody">
+                        <tr><td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8;">Select a doctor to view...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_BASE = '/api/admin';
 
         // Security
-        if(localStorage.getItem('userRole') !== 'admin' && localStorage.getItem('userRole') !== 'guest') {
-            alert('Access Denied. Admin Dashboard.');
-            window.location.href = '8login.html';
-        }
+        checkUserRole(['admin']);
 
         function logout() {
             localStorage.clear();
@@ -333,11 +432,18 @@
                 recTbody.innerHTML = '';
                 pharTbody.innerHTML = '';
                 
-                staff.forEach(s => {
+                staff.forEach((s, index) => {
+                    const passId = `pass-${index}`;
                     const tr = `<tr>
                         <td style="color:#059669; font-weight:700; width:120px;">${s.id}</td>
                         <td style="font-weight:600;">${s.name}</td>
                         <td><span class="role-badge">${s.role}</span></td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <input type="password" id="${passId}" value="${s.password}" readonly style="border:none; background:transparent; font-family:inherit; color:#334155; font-weight:600; width:80px; outline:none;" />
+                                <i class="fas fa-eye" style="cursor:pointer; color:#64748b;" onclick="togglePassword('${passId}', this)"></i>
+                            </div>
+                        </td>
                         <td><button class="btn-del" onclick="deleteStaff('${s.id}')"><i class="fas fa-trash"></i></button></td>
                     </tr>`;
 
@@ -351,6 +457,19 @@
                 });
             } catch(e) {
                 console.error('Failed to load staff list', e);
+            }
+        }
+
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = "password";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
         }
 
@@ -395,7 +514,8 @@
                 
                 const data = await res.json();
                 if(data.success) {
-                    alert(`Successfully registered! Initialized ID: ${data.user.doctorId || data.user.staffId}`);
+                    // Remove the intrusive alert, just update table seamlessly.
+                    // The new user and their password will appear in the table below.
                     event.target.reset();
                     closeModal(type === 'doctor' ? 'doctorModal' : 'staffModal');
                     fetchStaff();
@@ -410,13 +530,251 @@
             btn.innerHTML = 'Assign ID & Register';
         }
 
+        async function fetchLeaves() {
+            try {
+                const res = await fetch('/api/leaves');
+                const leaves = await res.json();
+                const container = document.getElementById('leavesContainer');
+                
+                const pending = leaves.filter(l => l.status === 'pending');
+                if (pending.length === 0) {
+                    container.innerHTML = '<p style="color:#64748b; font-size:13px;">No pending leave requests.</p>';
+                    return;
+                }
+                
+                container.innerHTML = pending.map(l => `
+                    <div class="leave-item">
+                        <div class="leave-info">
+                            <span style="font-weight:700; color:#0f172a;">${l.doctorName}</span>
+                            <span style="font-size:11px; color:#64748b;">Requested Date: ${l.leaveDate}</span>
+                            <span style="font-size:12px; color:#334155;">Reason: ${l.reason}</span>
+                        </div>
+                        <div class="leave-actions">
+                            <button class="btn-approve" onclick="handleLeave('${l._id}', 'approved')">Approve</button>
+                            <button class="btn-reject" onclick="handleLeave('${l._id}', 'rejected')">Reject</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function handleLeave(id, status) {
+            try {
+                const res = await fetch(`/api/leaves/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    fetchLeaves();
+                    fetchStats();
+                    fetchStaff();
+                } else {
+                    alert('Failed to update leave request');
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function fetchAlerts() {
+            try {
+                // Fetch medicines for low stock
+                const medRes = await fetch('/api/medicines');
+                const medicines = await medRes.json();
+                
+                // Fetch beds for occupancy
+                const bedRes = await fetch('/api/beds');
+                const beds = await bedRes.json();
+                
+                // Fetch active queue for emergency patients and doctor check
+                const queueRes = await fetch('/api/patients/queue');
+                const queue = await queueRes.json();
+                
+                // Fetch doctors list
+                const docRes = await fetch('/api/doctors');
+                const doctors = await docRes.json();
+                
+                const alerts = [];
+                
+                // 1. Medicine stock below threshold (< 10)
+                medicines.forEach(m => {
+                    if (m.stock < 10) {
+                        alerts.push({
+                            type: 'warn',
+                            icon: 'fa-pills',
+                            text: `Low Stock: "${m.name}" has only ${m.stock} units left in pharmacy!`
+                        });
+                    }
+                });
+                
+                // 2. Bed occupancy > 90%
+                const totalBeds = beds.length;
+                const occupiedBeds = beds.filter(b => b.status !== 'free').length;
+                const occupancyPct = totalBeds > 0 ? (occupiedBeds / totalBeds) * 100 : 0;
+                if (occupancyPct > 90) {
+                    alerts.push({
+                        type: 'danger',
+                        icon: 'fa-procedures',
+                        text: `Critical Beds: Occupancy is at ${Math.round(occupancyPct)}% (${occupiedBeds}/${totalBeds} occupied)!`
+                    });
+                }
+                
+                // 3. Emergency patient waiting
+                queue.forEach(p => {
+                    const probLower = p.problem.toLowerCase();
+                    const isEmergencyProblem = probLower.includes('chest pain') || 
+                                              probLower.includes('breathing') || 
+                                              probLower.includes('bleeding') || 
+                                              probLower.includes('heart') ||
+                                              probLower.includes('stroke') ||
+                                              probLower.includes('critical') ||
+                                              probLower.includes('emergency') ||
+                                              p.problem.includes('CRITICAL') ||
+                                              p.problem.includes('HIGH');
+                    if (isEmergencyProblem && p.status === 'waiting') {
+                        alerts.push({
+                            type: 'danger',
+                            icon: 'fa-exclamation-triangle',
+                            text: `Emergency: Patient "${p.name}" is waiting with suspected emergency: "${p.problem}"!`
+                        });
+                    }
+                });
+                
+                // 4. Doctor absent but appointments booked
+                doctors.forEach(d => {
+                    if (d.isActive === false) {
+                        const bookedCount = queue.filter(p => {
+                            const docId = p.assignedDoctor?._id || p.assignedDoctor;
+                            return docId === d._id && p.status === 'waiting';
+                        }).length;
+                        
+                        if (bookedCount > 0) {
+                            alerts.push({
+                                type: 'danger',
+                                icon: 'fa-user-times',
+                                text: `Absent Doctor Warning: Dr. ${d.name.replace('Dr. ', '')} is ON LEAVE, but has ${bookedCount} waiting patient(s) assigned!`
+                            });
+                        }
+                    }
+                });
+                
+                const container = document.getElementById('alertsContainer');
+                if (alerts.length === 0) {
+                    container.innerHTML = '<p style="color:#64748b; font-size:13px;">No active alerts. System healthy.</p>';
+                    return;
+                }
+                
+                container.innerHTML = alerts.map(a => `
+                    <div class="alert-item ${a.type === 'warn' ? 'warn' : ''}" style="margin-bottom: 8px;">
+                        <i class="fas ${a.icon}"></i>
+                        <span>${a.text}</span>
+                    </div>
+                `).join('');
+                
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        let currentPerformanceData = [];
+
+        async function fetchDoctorPerformance() {
+            try {
+                const res = await fetch('/api/admin/doctor-performance');
+                const result = await res.json();
+                
+                if (result.success) {
+                    currentPerformanceData = result.performance;
+                    const tbody = document.getElementById('performanceTableBody');
+                    if (result.performance.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #94a3b8;">No doctor performance data found.</td></tr>';
+                        return;
+                    }
+                    
+                    tbody.innerHTML = result.performance.map(d => `
+                        <tr>
+                            <td style="color:#059669; font-weight:700; width:120px;">${d.doctorId}</td>
+                            <td class="clickable-doc" style="font-weight:600; cursor:pointer;" onclick="showDoctorPatients('${d.doctorId}')">
+                                <i class="fas fa-user-md" style="color:#64748b; margin-right:5px;"></i> ${d.name}
+                            </td>
+                            <td><span class="role-badge" style="background:#ecfdf5; color:#047857; border:1px solid #a7f3d0;">${d.specialization}</span></td>
+                            <td style="font-weight:600; text-align:center; cursor:pointer;" onclick="showDoctorPatients('${d.doctorId}')">
+                                <span style="display:inline-flex; align-items:center; gap:5px; background:#eff6ff; color:#1e40af; padding:4px 10px; border-radius:6px; font-size:13px;">
+                                    <i class="fas fa-users" style="font-size:11px;"></i> ${d.patientsHandled}
+                                </span>
+                            </td>
+                            <td style="font-weight:600; text-align:center;">
+                                <span style="display:inline-flex; align-items:center; gap:5px; background:#fffbeb; color:#92400e; padding:4px 10px; border-radius:6px; font-size:13px;">
+                                    <i class="far fa-clock" style="font-size:11px;"></i> ${d.avgConsultationTime} mins
+                                </span>
+                            </td>
+                            <td style="font-weight:700; color:#10b981; font-size:15px;">₹${d.revenueGenerated.toLocaleString()}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (e) {
+                console.error('Failed to load doctor performance data', e);
+            }
+        }
+
+        function showDoctorPatients(docId) {
+            const doc = currentPerformanceData.find(d => d.doctorId === docId);
+            if (!doc) return;
+
+            document.getElementById('docPatientsTitle').innerHTML = `
+                <i class="fas fa-user-injured" style="color: #043f77;"></i> Patients Handled by ${doc.name}
+            `;
+
+            const tbody = document.getElementById('docPatientsTableBody');
+            if (!doc.patients || doc.patients.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 25px; color: #94a3b8;"><i class="fas fa-info-circle"></i> No patients have been checked by this doctor yet.</td></tr>`;
+            } else {
+                tbody.innerHTML = doc.patients.map(p => {
+                    const dateStr = p.date ? new Date(p.date).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) : 'N/A';
+                    
+                    let statusBadge = `<span class="role-badge" style="background:#f1f5f9; color:#475569;">${p.status.toUpperCase()}</span>`;
+                    if (p.status === 'completed') {
+                        statusBadge = `<span class="role-badge" style="background:#ecfdf5; color:#047857; border: 1px solid #a7f3d0;">COMPLETED</span>`;
+                    } else if (p.status === 'prescribed') {
+                        statusBadge = `<span class="role-badge" style="background:#eff6ff; color:#1e40af; border: 1px solid #bfdbfe;">PRESCRIBED</span>`;
+                    }
+
+                    return `
+                        <tr>
+                            <td style="font-weight: 600; color: #0f172a; padding: 12px 15px;">${p.name} <span style="font-size: 11px; color: #64748b; font-weight: normal;">(${p.patientId})</span></td>
+                            <td style="color: #475569; font-size: 13px; padding: 12px 15px;">${dateStr}</td>
+                            <td style="padding: 12px 15px;">${statusBadge}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            openModal('doctorPatientsModal');
+        }
+
         // Initialize Page
         fetchStats();
         fetchStaff();
+        fetchLeaves();
+        fetchAlerts();
+        fetchDoctorPerformance();
 
         // Real-time MongoDB Polling (every 5 seconds)
         setInterval(fetchStats, 5000);
         setInterval(fetchStaff, 5000);
+        setInterval(fetchLeaves, 5000);
+        setInterval(fetchAlerts, 5000);
+        setInterval(fetchDoctorPerformance, 5000);
     </script>
 </body>
 </html>

@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MediPulse - Bed Management (White & Green)</title>
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js"></script>
+<script>
+  checkUserRole(['admin']);
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -162,6 +167,13 @@ body{
     </div>
     
     <div class="mp-hactions">
+      <div class="theme-selector-container">
+          <select id="themeSelector" class="theme-select" onchange="setTheme(this.value)">
+              <option value="theme-default">Default Theme</option>
+              <option value="theme-dark-1">Sci-Fi (3D)</option>
+              <option value="theme-dark-2">Bio-Medical (Video)</option>
+          </select>
+      </div>
       <div class="live-badge"><div class="live-dot"></div> Live Tracker</div>
       <div class="mp-avatar">SR</div>
     </div>

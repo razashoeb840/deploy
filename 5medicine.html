@@ -4,13 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MediPulse - Smart Pharmacy POS</title>
-<script>
-    if(localStorage.getItem('userRole') !== 'pharmacy' && localStorage.getItem('userRole') !== 'guest') {
-        alert('Access Denied. Pharmacy access required.');
-        window.location.href = '8login.html';
-    }
-</script>
+  <script src="theme.js"></script>
+  <script>
+    checkUserRole(['pharmacy']);
+  </script>
+  <link rel="stylesheet" href="theme.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{
@@ -224,6 +225,13 @@ body{
     </div>
     
     <div class="mp-hactions">
+      <div class="theme-selector-container">
+          <select id="themeSelector" class="theme-select" onchange="setTheme(this.value)">
+              <option value="theme-default">Default Theme</option>
+              <option value="theme-dark-1">Sci-Fi (3D)</option>
+              <option value="theme-dark-2">Bio-Medical (Video)</option>
+          </select>
+      </div>
       <div class="live-badge"><div class="live-dot"></div> System Synced</div>
       <div class="mp-avatar">SR</div>
     </div>
@@ -292,10 +300,15 @@ body{
           <span>Total Amount</span>
           <span id="totalAmt">₹0.00</span>
         </div>
-        <button class="checkout-btn" id="checkoutBtn" onclick="checkout()" disabled>
-          Complete Sale
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        </button>
+        <div style="display: flex; gap: 10px;">
+          <button class="checkout-btn" id="checkoutBtn" onclick="checkout()" disabled style="flex: 1;">
+            Complete Sale
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="checkout-btn" id="printBillBtn" onclick="exportBillingInvoicePDF()" style="background: #3b82f6; width: 50px; padding: 0; display: flex; justify-content: center; align-items: center;" title="Export PDF Invoice">
+            <i class="fas fa-file-pdf" style="font-size: 18px;"></i>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -651,6 +664,9 @@ async function checkout() {
        return;
     }
 
+    // Auto export PDF invoice before clearing cart
+    exportBillingInvoicePDF();
+
     cart.forEach(cItem => {
       const invItem = inventory.find(i => i.id === cItem.id);
       invItem.stock -= cItem.qty; 
@@ -686,11 +702,174 @@ async function checkout() {
     // Completely refresh inventory to align with DB
     await fetchInventory();
 
-    toast('Sale Completed! Data logged to history ✓');
+    toast('Sale Completed! Invoice PDF exported ✓');
   } catch(err) {
     console.error(err);
     toast('Network Error', 'error');
   }
+}
+
+function exportBillingInvoicePDF() {
+  if (cart.length === 0) {
+    toast('No items in the invoice to export.', 'error');
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  const invoiceId = 'INV-' + Date.now().toString().slice(-8);
+  const patientName = window.currentRxPatientName || "Walk-in Customer";
+  const patientPermanentId = window.currentRxPatientPermanentId || "PID-N/A";
+
+  // Header Banner Background (Navy Blue)
+  doc.setFillColor(15, 23, 42); // #0f172a
+  doc.rect(0, 0, 210, 32, 'F');
+  
+  // Green Accent Line
+  doc.setFillColor(1, 202, 139); // #01ca8b
+  doc.rect(0, 32, 210, 2, 'F');
+  
+  // Header Text
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(20);
+  doc.setTextColor(255, 255, 255);
+  doc.text("MEDIPULSE HOSPITAL PHARMACY", 14, 18);
+  
+  doc.setFont("Helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(203, 213, 225); // Slate 300
+  doc.text("Retail Pharmacy Division & Billing Center | System Synced", 14, 25);
+  
+  // Document Title
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(15, 23, 42); // Slate 900
+  doc.text("OFFICIAL RETAIL PHARMACY INVOICE", 14, 45);
+  
+  // Metadata Container Box
+  doc.setFillColor(248, 250, 252); // Slate 50
+  doc.rect(14, 50, 182, 22, 'F');
+  doc.setDrawColor(226, 232, 240); // Slate 200
+  doc.setLineWidth(0.3);
+  doc.rect(14, 50, 182, 22);
+  
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(71, 85, 105); // Slate 600
+  
+  doc.text("INVOICE NO:", 18, 57);
+  doc.text("PATIENT ID:", 18, 65);
+  doc.text("DATE & TIME:", 100, 57);
+  doc.text("STATUS:", 100, 65);
+  
+  doc.setFont("Helvetica", "normal");
+  doc.setTextColor(15, 23, 42);
+  doc.text(invoiceId, 42, 57);
+  doc.text(patientPermanentId, 42, 65);
+  doc.text(new Date().toLocaleString(), 125, 57);
+  
+  // Transaction Status Badge (Green "PAID" box)
+  doc.setFillColor(239, 253, 245); // Light Green
+  doc.rect(125, 61, 20, 5, 'F');
+  doc.setDrawColor(167, 243, 208);
+  doc.rect(125, 61, 20, 5);
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(7.5);
+  doc.setTextColor(5, 150, 105); // Dark Green
+  doc.text("PAID", 131, 64.5);
+  
+  // Patient details
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(15, 23, 42);
+  doc.text("1. Billing Demographics", 14, 82);
+  
+  doc.setFontSize(9.5);
+  doc.setFont("Helvetica", "normal");
+  doc.text(`Customer / Patient Name:`, 14, 90);
+  doc.setFont("Helvetica", "bold");
+  doc.text(patientName, 55, 90);
+  
+  doc.setFont("Helvetica", "normal");
+  doc.text(`Cashier / Operator:`, 110, 90);
+  doc.text(`MediPulse Pharmacist`, 145, 90);
+  
+  doc.setDrawColor(226, 232, 240);
+  doc.line(14, 96, 196, 96);
+  
+  // Table header
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("2. Itemized Medication Sales Ledger", 14, 104);
+  
+  doc.setFillColor(15, 23, 42);
+  doc.rect(14, 108, 182, 8, 'F');
+  doc.setFontSize(8.5);
+  doc.setTextColor(255, 255, 255);
+  doc.text("MEDICINE NAME", 18, 113);
+  doc.text("CATEGORY", 85, 113);
+  doc.text("UNIT PRICE", 120, 113);
+  doc.text("QTY", 155, 113);
+  doc.text("TOTAL (INR)", 175, 113);
+  
+  // Table rows
+  doc.setTextColor(15, 23, 42);
+  let startY = 122;
+  let totalSum = 0;
+  cart.forEach(c => {
+    const rowTotal = c.price * c.qty;
+    totalSum += rowTotal;
+    
+    doc.setFont("Helvetica", "bold");
+    doc.text(c.name, 18, startY);
+    
+    doc.setFont("Helvetica", "normal");
+    doc.text(c.type || "Normal", 85, startY);
+    doc.text(`₹${c.price.toFixed(2)}`, 120, startY);
+    doc.text(c.qty.toString(), 155, startY);
+    
+    doc.setFont("Helvetica", "bold");
+    doc.text(`₹${rowTotal.toFixed(2)}`, 175, startY);
+    
+    // Draw row divider
+    doc.setDrawColor(241, 245, 249);
+    doc.setLineWidth(0.2);
+    doc.line(14, startY + 3, 196, startY + 3);
+    
+    startY += 8;
+  });
+  
+  startY += 2;
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.5);
+  doc.line(14, startY, 196, startY);
+  
+  // Grand Total
+  startY += 8;
+  doc.setFont("Helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text("Grand Total:", 115, startY);
+  doc.text(`₹${totalSum.toFixed(2)}`, 175, startY);
+  
+  // Double line below totals
+  doc.line(115, startY + 2, 196, startY + 2);
+  doc.line(115, startY + 3, 196, startY + 3);
+  
+  // Footer and signature
+  const pageHeight = doc.internal.pageSize.height;
+  doc.line(14, pageHeight - 35, 196, pageHeight - 35);
+  doc.setFontSize(8.5);
+  doc.setFont("Helvetica", "bold");
+  doc.text("AUTHORIZED DISPENSING PHARMACIST", 115, pageHeight - 27);
+  doc.setFont("Helvetica", "normal");
+  doc.setTextColor(100, 116, 139);
+  doc.text("Signature & System Verified Receipt", 115, pageHeight - 22);
+  
+  doc.setFont("Helvetica", "oblique");
+  doc.text("Thank you for using MediPulse Pharmacy! Have a speedy recovery.", 14, pageHeight - 20);
+  
+  doc.save(`Invoice_${invoiceId}.pdf`);
 }
 
 function closeModal(id) {
@@ -756,7 +935,7 @@ async function openPrescriptionModal() {
                         ${rx.medicines.map(m => `💊 ${m.medicineName} (${m.dosage})`).join('<br>')}
                     </div>
                 </div>
-                <button class="btn-save" style="padding:8px 16px; width:auto;" onclick="loadToCart('${p._id}')">Auto-Fill Bill</button>
+                <button class="btn-save" style="padding:8px 16px; width:auto;" onclick="loadToCart('${p._id}', '${p.name}', '${p.patientId || ''}')">Auto-Fill Bill</button>
             </div>
            `;
         }
@@ -767,17 +946,91 @@ async function openPrescriptionModal() {
     }
 }
 
-function loadToCart(patientId) {
+function calculatePrescribedQty(dose, frequency, duration) {
+    let doseMultiplier = 1;
+    if (dose) {
+        let cleanDose = dose.toLowerCase().trim();
+        if (/^\d+(\.\d+)?$/.test(cleanDose)) {
+            doseMultiplier = parseFloat(cleanDose) || 1;
+        } else {
+            let match = cleanDose.match(/(\d+(\.\d+)?)\s*(tab|cap|pill|unit|pc|drop|spoon|puff|dosage|tablet|capsule)/);
+            if (match) {
+                doseMultiplier = parseFloat(match[1]) || 1;
+            } else {
+                if (cleanDose.includes('mg') || cleanDose.includes('ml') || cleanDose.includes('mcg') || cleanDose.includes('gm') || cleanDose.includes('g')) {
+                    doseMultiplier = 1;
+                } else {
+                    let numMatch = cleanDose.match(/(\d+(\.\d+)?)/);
+                    if (numMatch) {
+                        doseMultiplier = parseFloat(numMatch[1]) || 1;
+                    }
+                }
+            }
+        }
+    }
+
+    let dailyCount = 1;
+    if (frequency) {
+        let cleanFreq = frequency.toLowerCase().trim();
+        if (cleanFreq.includes('-')) {
+            let parts = cleanFreq.split('-');
+            let sum = 0;
+            parts.forEach(p => {
+                let num = parseFloat(p.trim());
+                if (!isNaN(num)) sum += num;
+            });
+            dailyCount = sum > 0 ? sum : 1;
+        } else if (cleanFreq.includes('once') || cleanFreq === 'qd' || cleanFreq === 'od' || cleanFreq === 'daily') {
+            dailyCount = 1;
+        } else if (cleanFreq.includes('twice') || cleanFreq === 'bid' || cleanFreq === 'bd') {
+            dailyCount = 2;
+        } else if (cleanFreq.includes('thrice') || cleanFreq === 'tid' || cleanFreq === 'td') {
+            dailyCount = 3;
+        } else if (cleanFreq.includes('four') || cleanFreq === 'qid') {
+            dailyCount = 4;
+        } else {
+            let numMatch = cleanFreq.match(/(\d+(\.\d+)?)/);
+            if (numMatch) {
+                dailyCount = parseFloat(numMatch[1]) || 1;
+            }
+        }
+    }
+
+    let days = 1;
+    if (duration) {
+        let cleanDur = duration.toLowerCase().trim();
+        let numMatch = cleanDur.match(/(\d+(\.\d+)?)/);
+        let val = numMatch ? parseFloat(numMatch[1]) : 1;
+        if (cleanDur.includes('week')) {
+            days = val * 7;
+        } else if (cleanDur.includes('month')) {
+            days = val * 30;
+        } else {
+            days = val;
+        }
+    }
+
+    return Math.max(1, Math.ceil(doseMultiplier * dailyCount * days));
+}
+
+function loadToCart(patientId, patientName, patientPermanentId) {
     cart = [];
     currentRxPatientId = patientId;
-    document.getElementById('billedPatientName').textContent = "Billed for Patient";
+    window.currentRxPatientName = patientName || "Walk-in Customer";
+    window.currentRxPatientPermanentId = patientPermanentId || "PID-N/A";
+    document.getElementById('billedPatientName').textContent = patientName ? `Patient: ${patientName} (${patientPermanentId || 'PID-N/A'})` : "Walk-in Customer";
 
     const medicines = window.rxStore[patientId] || [];
 
     medicines.forEach(prescribedMed => {
         const invItem = inventory.find(i => i.name.toLowerCase() === prescribedMed.medicineName.toLowerCase());
         if(invItem) {
-            cart.push({ ...invItem, qty: 1 }); 
+            const calculatedQty = calculatePrescribedQty(prescribedMed.dosage, prescribedMed.frequency, prescribedMed.duration);
+            const finalQty = Math.min(calculatedQty, invItem.stock);
+            cart.push({ ...invItem, qty: finalQty }); 
+            if (calculatedQty > invItem.stock) {
+                toast(`Insufficient stock for ${prescribedMed.medicineName}. Prescribed: ${calculatedQty}, Available: ${invItem.stock}`, 'error');
+            }
         } else {
              toast(`Cannot find ${prescribedMed.medicineName} in stock.`, 'error');
         }
@@ -785,7 +1038,7 @@ function loadToCart(patientId) {
 
     renderCart();
     closeModal('rxModal');
-    toast(`Prescription loaded. Please update quantities if needed.`);
+    toast(`Prescription loaded. Quantities calculated automatically.`);
 }
 
 function toast(msg, type='success'){

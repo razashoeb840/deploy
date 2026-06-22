@@ -1,0 +1,1800 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif !important;
+}
+
+/* Global Theme Variables and Overrides */
+
+/* --- DARK THEME 1: SCI-FI / TECH --- */
+/* --- DARK THEME 1: SCI-FI / TECH (OMNITRIX MODE) --- */
+html.theme-dark-1 {
+    --ac: #00ccff;
+    --ac-rgb: 0, 204, 255;
+}
+
+html.theme-dark-1 body {
+    background-color: #03060f !important;
+    background-image: none !important;
+    color: #e2e8f0;
+}
+
+html.theme-dark-1 .product-card {
+    background: radial-gradient(circle at 40px 40px, rgba(0, 204, 255, 0.12) 0%, transparent 60%), rgba(4, 15, 10, 0.78) !important;
+    border: 1px solid rgba(0, 204, 255, 0.22) !important;
+    border-radius: 22px !important;
+    padding: 32px 28px !important;
+    margin-bottom: 20px !important;
+    backdrop-filter: blur(25px) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.35s ease !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.65), 0 0 20px rgba(0, 204, 255, 0.08), inset 0 0 15px rgba(0, 204, 255, 0.04) !important;
+    animation: cfloat 6s ease-in-out infinite !important;
+}
+
+html.theme-dark-1 .product-card::after {
+    content: '' !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 20px !important;
+    bottom: 20px !important;
+    width: 4px !important;
+    border-radius: 0 4px 4px 0 !important;
+    background: #00ccff !important;
+    box-shadow: 0 0 15px #00ccff !important;
+    opacity: 0.8 !important;
+}
+
+html.theme-dark-1 .product-card:hover {
+    border-color: rgba(0, 204, 255, 0.45) !important;
+    transform: translateY(-8px) !important;
+    box-shadow: 0 28px 70px rgba(0,0,0,0.75), 0 0 30px rgba(0, 204, 255, 0.2) !important;
+}
+
+@keyframes cfloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+html.theme-dark-1 .dashboard-card,
+html.theme-dark-1 .form-container,
+html.theme-dark-1 .panel,
+html.theme-dark-1 .scard,
+html.theme-dark-1 .tok-box,
+html.theme-dark-1 .mp-header,
+html.theme-dark-1 .med-card,
+html.theme-dark-1 .billing-section,
+html.theme-dark-1 .modal-content,
+html.theme-dark-1 .table-container,
+html.theme-dark-1 .login-box,
+html.theme-dark-1 .detail-panel,
+html.theme-dark-1 .zone-card {
+    background: rgba(10, 20, 30, 0.75) !important;
+    border: 1px solid rgba(0, 204, 255, 0.2) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.65), 0 0 15px rgba(0, 204, 255, 0.1) inset !important;
+    backdrop-filter: blur(16px) !important;
+    color: #f8fafc !important;
+}
+
+html.theme-dark-1 h1,
+html.theme-dark-1 h2,
+html.theme-dark-1 h3,
+html.theme-dark-1 h4,
+html.theme-dark-1 .section-title h2 {
+    color: #ffffff;
+}
+
+html.theme-dark-1 p,
+html.theme-dark-1 .feature-list li {
+    color: #cbd5e1;
+}
+
+html.theme-dark-1 .product-card h3 {
+    color: #ffffff !important;
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+    text-shadow: 0 0 10px rgba(0, 204, 255, 0.45) !important;
+}
+
+html.theme-dark-1 .header-active {
+    background: rgba(3, 6, 15, 0.95);
+    border-bottom: 1px solid rgba(0, 204, 255, 0.2);
+}
+
+html.theme-dark-1 .btn-launch {
+    background: rgba(0, 204, 255, 0.08) !important;
+    color: #00ccff !important;
+    border: 1px solid rgba(0, 204, 255, 0.25) !important;
+}
+
+html.theme-dark-1 .product-card:hover .btn-launch {
+    background: #00ccff !important;
+    color: #03060f !important;
+    border-color: #00ccff !important;
+    box-shadow: 0 0 15px rgba(0, 204, 255, 0.4) !important;
+}
+
+html.theme-dark-1 table {
+    background: rgba(10, 20, 30, 0.75) !important;
+    color: #f8fafc !important;
+}
+
+html.theme-dark-1 th {
+    background: rgba(4, 15, 25, 0.9) !important;
+    color: #00ccff !important;
+    border-bottom: 2px solid #00ccff !important;
+    font-family: 'Orbitron', sans-serif !important;
+}
+
+html.theme-dark-1 td {
+    border-color: rgba(0, 204, 255, 0.12) !important;
+}
+
+/* Custom Cursor, Starfield, Scanline & Corners Global Toggles */
+#cur, #cur-ring, #stars, .scan, .corner, .credits {
+    display: none;
+}
+html.theme-dark-1 #cur,
+html.theme-dark-1 #cur-ring,
+html.theme-dark-1 #stars,
+html.theme-dark-1 .scan,
+html.theme-dark-1 .corner,
+html.theme-dark-1 .credits {
+    display: block;
+}
+html.theme-dark-1:has(#cur) * {
+    cursor: none !important;
+}
+
+/* Stars Canvas styling */
+#stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ── CREDITS OVERLAY ── */
+.credits {
+    position: fixed;
+    bottom: 18px;
+    right: 28px;
+    z-index: 50;
+    text-align: right;
+    pointer-events: none;
+}
+.cr-by{font-size:9px;color:rgba(0,204,255,0.45);letter-spacing:4px;font-family:'Orbitron',sans-serif;margin-bottom:3px}
+.cr-name{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:800;letter-spacing:3px;background:linear-gradient(90deg,#00ccff,#00ff88,#aa88ff,#ff6ef7,#00ccff);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:cflow 3s linear infinite}
+@keyframes cflow{0%{background-position:0%}100%{background-position:300%}}
+.cr-deco{font-size:9px;color:rgba(0,204,255,0.2);letter-spacing:6px;margin-top:2px}
+
+/* ── GLOBAL CURSOR STYLING ── */
+#cur{position:fixed;width:18px;height:18px;pointer-events:none;z-index:99999;transform:translate(-50%,-50%)}
+#cur-ring{position:fixed;width:38px;height:38px;pointer-events:none;z-index:99998;transform:translate(-50%,-50%)}
+.cur-dot{width:16px;height:16px;background:var(--ac,#00ccff);border-radius:50%;position:absolute;top:1px;left:1px;box-shadow:0 0 10px var(--ac,#00ccff),0 0 20px rgba(var(--ac-rgb,0,204,255),0.3);animation:cpulse 2s infinite}
+@keyframes cpulse{0%,100%{opacity:1}50%{opacity:.5}}
+.cur-out{width:38px;height:38px;border:1.5px solid rgba(var(--ac-rgb, 0,204,255),.5);border-radius:50%;position:absolute;top:0;left:0;animation:cspin 3s linear infinite}
+@keyframes cspin{to{transform:rotate(360deg)}}
+.cur-out::before,.cur-out::after{content:'';position:absolute;width:4px;height:4px;background:var(--ac,#00ccff);border-radius:50%;top:-2px;left:17px;box-shadow:0 0 5px var(--ac,#00ccff)}
+.cur-out::after{top:auto;bottom:-2px}
+
+/* ── SCANLINE EFFECT ── */
+.scan{position:fixed;width:100%;height:1px;top:0;left:0;z-index:2;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(0,204,255,.25),transparent);opacity:.15;animation:scanl 9s linear infinite}
+@keyframes scanl{0%{top:0}100%{top:100%}}
+
+/* ── HUD CORNERS ── */
+.corner {
+  position: fixed;
+  width: 70px;
+  height: 70px;
+  z-index: 3;
+  pointer-events: none;
+  transition: border-color 0.4s;
+  opacity: 0.65;
+}
+.corner.tl {
+  top: 24px;
+  left: 24px;
+  border-top: 2px solid var(--ac, #00ccff);
+  border-left: 2px solid var(--ac, #00ccff);
+}
+.corner.tr {
+  top: 24px;
+  right: 24px;
+  border-top: 2px solid var(--ac, #00ccff);
+  border-right: 2px solid var(--ac, #00ccff);
+}
+.corner.bl {
+  bottom: 24px;
+  left: 24px;
+  border-bottom: 2px solid var(--ac, #00ccff);
+  border-left: 2px solid var(--ac, #00ccff);
+}
+.corner.br {
+  bottom: 24px;
+  right: 24px;
+  border-bottom: 2px solid var(--ac, #00ccff);
+  border-right: 2px solid var(--ac, #00ccff);
+}
+.hud-label {
+  position: absolute;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 8px;
+  color: var(--ac, #00ccff);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  opacity: 0.8;
+  animation: hudblink 3s infinite;
+}
+@keyframes hudblink {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 0.4; }
+}
+.tl .hud-label { top: 6px; left: 12px; }
+.tr .hud-label { top: 6px; right: 12px; text-align: right; }
+.bl .hud-label { bottom: 6px; left: 12px; }
+.br .hud-label { bottom: 6px; right: 12px; text-align: right; }
+
+/* ── STAGE/BANNER SPECIALS ── */
+html.theme-dark-1 .banner-content h1 {
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 900 !important;
+    background: linear-gradient(90deg, #00ccff 0%, #00ff88 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    filter: drop-shadow(0 0 15px rgba(0, 204, 255, 0.55)) !important;
+}
+
+html.theme-dark-1 .btn-cta {
+    background: rgba(0, 204, 255, 0.08) !important;
+    color: #00ccff !important;
+    border: 2px solid #00ccff !important;
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: 2px !important;
+    box-shadow: 0 0 20px rgba(0, 204, 255, 0.2) !important;
+    transition: all 0.3s ease !important;
+}
+
+html.theme-dark-1 .btn-cta:hover {
+    background: #00ccff !important;
+    color: #03060f !important;
+    box-shadow: 0 0 35px rgba(0, 204, 255, 0.6) !important;
+    transform: translateY(-3px) !important;
+}
+
+html.theme-dark-1 .btn-green {
+    background: rgba(0, 204, 255, 0.08) !important;
+    color: #00ccff !important;
+    border: 2.5px solid #00ccff !important;
+    box-shadow: 0 0 12px rgba(0, 204, 255, 0.15) !important;
+    font-family: 'Orbitron', sans-serif !important;
+}
+
+html.theme-dark-1 .btn-green:hover {
+    background: #00ccff !important;
+    color: #03060f !important;
+    box-shadow: 0 0 25px rgba(0, 204, 255, 0.5) !important;
+}
+
+html.theme-dark-1 .logo {
+    color: #ffffff !important;
+}
+
+html.theme-dark-1 .logo span {
+    color: #00ccff !important;
+    text-shadow: 0 0 8px rgba(0, 204, 255, 0.5);
+}
+
+html.theme-dark-1 .logo i {
+    color: #00ccff !important;
+    filter: drop-shadow(0 0 6px #00ccff);
+}
+
+html.theme-dark-1 .feature-list li i {
+    color: #00ccff !important;
+}
+
+html.theme-dark-1 .menu ul li a::before {
+    background-color: #00ccff !important;
+}
+
+html.theme-dark-1 .theme-icon-switcher {
+    background: linear-gradient(135deg, #00ccff, #00ff88) !important;
+    box-shadow: 0 4px 10px rgba(0, 204, 255, 0.3) !important;
+}
+
+html.theme-dark-1 .social-icons a:hover {
+    background: #00ccff !important;
+    color: #03060f !important;
+}
+
+html.theme-dark-1 .module-status {
+    background: rgba(0, 204, 255, 0.15) !important;
+    color: #00ccff !important;
+    border: 1px solid rgba(0, 204, 255, 0.3) !important;
+}
+
+/* --- DARK THEME 2: FUTURISTIC BIO-MEDICAL CONSOLE --- */
+html.theme-dark-2 body {
+    background-color: #02090e;
+    background-image: linear-gradient(rgba(2, 9, 14, 0.85), rgba(2, 9, 14, 0.95)), url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=2070&auto=format&fit=crop');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    color: #e2e8f0;
+}
+
+html.theme-dark-2 .product-card,
+html.theme-dark-2 .dashboard-card,
+html.theme-dark-2 .form-container,
+html.theme-dark-2 .panel {
+    background: rgba(3, 16, 26, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.65), 0 0 15px rgba(0, 240, 255, 0.1) inset;
+    color: #f8fafc;
+}
+
+html.theme-dark-2 h1, 
+html.theme-dark-2 h2, 
+html.theme-dark-2 h3, 
+html.theme-dark-2 h4, 
+html.theme-dark-2 .section-title h2 {
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+html.theme-dark-2 p,
+html.theme-dark-2 .feature-list li {
+    color: #cbd5e1;
+}
+
+html.theme-dark-2 .product-card h3 {
+    color: #00f0ff;
+}
+
+html.theme-dark-2 .header-active {
+    background: rgba(2, 10, 18, 0.96);
+    border-bottom: 1px solid rgba(0, 240, 255, 0.25);
+}
+
+html.theme-dark-2 .btn-launch {
+    background: rgba(0, 240, 255, 0.08);
+    color: #00f0ff;
+    border-color: rgba(0, 240, 255, 0.25);
+}
+
+html.theme-dark-2 .btn-launch:hover {
+    background: #00f0ff;
+    color: #02090e;
+    border-color: #00f0ff;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+}
+
+html.theme-dark-2 table {
+    background: rgba(3, 16, 26, 0.75);
+    color: #f8fafc;
+}
+
+html.theme-dark-2 th {
+    background: rgba(2, 10, 18, 0.9) !important;
+    color: #00f0ff !important;
+    border-bottom: 2px solid #00f0ff !important;
+}
+
+html.theme-dark-2 td {
+    border-color: rgba(0, 240, 255, 0.1) !important;
+}
+
+html.theme-dark-2 .btn-green {
+    background: #00e5a3;
+    border-color: #00e5a3;
+    color: #02090e;
+    box-shadow: 0 0 10px rgba(0, 229, 163, 0.3);
+    font-weight: 700;
+}
+
+html.theme-dark-2 .btn-green:hover {
+    background: transparent;
+    color: #00e5a3;
+    box-shadow: 0 0 20px rgba(0, 229, 163, 0.5);
+}
+
+html.theme-dark-2 .product-card::before {
+    background: #00f0ff;
+}
+
+html.theme-dark-2 .product-card:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 240, 255, 0.2);
+}
+
+/* --- THEME SELECTOR DROPDOWN STYLES --- */
+.theme-selector-container {
+    position: relative;
+    margin-right: 15px;
+    z-index: 1000;
+}
+
+.theme-icon-switcher {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #01ca8b, #0ea5e9);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(1, 202, 139, 0.3);
+    transition: 0.3s;
+}
+
+.theme-icon-switcher:hover {
+    transform: rotate(15deg) scale(1.1);
+}
+
+.theme-dropdown-menu {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    width: 200px;
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+    border: 1px solid #e2e8f0;
+}
+
+.theme-dropdown-menu.show {
+    display: flex;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.theme-option {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.theme-option:hover {
+    background: #f8fafc;
+    color: #01ca8b;
+}
+
+.theme-option.active {
+    background: #ecfdf5;
+    color: #059669;
+    border-left: 3px solid #01ca8b;
+}
+
+html[class*="theme-dark"] .theme-dropdown-menu {
+    background: #0f172a;
+    border-color: rgba(255,255,255,0.1);
+}
+
+html[class*="theme-dark"] .theme-option {
+    color: #cbd5e1;
+}
+
+html[class*="theme-dark"] .theme-option:hover {
+    background: #1e293b;
+    color: #38bdf8;
+}
+
+html[class*="theme-dark"] .theme-option.active {
+    background: #1e293b;
+    color: #38bdf8;
+    border-left-color: #38bdf8;
+}
+
+/* --- MASSIVE DARK THEME UI FIXES --- */
+/* Target all common card classes and UI elements */
+html[class*="theme-dark"] .scard,
+html[class*="theme-dark"] .panel,
+html[class*="theme-dark"] .tok-box,
+html[class*="theme-dark"] .ntpill,
+html[class*="theme-dark"] .qa-btn,
+html[class*="theme-dark"] .mp-header,
+html[class*="theme-dark"] .ptbl th,
+html[class*="theme-dark"] .ptbl td,
+html[class*="theme-dark"] .sales-bar,
+html[class*="theme-dark"] .section-header,
+html[class*="theme-dark"] .med-card,
+html[class*="theme-dark"] .billing-section,
+html[class*="theme-dark"] .bill-header,
+html[class*="theme-dark"] .bill-summary,
+html[class*="theme-dark"] .modal-content,
+html[class*="theme-dark"] .cart-item,
+html[class*="theme-dark"] .history-table th,
+html[class*="theme-dark"] .history-table td,
+html[class*="theme-dark"] .top-nav,
+html[class*="theme-dark"] .stat-card,
+html[class*="theme-dark"] .table-container,
+html[class*="theme-dark"] table,
+html[class*="theme-dark"] .header,
+html[class*="theme-dark"] .login-box,
+html[class*="theme-dark"] .card,
+html[class*="theme-dark"] .detail-panel,
+html[class*="theme-dark"] .zone-card,
+html[class*="theme-dark"] .stat-pill,
+html[class*="theme-dark"] .ig-row,
+html[class*="theme-dark"] .sidebar,
+html[class*="theme-dark"] .empty-state,
+html[class*="theme-dark"] .detail-header,
+html[class*="theme-dark"] .panel-head,
+html[class*="theme-dark"] .panel-body,
+html[class*="theme-dark"] .info-box,
+html[class*="theme-dark"] .vital-card,
+html[class*="theme-dark"] .rx-row input,
+html[class*="theme-dark"] .rx-row select,
+html[class*="theme-dark"] .completed-rx,
+html[class*="theme-dark"] .q-stat {
+    background-color: rgba(15, 23, 42, 0.7) !important;
+    backdrop-filter: blur(16px);
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: #f8fafc !important;
+}
+
+html.theme-dark-2 .scard,
+html.theme-dark-2 .panel,
+html.theme-dark-2 .tok-box,
+html.theme-dark-2 .ntpill,
+html.theme-dark-2 .qa-btn,
+html.theme-dark-2 .mp-header,
+html.theme-dark-2 .ptbl th,
+html.theme-dark-2 .ptbl td,
+html.theme-dark-2 .sales-bar,
+html.theme-dark-2 .section-header,
+html.theme-dark-2 .med-card,
+html.theme-dark-2 .billing-section,
+html.theme-dark-2 .bill-header,
+html.theme-dark-2 .bill-summary,
+html.theme-dark-2 .modal-content,
+html.theme-dark-2 .cart-item,
+html.theme-dark-2 .history-table th,
+html.theme-dark-2 .history-table td,
+html.theme-dark-2 .top-nav,
+html.theme-dark-2 .stat-card,
+html.theme-dark-2 .table-container,
+html.theme-dark-2 table,
+html.theme-dark-2 .header,
+html.theme-dark-2 .login-box,
+html.theme-dark-2 .card,
+html.theme-dark-2 .detail-panel,
+html.theme-dark-2 .zone-card,
+html.theme-dark-2 .stat-pill,
+html.theme-dark-2 .ig-row {
+    background-color: rgba(15, 5, 25, 0.8) !important;
+    border-color: rgba(236, 72, 153, 0.2) !important;
+}
+
+/* Fix Input & Select Fields */
+html[class*="theme-dark"] input,
+html[class*="theme-dark"] select,
+html[class*="theme-dark"] .mp-search,
+html[class*="theme-dark"] .search-box {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #f8fafc !important;
+}
+
+html[class*="theme-dark"] input::placeholder {
+    color: #94a3b8 !important;
+}
+
+/* Fix Headings and specific text elements */
+html[class*="theme-dark"] h1,
+html[class*="theme-dark"] h2,
+html[class*="theme-dark"] h3,
+html[class*="theme-dark"] .scard-val,
+html[class*="theme-dark"] .tok-num,
+html[class*="theme-dark"] .tok-name,
+html[class*="theme-dark"] .nn,
+html[class*="theme-dark"] .sale-val,
+html[class*="theme-dark"] .med-name,
+html[class*="theme-dark"] .med-price,
+html[class*="theme-dark"] .ci-name,
+html[class*="theme-dark"] .ci-total,
+html[class*="theme-dark"] .bill-title,
+html[class*="theme-dark"] .grand-total,
+html[class*="theme-dark"] .ig-val,
+html[class*="theme-dark"] .st-val,
+html[class*="theme-dark"] .ptbl td,
+html[class*="theme-dark"] .mp-logo-title,
+html[class*="theme-dark"] .ci-price {
+    color: #ffffff !important;
+}
+
+/* Subtitles, labels, and secondary text */
+html[class*="theme-dark"] p,
+html[class*="theme-dark"] .scard-label,
+html[class*="theme-dark"] .scard-sub,
+html[class*="theme-dark"] .tok-lbl,
+html[class*="theme-dark"] .tok-wait,
+html[class*="theme-dark"] .nl,
+html[class*="theme-dark"] .sale-lbl,
+html[class*="theme-dark"] .med-unit-lbl,
+html[class*="theme-dark"] .stock-lbl,
+html[class*="theme-dark"] .bill-subtitle,
+html[class*="theme-dark"] .ig-lbl,
+html[class*="theme-dark"] .st-lbl,
+html[class*="theme-dark"] label,
+html[class*="theme-dark"] .ptbl th {
+    color: #cbd5e1 !important;
+}
+
+/* Fix Buttons */
+html[class*="theme-dark"] .mp-ibtn,
+html[class*="theme-dark"] .flt-btn,
+html[class*="theme-dark"] .btn-history,
+html[class*="theme-dark"] .edit-stock-btn,
+html[class*="theme-dark"] .qty-btn,
+html[class*="theme-dark"] .del-btn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+html[class*="theme-dark"] .mp-ibtn:hover,
+html[class*="theme-dark"] .flt-btn:hover,
+html[class*="theme-dark"] .btn-history:hover,
+html[class*="theme-dark"] .edit-stock-btn:hover,
+html[class*="theme-dark"] .qty-btn:hover {
+    background: #01ca8b !important;
+    color: white !important;
+    border-color: #01ca8b !important;
+}
+
+html[class*="theme-dark"] .del-btn:hover {
+    background: #ef4444 !important;
+    color: white !important;
+}
+
+html.theme-dark-2 .mp-ibtn:hover,
+html.theme-dark-2 .flt-btn:hover,
+html.theme-dark-2 .btn-history:hover,
+html.theme-dark-2 .edit-stock-btn:hover,
+html.theme-dark-2 .qty-btn:hover {
+    background: #00f0ff !important;
+    color: #02090e !important;
+    border-color: #00f0ff !important;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+}
+
+/* Make backgrounds transparent in dark modes for proper image display */
+html.theme-dark-1 .product-intro,
+html.theme-dark-2 .product-intro {
+    background-color: transparent !important;
+}
+
+/* Overriding section title for dark modes explicitly */
+html.theme-dark-1 .section-title h2,
+html.theme-dark-2 .section-title h2 {
+    color: #ffffff !important;
+}
+html.theme-dark-1 .section-title p,
+html.theme-dark-2 .section-title p {
+    color: #cbd5e1 !important;
+}
+
+/* Video/Vanta Background Overlays on Index */
+#vanta-bg, #video-bg, #default-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+}
+
+#video-bg video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Add a dark overlay on top of video to make text readable */
+#video-bg::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Tagda cinematic dark overlay */
+}
+
+.banner {
+    position: relative;
+    background-color: transparent !important;
+    background-image: none !important;
+    z-index: 1;
+}
+
+/* For default theme banner image */
+#default-bg {
+    background-image: linear-gradient(rgba(8, 55, 81, 0.7), rgba(0, 0, 0, 0.6)), url('banner.webp');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+/* --- DOCTOR DETAIL POPUP OVERRIDES FOR DARK THEMES --- */
+html[class*="theme-dark"] .m-box {
+    background-color: rgba(30, 41, 59, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+html[class*="theme-dark"] .m-box h4 {
+    color: #94a3b8 !important;
+}
+html[class*="theme-dark"] .m-box p {
+    color: #f8fafc !important;
+}
+html[class*="theme-dark"] .m-about {
+    background-color: rgba(14, 165, 233, 0.1) !important;
+    border-color: #0ea5e9 !important;
+}
+html[class*="theme-dark"] .m-about h4 {
+    color: #38bdf8 !important;
+}
+html[class*="theme-dark"] .m-about p {
+    color: #cbd5e1 !important;
+}
+
+/* Bio-Medical Console Theme Spefific Popup Overrides */
+html.theme-dark-2 .m-box {
+    background-color: rgba(2, 16, 24, 0.6) !important;
+    border-color: rgba(0, 240, 255, 0.25) !important;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.05) inset;
+}
+html.theme-dark-2 .m-box h4 {
+    color: #00f0ff !important;
+}
+html.theme-dark-2 .m-about {
+    background-color: rgba(0, 240, 255, 0.05) !important;
+    border-color: #00f0ff !important;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.05) inset;
+}
+html.theme-dark-2 .m-about h4 {
+    color: #00f0ff !important;
+}
+
+/* Dark mode theme selector dropdown text match fix */
+html[class*="theme-dark"] select.theme-select {
+    background-color: rgba(15, 23, 42, 0.9) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html.theme-dark-2 select.theme-select {
+    background-color: rgba(3, 16, 26, 0.9) !important;
+    color: #00f0ff !important;
+    border: 1px solid rgba(0, 240, 255, 0.3) !important;
+}
+
+/* --- ADVANCED AI FLOATING ASSISTANT WIDGET CSS --- */
+.ai-float-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #01ca8b, #00f0ff);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(1, 202, 139, 0.4);
+    z-index: 9999;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.ai-float-btn:hover {
+    transform: scale(1.1) rotate(10deg);
+    box-shadow: 0 15px 35px rgba(1, 202, 139, 0.6);
+}
+
+.ai-float-btn i {
+    z-index: 10;
+}
+
+.ai-btn-pulse {
+    position: absolute;
+    top: -5px; left: -5px; right: -5px; bottom: -5px;
+    border-radius: 50%;
+    border: 2px solid #01ca8b;
+    animation: ai-pulse-anim 2s infinite;
+    opacity: 0;
+    pointer-events: none;
+}
+
+@keyframes ai-pulse-anim {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.2); opacity: 0; }
+    100% { transform: scale(0.95); opacity: 0; }
+}
+
+.ai-float-btn .tooltip-text {
+    visibility: hidden;
+    width: 140px;
+    background-color: #0f172a;
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    padding: 6px 10px;
+    position: absolute;
+    z-index: 100;
+    bottom: 125%;
+    right: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 11px;
+    font-weight: 600;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.ai-float-btn:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Chat Window Container */
+.ai-chat-window {
+    position: fixed;
+    bottom: 110px;
+    right: 30px;
+    width: 420px;
+    height: 600px;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 9998;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.ai-chat-window.active {
+    display: flex;
+    animation: ai-slide-in 0.4s ease-out;
+}
+
+@keyframes ai-slide-in {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Chat Header */
+.ai-chat-header {
+    background: linear-gradient(135deg, #083751, #01ca8b);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.ai-header-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ai-header-logo i {
+    font-size: 24px;
+}
+
+.ai-header-logo h4 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.status-online {
+    font-size: 10px;
+    color: #d1fae5;
+    opacity: 0.9;
+}
+
+.ai-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: 0.2s;
+}
+
+.ai-close-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Chat Area messages list */
+.ai-chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: #f8fafc;
+}
+
+.ai-message {
+    padding: 12px 16px;
+    border-radius: 16px;
+    max-width: 85%;
+    font-size: 13.5px;
+    line-height: 1.5;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.ai-message.bot {
+    background: white;
+    color: #334155;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    border: 1px solid #f1f5f9;
+}
+
+.ai-message.user {
+    background: linear-gradient(135deg, #01ca8b, #0ea5e9);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+.ai-message.bot ul {
+    margin-left: 20px;
+    margin-top: 8px;
+}
+
+.chat-symptom-thumbnail {
+    max-width: 150px;
+    border-radius: 8px;
+    margin-top: 8px;
+    border: 2px solid white;
+}
+
+/* Image input preview bar */
+.ai-image-preview-bar {
+    padding: 10px 20px;
+    background: #f1f5f9;
+    border-top: 1px solid #cbd5e1;
+}
+
+.preview-container {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #01ca8b;
+}
+
+.preview-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.remove-preview {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+/* Input container bar */
+.ai-chat-input-container {
+    padding: 12px 16px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ai-action-btn {
+    background: #f1f5f9;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+.ai-action-btn:hover {
+    background: #ecfdf5;
+    color: #01ca8b;
+}
+
+.ai-chat-input-container input[type="text"] {
+    flex: 1;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 10px 18px;
+    font-size: 13px;
+    outline: none;
+    transition: 0.2s;
+}
+
+.ai-chat-input-container input[type="text"]:focus {
+    border-color: #01ca8b;
+}
+
+.ai-send-btn {
+    background: #01ca8b;
+    color: white;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    box-shadow: 0 4px 10px rgba(1, 202, 139, 0.2);
+}
+
+.ai-send-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Booking Details inside chat widget overlay */
+.ai-booking-panel {
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+}
+
+.ai-booking-panel h5 {
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.booking-form-group {
+    margin-bottom: 10px;
+}
+
+.booking-form-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.booking-form-group input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+}
+
+.booking-form-group input:focus {
+    border-color: #01ca8b;
+}
+
+.booking-action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-confirm-bk {
+    flex: 2;
+    background: #01ca8b;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.btn-cancel-bk {
+    flex: 1;
+    background: #f1f5f9;
+    color: #64748b;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+/* Triage Visuals */
+.triage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    border-bottom: 1px dashed #cbd5e1;
+    padding-bottom: 8px;
+}
+
+.ai-urgency-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 50px;
+    letter-spacing: 0.5px;
+}
+
+.urgency-low { background: #ecfdf5; color: #059669; }
+.urgency-med { background: #fffbeb; color: #d97706; }
+.urgency-high { background: #fff1f2; color: #e11d48; }
+.urgency-critical {
+    background: #f43f5e;
+    color: white;
+    animation: urgent-glow 1s infinite alternate;
+}
+
+@keyframes urgent-glow {
+    from { box-shadow: 0 0 5px rgba(244, 63, 94, 0.4); }
+    to { box-shadow: 0 0 15px rgba(244, 63, 94, 0.8); }
+}
+
+.triage-section {
+    margin-bottom: 10px;
+}
+
+.triage-lbl {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 3px;
+}
+
+.triage-val {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.first-aid-list {
+    margin-left: 15px;
+    font-size: 12px;
+}
+
+.first-aid-list li {
+    margin-bottom: 4px;
+}
+
+.triage-disclaimer {
+    background: #f8fafc;
+    border-left: 3px solid #64748b;
+    padding: 8px;
+    font-size: 10.5px;
+    color: #64748b;
+    margin-top: 10px;
+    border-radius: 0 6px 6px 0;
+}
+
+/* Recommended doctor card style */
+.ai-doc-card {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 12px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.ai-doc-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.ai-doc-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #01ca8b, #0ea5e9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.ai-doc-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.ai-doc-spec {
+    font-size: 11px;
+    color: #01ca8b;
+    font-weight: 600;
+}
+
+.ai-doc-body {
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.ai-doc-body p {
+    margin-bottom: 3px;
+}
+
+.ai-doc-about {
+    font-style: italic;
+    font-size: 11px;
+    color: #64748b;
+}
+
+.ai-btn-book {
+    width: 100%;
+    background: linear-gradient(135deg, #01ca8b, #00f0ff);
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 12px;
+    transition: 0.2s;
+    box-shadow: 0 4px 10px rgba(1, 202, 139, 0.2);
+}
+
+.ai-btn-book:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(1, 202, 139, 0.35);
+}
+
+/* Confirmation booking token success display */
+.success-booking-card {
+    text-align: center;
+    border: 2px solid #10b981 !important;
+    background: #ecfdf5 !important;
+    padding: 20px !important;
+}
+
+.ai-token-display {
+    font-size: 36px;
+    font-weight: 800;
+    color: #0f172a;
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px dashed #10b981;
+    display: inline-block;
+    min-width: 100px;
+    letter-spacing: 2px;
+}
+
+/* Sound Wave Voice Indicator animation */
+.sound-wave {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 16px;
+}
+
+.sound-wave span {
+    display: block;
+    width: 3px;
+    height: 10px;
+    background: #ef4444;
+    border-radius: 5px;
+    animation: wave-anim 1.2s infinite ease-in-out;
+}
+
+.sound-wave span:nth-child(2) { animation-delay: 0.2s; }
+.sound-wave span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes wave-anim {
+    0%, 100% { height: 6px; }
+    50% { height: 16px; }
+}
+
+/* AI Payment Modal Container */
+.ai-payment-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-payment-modal {
+    background: white;
+    padding: 25px 30px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 380px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    text-align: center;
+}
+
+.ai-payment-modal h4 {
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.pay-amount-box {
+    background: #f8fafc;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pay-lbl {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.pay-val {
+    font-size: 20px;
+    font-weight: 800;
+    color: #01ca8b;
+}
+
+.pay-details {
+    text-align: left;
+    background: #f0fdf4;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    color: #334155;
+    border: 1px solid #dcfce7;
+}
+
+.pay-methods {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.pay-opt {
+    flex: 1;
+    border: 1px solid #cbd5e1;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.pay-opt.active {
+    border-color: #01ca8b;
+    color: #01ca8b;
+    background: #ecfdf5;
+}
+
+.btn-pay-submit {
+    width: 100%;
+    background: #0f172a;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.btn-pay-submit:hover {
+    background: #1e293b;
+}
+
+.btn-pay-cancel {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+/* Typing indicator micro-animation */
+.typing-indicator span {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: #cbd5e1;
+    border-radius: 50%;
+    animation: typing-anim 1s infinite alternate;
+    margin-right: 3px;
+}
+
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-anim {
+    from { transform: translateY(0); }
+    to { transform: translateY(-5px); }
+}
+
+/* --- THEME-BASED STYLE FIXES --- */
+
+/* SCI-FI THEME (DARK_1) OVERRIDES */
+html.theme-dark-1 .ai-chat-window {
+    background: rgba(15, 23, 42, 0.8) !important;
+    backdrop-filter: blur(20px);
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: #f8fafc !important;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5);
+}
+
+html.theme-dark-1 .ai-chat-messages {
+    background: rgba(10, 15, 30, 0.8) !important;
+}
+
+html.theme-dark-1 .ai-message.bot {
+    background: rgba(30, 41, 59, 0.8) !important;
+    color: #cbd5e1 !important;
+    border-color: rgba(255,255,255,0.05) !important;
+}
+
+html.theme-dark-1 .ai-chat-input-container,
+html.theme-dark-1 .ai-booking-panel {
+    background: rgba(15, 23, 42, 0.9) !important;
+    border-color: rgba(255,255,255,0.08) !important;
+}
+
+html.theme-dark-1 .ai-chat-input-container input[type="text"],
+html.theme-dark-1 .booking-form-group input {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #f8fafc !important;
+}
+
+html.theme-dark-1 .ai-doc-card,
+html.theme-dark-1 .triage-disclaimer {
+    background: rgba(30, 41, 59, 0.5) !important;
+    border-color: rgba(255,255,255,0.05) !important;
+}
+
+html.theme-dark-1 .ai-payment-modal {
+    background: #0f172a !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    color: white !important;
+}
+
+html.theme-dark-1 .pay-amount-box {
+    background: rgba(0,0,0,0.3) !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+
+html.theme-dark-1 .pay-details {
+    background: rgba(16, 185, 129, 0.15) !important;
+    border-color: rgba(16, 185, 129, 0.25) !important;
+}
+
+html.theme-dark-1 .ai-doc-name,
+html.theme-dark-1 .triage-val {
+    color: white !important;
+}
+
+/* BIO-MEDICAL CONSOLE THEME (DARK_2) OVERRIDES */
+html.theme-dark-2 .ai-float-btn {
+    background: linear-gradient(135deg, #00f0ff, #01ca8b);
+    box-shadow: 0 10px 25px rgba(0, 240, 255, 0.3);
+}
+
+html.theme-dark-2 .ai-float-btn .ai-btn-pulse {
+    border-color: #00f0ff;
+}
+
+html.theme-dark-2 .ai-chat-window {
+    background: rgba(3, 16, 26, 0.85) !important;
+    backdrop-filter: blur(20px);
+    border-color: rgba(0, 240, 255, 0.25) !important;
+    color: #f8fafc !important;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 240, 255, 0.1) inset;
+}
+
+html.theme-dark-2 .ai-chat-header {
+    background: linear-gradient(135deg, #02090e, #031c2c);
+    border-bottom-color: rgba(0, 240, 255, 0.2) !important;
+}
+
+html.theme-dark-2 .ai-chat-header h4 {
+    color: #00f0ff !important;
+}
+
+html.theme-dark-2 .status-online {
+    color: #00e5a3 !important;
+}
+
+html.theme-dark-2 .ai-chat-messages {
+    background: rgba(2, 9, 14, 0.85) !important;
+}
+
+html.theme-dark-2 .ai-message.bot {
+    background: rgba(3, 16, 26, 0.8) !important;
+    color: #cbd5e1 !important;
+    border-color: rgba(0, 240, 255, 0.15) !important;
+}
+
+html.theme-dark-2 .ai-chat-input-container,
+html.theme-dark-2 .ai-booking-panel {
+    background: rgba(3, 16, 26, 0.95) !important;
+    border-color: rgba(0, 240, 255, 0.2) !important;
+}
+
+html.theme-dark-2 .ai-chat-input-container input[type="text"],
+html.theme-dark-2 .booking-form-group input {
+    background-color: rgba(2, 9, 14, 0.5) !important;
+    border-color: rgba(0, 240, 255, 0.25) !important;
+    color: #f8fafc !important;
+}
+
+html.theme-dark-2 .ai-chat-input-container input[type="text"]:focus {
+    border-color: #00f0ff !important;
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+}
+
+html.theme-dark-2 .ai-action-btn {
+    background: rgba(255,255,255,0.05) !important;
+    color: #94a3b8;
+}
+
+html.theme-dark-2 .ai-action-btn:hover {
+    background: rgba(0, 240, 255, 0.1) !important;
+    color: #00f0ff !important;
+}
+
+html.theme-dark-2 .ai-doc-card,
+html.theme-dark-2 .triage-disclaimer {
+    background: rgba(3, 16, 26, 0.6) !important;
+    border-color: rgba(0, 240, 255, 0.15) !important;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.05) inset;
+}
+
+html.theme-dark-2 .ai-payment-modal {
+    background: #02090e !important;
+    border: 1px solid rgba(0,240,255,0.25) !important;
+    color: white !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 20px rgba(0,240,255,0.1) inset;
+}
+
+html.theme-dark-2 .pay-amount-box {
+    background: rgba(0,0,0,0.4) !important;
+    border-color: rgba(0,240,255,0.15) !important;
+}
+
+html.theme-dark-2 .pay-details {
+    background: rgba(0, 229, 163, 0.05) !important;
+    border-color: rgba(0, 229, 163, 0.2) !important;
+}
+
+html.theme-dark-2 .ai-doc-name {
+    color: white !important;
+}
+
+html.theme-dark-2 .triage-val {
+    color: #00f0ff !important;
+}
+
+html.theme-dark-2 .ai-send-btn {
+    background: #00f0ff !important;
+    color: #02090e !important;
+    box-shadow: 0 4px 10px rgba(0, 240, 255, 0.3);
+}
+
+html.theme-dark-2 .btn-confirm-bk {
+    background: #00f0ff !important;
+    color: #02090e !important;
+}
+
+html.theme-dark-2 .btn-pay-submit {
+    background: #00e5a3 !important;
+    color: #02090e !important;
+}
+
+/* --- AI SETTINGS & TTS STYLING --- */
+
+/* Base Settings Panel Transition */
+.ai-settings-panel {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0 16px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-bottom: 0px solid transparent;
+}
+
+.ai-settings-panel.active {
+    max-height: 100px;
+    opacity: 1;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.ai-settings-toggle:hover {
+    transform: rotate(45deg);
+    opacity: 1 !important;
+}
+
+/* Switch Slider */
+.ai-switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+}
+
+.ai-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.ai-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #cbd5e1;
+    transition: .4s;
+    border-radius: 20px;
+}
+
+.ai-slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+.ai-switch input:checked + .ai-slider {
+    background-color: #01ca8b;
+}
+
+.ai-switch input:checked + .ai-slider:before {
+    transform: translateX(14px);
+}
+
+/* Tts button hover & speaking animation */
+.ai-tts-btn {
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.ai-tts-btn:hover {
+    opacity: 1;
+    transform: scale(1.15);
+    color: #01ca8b !important;
+}
+
+.ai-tts-btn.speaking {
+    color: #ef4444 !important;
+    animation: tts-speaking-glow 1.2s infinite alternate;
+}
+
+@keyframes tts-speaking-glow {
+    from {
+        transform: scale(1.05);
+        opacity: 0.6;
+    }
+    to {
+        transform: scale(1.25);
+        opacity: 1;
+    }
+}
+
+/* Theme overrides for Settings Panel */
+html.theme-dark-1 .ai-settings-panel {
+    background: rgba(15, 23, 42, 0.95) !important;
+    color: #cbd5e1 !important;
+}
+
+html.theme-dark-1 .ai-settings-panel.active {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+html.theme-dark-1 .ai-settings-panel span {
+    color: #cbd5e1 !important;
+}
+
+html.theme-dark-1 .ai-settings-panel select {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #f8fafc !important;
+}
+
+html.theme-dark-2 .ai-settings-panel {
+    background: rgba(3, 16, 26, 0.98) !important;
+    color: #cbd5e1 !important;
+}
+
+html.theme-dark-2 .ai-settings-panel.active {
+    border-bottom: 1px solid rgba(0, 240, 255, 0.2) !important;
+}
+
+html.theme-dark-2 .ai-settings-panel span {
+    color: #cbd5e1 !important;
+}
+
+html.theme-dark-2 .ai-settings-panel select {
+    background: rgba(2, 9, 14, 0.5) !important;
+    border-color: rgba(0, 240, 255, 0.25) !important;
+    color: #f8fafc !important;
+}
+
+html.theme-dark-2 .ai-switch input:checked + .ai-slider {
+    background-color: #00f0ff !important;
+}
+
+

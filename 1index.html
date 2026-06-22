@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Orbitron:wght@400;600;700;800;900&family=Exo+2:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <title>MediPulse - Welcome</title>
 
@@ -188,7 +188,7 @@
 
         /* --- BANNER SECTION --- */
         .banner {
-            background-image: linear-gradient(rgba(8, 55, 81, 0.7), rgba(0, 0, 0, 0.6)), url('banner.png');
+            background-image: linear-gradient(rgba(8, 55, 81, 0.7), rgba(0, 0, 0, 0.6)), url('banner.webp');
             background-position: center;
             background-size: cover;
             background-repeat: no-repeat;
@@ -445,9 +445,29 @@
             .product-intro { padding: 60px 0; }
         }
     </style>
+    <link rel="stylesheet" href="theme.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+    <script src="theme.js"></script>
 </head>
 
 <body>
+    <div id="cur"><div class="cur-dot"></div></div>
+    <div id="cur-ring"><div class="cur-out"></div></div>
+    <div class="scan"></div>
+    <div class="corner tl"><span class="hud-label" id="hudTL">SYS_LOC: OMNI_01</span></div>
+    <div class="corner tr"><span class="hud-label" id="hudTR">AZIM_DEG: 0.00</span></div>
+    <div class="corner bl"><span class="hud-label" id="hudBL">MODULE: HOME_ACTV</span></div>
+    <div class="corner br"><span class="hud-label" id="hudBR">SYS_STATUS: OPTIMAL_100</span></div>
+
+    <div class="credits">
+      <div class="cr-by">DESIGNED &amp; DEVELOPED BY</div>
+      <div class="cr-name">SHOEB RAZA</div>
+      <div class="cr-deco">✦ ─── MEDIPULSE 2026 ─── ✦</div>
+    </div>
+
+    <canvas id="stars"></canvas>
+
     <header id="main-header">
         <div class="header-container">
             <a href="#" class="logo">
@@ -457,15 +477,23 @@
             <nav class="menu">
                 <ul>
                     <li><a href="#">Home</a></li>
-                    <li><a href="#dashboard-container">Features</a></li>
+                    <!-- <li><a href="#dashboard-container">Features</a></li> -->
+                    <li><a href="omnitrix-guide.html" target="_blank" style="color: #00ccff; text-shadow: 0 0 10px rgba(0,204,255,0.5); font-weight:700;"><i class="fas fa-space-shuttle" style="margin-right:5px;"></i>Guide</a></li>
                     <li><a href="#footer-section">About Us</a></li>
                     <li><a href="#footer-section">Contact</a></li>
                 </ul>
             </nav>
 
             <div class="header-actions">
+                <div class="theme-selector-container">
+                    <select id="themeSelector" class="theme-select" onchange="setTheme(this.value)">
+                        <option value="theme-default">Default Theme</option>
+                        <option value="theme-dark-1">Omnitrix</option>
+                        <option value="theme-dark-2">Bio-Medical (Video)</option>
+                    </select>
+                </div>
                 <div class="social-icons hidden-xs" style="display:flex; align-items:center;">
-                    <input type="text" id="navSearch" placeholder="Search modules..." onkeyup="searchModules()" style="display:none; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); padding:8px 15px; border-radius:20px; color:white; outline:none; font-size:13px; margin-right:10px; width: 200px;">
+                    <input type="text" id="navSearch" placeholder="Search modules..." onkeyup="searchModulesDebounced()" style="display:none; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); padding:8px 15px; border-radius:20px; color:white; outline:none; font-size:13px; margin-right:10px; width: 200px;">
                     <a href="javascript:void(0)" onclick="toggleSearchBox()"><i class="fas fa-search"></i></a>
                     <a href="#footer-section"><i class="fas fa-headset"></i></a>
                 </div>
@@ -477,6 +505,13 @@
     </header>
 
     <section class="banner">
+        <div id="default-bg"></div>
+        <div id="vanta-bg" style="display:none;"></div>
+        <div id="video-bg" style="display:none;">
+            <video autoplay loop muted playsinline>
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-abstract-particles-in-slow-motion-23746-large.mp4" type="video/mp4">
+            </video>
+        </div>
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
@@ -546,7 +581,7 @@
                                 <li><i class="fas fa-check"></i> Live Availability Status (Available/Busy)</li>
                                 <li><i class="fas fa-check"></i> Real-time Assigned Patients List</li>
                             </ul>
-                            <a href="3doctor2_module.html" class="btn-launch" onclick="checkAccess(event, 'doctor', '3doctor_module2.html')">Explore Module <br><small style="font-size:12px; font-weight:500; opacity:0.8; letter-spacing:0.5px;">(Doctor)</small> <i
+                            <a href="3doctor_module2.html" class="btn-launch" onclick="checkAccess(event, 'doctor', '3doctor_module2.html')">Explore Module <br><small style="font-size:12px; font-weight:500; opacity:0.8; letter-spacing:0.5px;">(Doctor)</small> <i
                                     class="fas fa-arrow-right" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%);"></i></a>
                         </div>
                     </div>
@@ -772,6 +807,12 @@
             }
         }
 
+        let searchTimeout;
+        function searchModulesDebounced() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(searchModules, 200);
+        }
+
         function searchModules() {
             const q = document.getElementById('navSearch').value.toLowerCase();
             const cards = document.querySelectorAll('.product-card');
@@ -798,7 +839,250 @@
                 }
             });
         }
+
+        // ── CUSTOM CURSOR LOGIC ──
+        let $c, $cr;
+        let mx = 0, my = 0, rx = 0, ry = 0;
+        document.addEventListener('mousemove', e => {
+            mx = e.clientX;
+            my = e.clientY;
+            if ($c) {
+                $c.style.left = mx + 'px';
+                $c.style.top = my + 'px';
+            }
+        });
+        (function rl() {
+            if ($cr) {
+                rx += (mx - rx) * 0.12;
+                ry += (my - ry) * 0.12;
+                $cr.style.left = rx + 'px';
+                $cr.style.top = ry + 'px';
+            }
+            requestAnimationFrame(rl);
+        })();
+
+        // ── CANVAS STARFIELD PROJECTS (3D WARP FIELD) ──
+        function hexToRgb(hex) {
+          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+          return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 204, 255';
+        }
+
+        function makeStars(canvas) {
+          const ctx = canvas.getContext('2d');
+          canvas.speedFactor = canvas.speedFactor || 1.0;
+          let S = [], P = [], M = [];
+          const maxZ = 1000;
+          const fov = 350;
+          
+          function rsz() {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            S = []; P = []; M = [];
+            for(let i = 0; i < 220; i++) {
+              S.push({
+                x: (Math.random() - 0.5) * canvas.width * 2,
+                y: (Math.random() - 0.5) * canvas.height * 2,
+                z: Math.random() * maxZ,
+                brightness: Math.random() * 0.4 + 0.6
+              });
+            }
+            for(let i = 0; i < 35; i++) {
+              P.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.25,
+                vy: -Math.random() * 0.3 - 0.08,
+                r: Math.random() * 2 + 0.8,
+                o: Math.random() * 0.4 + 0.15
+              });
+            }
+          }
+          rsz();
+          window.addEventListener('resize', rsz);
+          
+          setInterval(() => {
+            if (M.length < 2 && Math.random() > 0.35) {
+              M.push({
+                x: Math.random() * canvas.width * 0.7,
+                y: -20,
+                len: 50 + Math.random() * 60,
+                speed: 7 + Math.random() * 6,
+                angle: Math.PI / 4 + (Math.random() - 0.5) * 0.12,
+                opacity: 1,
+                color: Math.random() > 0.5 ? '#00ccff' : '#00ff88'
+              });
+            }
+          }, 3200);
+          
+          function draw() {
+            if (canvas.offsetWidth === 0) {
+              requestAnimationFrame(draw);
+              return;
+            }
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Ambient dark nebulous backdrop
+            const grad = ctx.createRadialGradient(canvas.width * 0.5, canvas.height * 0.5, 50, canvas.width * 0.5, canvas.height * 0.5, Math.max(canvas.width, canvas.height) * 0.85);
+            grad.addColorStop(0, 'rgba(3,8,18,1)');
+            grad.addColorStop(0.5, 'rgba(2,10,20,1)');
+            grad.addColorStop(1, 'rgba(2,4,8,1)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const speed = (canvas.speedFactor || 1.0) * 1.5;
+            
+            // Draw 3D stars / radial warp streaks
+            S.forEach(s => {
+              const prevZ = s.z;
+              s.z -= speed;
+              
+              if (s.z <= 0) {
+                s.z = maxZ;
+                s.x = (Math.random() - 0.5) * canvas.width * 2;
+                s.y = (Math.random() - 0.5) * canvas.height * 2;
+              }
+              
+              const px = (s.x / s.z) * fov + cx;
+              const py = (s.y / s.z) * fov + cy;
+              
+              if (px < 0 || px > canvas.width || py < 0 || py > canvas.height) {
+                s.z = maxZ;
+                s.x = (Math.random() - 0.5) * canvas.width * 2;
+                s.y = (Math.random() - 0.5) * canvas.height * 2;
+              }
+              
+              const size = (1 - s.z / maxZ) * 2.2 + 0.3;
+              const alpha = (1 - s.z / maxZ) * s.brightness;
+              
+              if (canvas.speedFactor > 1.25) {
+                const prevPx = (s.x / prevZ) * fov + cx;
+                const prevPy = (s.y / prevZ) * fov + cy;
+                
+                ctx.beginPath();
+                const activeColor = '#00ccff'; // cyber-cyan
+                const gradStreak = ctx.createLinearGradient(prevPx, prevPy, px, py);
+                gradStreak.addColorStop(0, 'transparent');
+                gradStreak.addColorStop(1, activeColor);
+                
+                ctx.strokeStyle = gradStreak;
+                ctx.lineWidth = size * 0.8;
+                ctx.moveTo(prevPx, prevPy);
+                ctx.lineTo(px, py);
+                ctx.stroke();
+              } else {
+                ctx.beginPath();
+                ctx.arc(px, py, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(215, 255, 245, ${alpha})`;
+                ctx.fill();
+              }
+            });
+            
+            // Constellation / network node grid
+            P.forEach((p, idx) => {
+              p.x += p.vx * speed;
+              p.y += p.vy * speed;
+              
+              if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
+              if (p.x < -10 || p.x > canvas.width + 10) { p.x = Math.random() * canvas.width; }
+              
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(0, 229, 255, ${p.o / (canvas.speedFactor || 1.0)})`;
+              ctx.fill();
+              
+              for (let j = idx + 1; j < P.length; j++) {
+                const p2 = P[j];
+                const dx = p.x - p2.x, dy = p.y - p2.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 95) {
+                  ctx.beginPath();
+                  ctx.moveTo(p.x, p.y);
+                  ctx.lineTo(p2.x, p2.y);
+                  const activeColor = '0, 204, 255'; // cyber-cyan
+                  ctx.strokeStyle = `rgba(${activeColor}, ${(1 - dist / 95) * 0.09 / (canvas.speedFactor || 1.0)})`;
+                  ctx.lineWidth = 0.5;
+                  ctx.stroke();
+                }
+              }
+            });
+            
+            // Shooting stars / meteors
+            M.forEach((m, idx) => {
+              m.x += Math.cos(m.angle) * m.speed;
+              m.y += Math.sin(m.angle) * m.speed;
+              m.opacity -= 0.012;
+              
+              if (m.opacity <= 0 || m.x > canvas.width || m.y > canvas.height) {
+                M.splice(idx, 1);
+              } else {
+                ctx.beginPath();
+                const ex = m.x - Math.cos(m.angle) * m.len;
+                const ey = m.y - Math.sin(m.angle) * m.len;
+                const metG = ctx.createLinearGradient(m.x, m.y, ex, ey);
+                metG.addColorStop(0, m.color);
+                metG.addColorStop(1, 'transparent');
+                ctx.strokeStyle = metG;
+                ctx.lineWidth = 1.6;
+                ctx.moveTo(m.x, m.y);
+                ctx.lineTo(ex, ey);
+                ctx.stroke();
+              }
+            });
+            
+            requestAnimationFrame(draw);
+          }
+          draw();
+        }
+
+        // Trigger Warp transitions
+        function triggerWarp(factor = 12.0, duration = 1.1) {
+          const canvas = document.getElementById('stars');
+          if (canvas && canvas.offsetWidth > 0 && typeof gsap !== 'undefined') {
+            gsap.fromTo(canvas, { speedFactor: factor }, { speedFactor: 1.0, duration: duration, ease: 'power2.out' });
+          }
+        }
+
+        // Bind interactive triggers
+        document.addEventListener('DOMContentLoaded', () => {
+          $c = document.getElementById('cur');
+          $cr = document.getElementById('cur-ring');
+          const canvas = document.getElementById('stars');
+          if (canvas) {
+            makeStars(canvas);
+          }
+          
+          // Trigger warp on card hover
+          document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+              triggerWarp(5.0, 0.8);
+            });
+          });
+
+          // Trigger warp on scroll ticks
+          let lastScrollTime = 0;
+          window.addEventListener('scroll', () => {
+            const now = Date.now();
+            if (now - lastScrollTime > 400) {
+              triggerWarp(3.5, 0.6);
+              lastScrollTime = now;
+            }
+          });
+
+          // Animate coordinates mock values
+          let azim = 0;
+          setInterval(() => {
+            const hudTR = document.getElementById('hudTR');
+            if (hudTR && document.documentElement.className === 'theme-dark-1') {
+              azim = (azim + Math.floor(Math.random() * 5) + 1) % 360;
+              hudTR.textContent = `AZIM_DEG: ${azim}.00`;
+            }
+          }, 1500);
+        });
     </script>
+    <script src="ai-assistant.js"></script>
 </body>
 
 </html>

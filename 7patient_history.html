@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediPulse - Patient History Dashboard</title>
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -36,6 +38,93 @@
         .patient-card { display: flex; align-items: center; gap: 15px; }
         .avatar { width: 45px; height: 45px; border-radius: 12px; background: #ecfdf5; color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; }
         
+        .search-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            border-left: 6px solid #04384b;
+            margin-bottom: 30px;
+        }
+        .search-panel h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #04384b;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .search-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .search-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .search-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+        }
+        .search-group input {
+            padding: 10px 12px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .search-group input:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        .search-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        .btn-search {
+            background: #04384b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-search:hover {
+            background: #032a39;
+        }
+        .btn-clear {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-clear:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
         /* --- Responsive Adjustments --- */
         @media(max-width: 768px) {
             body { padding: 20px; }
@@ -54,7 +143,46 @@
             <h1><i class="fas fa-book-medical"></i> Patient Lifecycles</h1>
             <p>Comprehensive historical ledger of all admitted, consulted, and discharged patients.</p>
         </div>
-        <a href="1index.html" class="btn-back"><i class="fas fa-arrow-left"></i> Home</a>
+        <div style="display:flex; gap: 15px; align-items:center;">
+            <div class="theme-selector-container">
+                <select id="themeSelector" class="theme-select" onchange="setTheme(this.value)">
+                    <option value="theme-default">Default Theme</option>
+                    <option value="theme-dark-1">Sci-Fi (3D)</option>
+                    <option value="theme-dark-2">Bio-Medical (Video)</option>
+                </select>
+            </div>
+            <a href="1index.html" class="btn-back"><i class="fas fa-arrow-left"></i> Home</a>
+        </div>
+    </div>
+
+    <!-- Simplified Search Section -->
+    <div class="search-panel" style="padding: 20px 25px;">
+        <h3 style="margin-bottom: 10px;"><i class="fas fa-search"></i> Search Patient History</h3>
+        <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+            <div class="search-group" style="flex: 1; min-width: 160px;">
+                <label for="searchType" style="font-size: 12px; font-weight: 600; color: #475569;">Search By</label>
+                <select id="searchType" style="padding: 11px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; background: white; cursor: pointer; transition: all 0.2s;">
+                    <option value="patientId">Patient ID (PID)</option>
+                    <option value="name">Patient Name</option>
+                    <option value="phone">Phone Number</option>
+                    <option value="aadhar">Aadhaar Number</option>
+                    <option value="doctorName">Doctor Name</option>
+                    <option value="prescriptionId">Prescription ID</option>
+                </select>
+            </div>
+            <div class="search-group" style="flex: 2; min-width: 240px;">
+                <label for="searchValue" style="font-size: 12px; font-weight: 600; color: #475569;">Search Value</label>
+                <input type="text" id="searchValue" placeholder="Enter search keywords..." style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; transition: all 0.2s ease;">
+            </div>
+            <div class="search-group" style="flex: 1; min-width: 150px;">
+                <label for="searchDate" style="font-size: 12px; font-weight: 600; color: #475569;">Filter by Date</label>
+                <input type="date" id="searchDate" style="padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; transition: all 0.2s ease; background: white; cursor: pointer;">
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button class="btn-search" onclick="fetchHistory()" style="padding: 11px 20px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; white-space: nowrap;"><i class="fas fa-search"></i> Search Patient</button>
+                <button class="btn-clear" onclick="clearFilters()" style="padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; border: 1px solid #cbd5e1; white-space: nowrap;"><i class="fas fa-sync-alt"></i> Reset</button>
+            </div>
+        </div>
     </div>
 
     <div class="table-container">
@@ -94,12 +222,26 @@
 
         async function fetchHistory() {
             try {
-                const res = await fetch(`${API_BASE}/patients/history`);
+                const searchType = document.getElementById('searchType').value;
+                const searchValue = document.getElementById('searchValue').value.trim();
+                const searchDate = document.getElementById('searchDate').value;
+
+                const params = new URLSearchParams();
+                if (searchValue) {
+                    params.append(searchType, searchValue);
+                }
+                if (searchDate) {
+                    params.append('date', searchDate);
+                }
+
+                const tbody = document.getElementById('historyBody');
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">Searching patient history...</td></tr>';
+
+                const res = await fetch(`${API_BASE}/patients/history?${params.toString()}`);
                 const data = await res.json();
                 
-                const tbody = document.getElementById('historyBody');
                 if(data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">No patient history found.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">No matching patient records found.</td></tr>';
                     return;
                 }
 
@@ -110,6 +252,15 @@
 
                     const initial = p.name ? p.name.charAt(0).toUpperCase() : 'P';
                     
+                    let rxHtml = '';
+                    if (p.prescriptionId) {
+                        rxHtml = `
+                            <div style="font-size: 11px; color: #0284c7; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="fas fa-file-prescription"></i> Rx ID: ${p.prescriptionId}
+                            </div>
+                        `;
+                    }
+
                     return `
                         <tr>
                             <td>
@@ -117,7 +268,10 @@
                                     <div class="avatar">${initial}</div>
                                     <div>
                                         <div style="font-weight: 700; color: #0f172a; font-size:15px;">${p.name}</div>
-                                        <div style="font-size:12px; color:#64748b; font-weight:500;">Age: ${p.age}</div>
+                                        <div style="font-size:11px; color:#475569; margin-top:2px;">Patient ID: <strong>${p.patientId || 'N/A'}</strong></div>
+                                        <div style="font-size:11px; color:#64748b;">Age: ${p.age} | Mob: ${p.contact || 'N/A'}</div>
+                                        <div style="font-size:11px; color:#64748b;">Aadhaar: ${p.aadhar || 'N/A'}</div>
+                                        ${rxHtml}
                                     </div>
                                 </div>
                             </td>
@@ -141,6 +295,13 @@
                 console.error(err);
                 document.getElementById('historyBody').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: red;">Error loading history.</td></tr>';
             }
+        }
+
+        function clearFilters() {
+            document.getElementById('searchType').value = 'patientId';
+            document.getElementById('searchValue').value = '';
+            document.getElementById('searchDate').value = '';
+            fetchHistory();
         }
 
         fetchHistory();

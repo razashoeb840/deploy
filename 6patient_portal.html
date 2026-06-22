@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediPulse - Patient Self Registration</title>
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; color: #0f172a; min-height: 100vh; }
@@ -11,7 +13,7 @@
         .split-layout { display: flex; height: 100vh; }
         .left-panel {
             flex: 1;
-            background-image: linear-gradient(135deg, rgba(5, 150, 105, 0.85), rgba(16, 185, 129, 0.4)), url('patient_bg.png');
+            background-image: linear-gradient(135deg, rgba(5, 150, 105, 0.85), rgba(16, 185, 129, 0.4)), url('patient_bg.webp');
             background-size: cover;
             background-position: center;
             display: flex;
@@ -80,6 +82,14 @@
 </head>
 <body>
 
+<div class="theme-selector-container" style="position: absolute; top: 20px; right: 20px; z-index: 1000;">
+    <select id="themeSelector" class="theme-select" onchange="setTheme(this.value)">
+        <option value="theme-default">Default Theme</option>
+        <option value="theme-dark-1">Sci-Fi (3D)</option>
+        <option value="theme-dark-2">Bio-Medical (Video)</option>
+    </select>
+</div>
+
 <div class="split-layout">
     
     <div class="left-panel">
@@ -113,16 +123,32 @@
                 <input type="text" id="contact" placeholder="10 digit mobile number">
             </div>
             <div class="form-group">
-                <label>Primary Medical Issue</label>
-                <input type="text" id="problem" placeholder="What are you experiencing?">
+                <label>Primary Medical Issue / Symptoms</label>
+                <input type="text" id="problem" placeholder="What symptoms are you experiencing?">
             </div>
-            <div class="form-group">
-                <label>Select Doctor</label>
-                <select id="doctorSelect">
-                    <option value="">Loading Doctors...</option>
-                </select>
+            
+            <button type="button" class="btn-primary" id="btnAnalyze" onclick="analyzeSymptoms()" style="background:#0284c7; margin-bottom: 20px;">
+                <i class="fas fa-brain"></i> Analyze Symptoms & Find Doctor
+            </button>
+
+            <!-- AI Recommendation Display -->
+            <div id="aiRecommendation" style="display:none; margin-bottom: 20px; background: #ecfdf5; border: 1.5px solid #10b981; border-radius: 12px; padding: 15px; text-align: left;">
+                <h4 style="color:#065f46; font-weight:700; font-size:15px; margin-top:0; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-robot"></i> AI Doctor Match & Triage
+                </h4>
+                <div id="aiRecDetails" style="font-size:13px; color:#1e293b; line-height:1.6; margin-bottom: 12px;">
+                    <!-- Injected dynamically -->
+                </div>
+                <div style="margin-top: 15px; padding-top: 12px; border-top: 1px solid #a7f3d0; text-align:center;">
+                    <p style="font-weight: 700; font-size:13px; margin-bottom:10px; color:#065f46;">Are you satisfied with this recommendation?</p>
+                    <div style="display:flex; justify-content:center; gap:10px;">
+                        <button type="button" onclick="setSatisfaction(true)" style="background:#10b981; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:600; cursor:pointer; font-size:12px;">Yes, Proceed</button>
+                        <button type="button" onclick="setSatisfaction(false)" style="background:#ef4444; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:600; cursor:pointer; font-size:12px;">No, Edit description</button>
+                    </div>
+                </div>
             </div>
-            <button class="btn-primary" onclick="openPayment()">Proceed to Payment (₹ 500)</button>
+
+            <button class="btn-primary" id="payBtn" style="display:none;" onclick="openPayment()">Proceed to Payment (₹ 500)</button>
         </div>
         <div class="success-screen" id="successScreen">
             <h1>✓</h1>
@@ -152,30 +178,120 @@
 
     <script>
         const API_BASE = '/api';
+        let doctorsList = [];
+        let selectedDoctorId = null;
+        let selectedDoctorFee = 500;
+        let aiProblemKeyword = '';
 
         async function loadDoctors() {
             try {
                 const res = await fetch(`${API_BASE}/doctors`);
-                const doctors = await res.json();
-                const sel = document.getElementById('doctorSelect');
-                sel.innerHTML = '<option value="">-- Choose a Doctor --</option>' + 
-                    doctors.map(d => `<option value="${d._id}">Dr. ${d.name} (${d.specialization})</option>`).join('');
+                doctorsList = await res.json();
             } catch(err) {
-                console.error(err);
-                document.getElementById('doctorSelect').innerHTML = '<option value="">Error loading doctors</option>';
+                console.error("Error loading doctors", err);
             }
         }
         loadDoctors();
+
+        async function analyzeSymptoms() {
+            const problem = document.getElementById('problem').value.trim();
+            const fn = document.getElementById('fn').value.trim();
+            const age = document.getElementById('age').value.trim();
+            const contact = document.getElementById('contact').value.trim();
+
+            if (!fn || !age || !contact) {
+                alert('Please fill out Name, Age, and Contact fields first.');
+                return;
+            }
+
+            if (!problem) {
+                alert('Please describe your symptoms in the medical issue field.');
+                return;
+            }
+
+            const btn = document.getElementById('btnAnalyze');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing symptoms...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/ai/analyze-symptoms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        textSymptoms: problem,
+                        language: 'en-US'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Symptom analysis failed');
+                }
+
+                const aiResult = await response.json();
+                selectedDoctorId = aiResult.recommendedDoctorId;
+                aiProblemKeyword = aiResult.problemKeyword || problem;
+
+                // Find doctor details
+                const matchedDoc = doctorsList.find(d => d._id === selectedDoctorId);
+                const docName = matchedDoc ? matchedDoc.name : 'General Physician';
+                selectedDoctorFee = matchedDoc ? (matchedDoc.fee || 500) : 500;
+                const docCabin = matchedDoc ? (matchedDoc.cabin || 'General Ward') : 'General Ward';
+
+                // Display recommendation
+                const aiRecDetails = document.getElementById('aiRecDetails');
+                let urgencyColor = '#10b981';
+                if (aiResult.urgency === 'High' || aiResult.urgency === 'Critical') urgencyColor = '#ef4444';
+                else if (aiResult.urgency === 'Medium') urgencyColor = '#f59e0b';
+
+                aiRecDetails.innerHTML = `
+                    <p style="margin: 0 0 6px 0;"><strong>Urgency Level:</strong> <span style="background:${urgencyColor}; color:white; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700;">${aiResult.urgency.toUpperCase()}</span></p>
+                    <p style="margin: 0 0 6px 0;"><strong>Suggested Specialist:</strong> ${aiResult.specialization}</p>
+                    <p style="margin: 0 0 6px 0;"><strong>Assigned Consultant:</strong> <strong>${docName}</strong> (Cabin ${docCabin})</p>
+                    <p style="margin: 0 0 6px 0;"><strong>Consultation Fee:</strong> ₹ ${selectedDoctorFee}</p>
+                    <p style="margin: 0 0 6px 0;"><strong>AI Analysis:</strong> ${aiResult.analysisReason || 'Matched based on reported symptoms.'}</p>
+                    <p style="margin: 10px 0 0 0; font-size:11px; color:#64748b; font-style:italic;">*Disclaimer: ${aiResult.disclaimer}</p>
+                `;
+
+                document.getElementById('aiRecommendation').style.display = 'block';
+                document.getElementById('payBtn').style.display = 'none';
+
+            } catch (err) {
+                console.error(err);
+                alert('Error connecting to symptom analyzer.');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function setSatisfaction(satisfied) {
+            if (satisfied) {
+                const payBtn = document.getElementById('payBtn');
+                payBtn.textContent = `Proceed to Payment (₹ ${selectedDoctorFee})`;
+                payBtn.style.display = 'block';
+                
+                // Update payment modal consultation fee text
+                document.querySelector('#paymentModal p').textContent = `Consultation Fee: ₹ ${selectedDoctorFee}`;
+                document.querySelector('#paymentModal .btn-pay').textContent = `Pay ₹ ${selectedDoctorFee} & Register`;
+                
+                payBtn.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                document.getElementById('payBtn').style.display = 'none';
+                document.getElementById('aiRecommendation').style.display = 'none';
+                document.getElementById('problem').focus();
+                alert('Please refine or describe your symptoms differently to get another recommendation.');
+            }
+        }
 
         function openPayment() {
             const fn = document.getElementById('fn').value;
             const age = document.getElementById('age').value;
             const contact = document.getElementById('contact').value;
             const problem = document.getElementById('problem').value;
-            const doc = document.getElementById('doctorSelect').value;
 
-            if(!fn || !age || !contact || !problem || !doc) {
-                alert('Please fill out all fields before proceeding to payment.');
+            if(!fn || !age || !contact || !problem || !selectedDoctorId) {
+                alert('Please complete all inputs and symptom analysis first.');
                 return;
             }
             document.getElementById('paymentModal').classList.add('active');
@@ -186,14 +302,13 @@
         }
 
         async function processPayment() {
-            // Simulate processing
             const btn = document.querySelector('.btn-pay');
-            btn.textContent = 'Processing...';
+            btn.textContent = 'Processing Payment...';
             btn.style.opacity = '0.7';
 
             setTimeout(async () => {
                 await submitRegistration();
-            }, 1000);
+            }, 1200);
         }
 
         async function submitRegistration() {
@@ -201,8 +316,8 @@
                 name: document.getElementById('fn').value.trim(),
                 age: document.getElementById('age').value.trim(),
                 contact: document.getElementById('contact').value.trim(),
-                problem: document.getElementById('problem').value.trim(),
-                assignedDoctor: document.getElementById('doctorSelect').value
+                problem: `[AI: ${aiProblemKeyword}] ` + document.getElementById('problem').value.trim(),
+                assignedDoctor: selectedDoctorId
             };
 
             try {
@@ -221,7 +336,7 @@
                 } else {
                     alert('Registration failed: ' + data.error);
                     const btn = document.querySelector('.btn-pay');
-                    btn.textContent = 'Pay ₹ 500 & Register';
+                    btn.textContent = `Pay ₹ ${selectedDoctorFee} & Register`;
                     btn.style.opacity = '1';
                 }
             } catch(err) {
@@ -229,5 +344,6 @@
             }
         }
     </script>
+    <script src="ai-assistant.js"></script>
 </body>
 </html>
