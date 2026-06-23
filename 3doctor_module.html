@@ -408,6 +408,24 @@ body {
   const eveningSlots = ["02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM"];
   const allSlots = [...morningSlots, ...eveningSlots];
 
+  // Live Polling Auto-fill
+  document.addEventListener('DOMContentLoaded', () => {
+    // Auto-fill logged-in patient details
+    const profileStr = localStorage.getItem('patientProfile');
+    if (profileStr) {
+      try {
+        const profile = JSON.parse(profileStr);
+        if (profile.name) document.getElementById('pName').value = profile.name;
+        if (profile.age) document.getElementById('pAge').value = profile.age;
+        if (profile.gender) document.getElementById('pGender').value = profile.gender;
+        if (profile.contact) document.getElementById('pContact').value = profile.contact;
+        if (profile.aadhar && profile.aadhar !== 'N/A') document.getElementById('pAadhar').value = profile.aadhar;
+      } catch (e) {
+        console.error("Error parsing patient profile in slot booking:", e);
+      }
+    }
+  });
+
   async function loadData() {
     try {
       const response = await fetch('/api/doctors');
@@ -750,6 +768,19 @@ body {
       return;
     }
 
+    const profileStr = localStorage.getItem('patientProfile');
+    let extraPayload = {};
+    if (profileStr) {
+      try {
+        const profile = JSON.parse(profileStr);
+        extraPayload = {
+          patientId: profile.patientId,
+          aadhar: profile.aadhar !== 'N/A' ? profile.aadhar : aadhar,
+          address: profile.address !== 'N/A' ? profile.address : `Slot Booking via Portal`
+        };
+      } catch(e) {}
+    }
+
     const payload = {
       name,
       age,
@@ -758,7 +789,8 @@ body {
       address: `Slot Booking via Portal`,
       aadhar,
       problem: `[Slot: ${selectedSlotTime}] ${symptoms}`,
-      assignedDoctor: selectedDoctorId
+      assignedDoctor: selectedDoctorId,
+      ...extraPayload
     };
 
     try {

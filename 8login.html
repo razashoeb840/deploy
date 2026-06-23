@@ -370,6 +370,8 @@
     </div>
 
     <script>
+        const API_BASE = window.location.port === '5000' ? '/api' : 'http://localhost:5000/api';
+
         function toggleForm(type) {
             if (type === 'change') {
                 document.getElementById('loginForm').style.display = 'none';
@@ -401,7 +403,7 @@
             btn.style.opacity = '0.8';
 
             try {
-                const response = await fetch('/api/auth/change-password', {
+                const response = await fetch(`${API_BASE}/auth/change-password`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: uid, oldPassword: oldPass, newPassword: newPass, role })
@@ -443,7 +445,7 @@
             btn.style.opacity = '0.8';
 
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch(`${API_BASE}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: uid, password: pass, role })

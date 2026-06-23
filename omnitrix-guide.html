@@ -750,7 +750,7 @@ const MODS = [
    {title:'Notifications & Alerts',titleHi:'Notifications & Alerts',secs:[
     {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
      body:'The Smart Alerts system continuously monitors hospital conditions and triggers automated notifications: medicine stock below 10 units, bed occupancy exceeding 90%, emergency patients in waiting queue, and doctors on leave with pending appointments.',
-     bodyHi:'Smart Alerts system hospital conditions monitor karta rehta hai aur automatic notifications trigger karta hai — medicine stock 10 se kam, beds 90% se zyada occupied, emergency patients queue mein wait kar rahe, leave pe gaye doctor ke pending appointments.'},
+     bodyHi:'Smart Alerts system hospital conditions monitor karta rehta hai aur automatic notifications trigger karta hai — medicine stock 10 se kam, beds 90% se zyada occupied, emergency patients in waiting queue, and doctors on leave with pending appointments.'},
     {t:'conn',h:'Connected Modules',hHi:'Connected Modules',i:'fa-link',mods:['AI Assistant','Reception & Queue','Doctor Dashboard','Pharmacy & Inventory','Bed Management']}
    ]}
   ]},
@@ -758,59 +758,58 @@ const MODS = [
  {id:'patient',name:'Patient Module',icon:'fas fa-user-injured',color:'#ff6ef7',
   tagline:'Self-Service: AI Triage, Booking, Queue Tracking & My Records',
   steps:[
-   {title:'Patient Login',titleHi:'Patient Login',secs:[
-    {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
-     body:'Patients access the MediPulse self-service portal by logging in or creating a new account. New patients can sign up with name, mobile number, and basic details — no prior hospital visit needed.',
-     bodyHi:'Patients MediPulse self-service portal mein login kar sakte hain ya naya account bana sakte hain. Naye patients sirf naam, mobile number, aur basic details se sign up kar sakte hain — pehle hospital jaana zaroori nahi.'},
-    {t:'who',h:'Who Uses It',hHi:'Kaun Use Karta Hai',i:'fa-user',tags:['Walk-in Patient','Returning Patient','Online Appointment Patient']},
-    {t:'tips',h:'Best Practices',hHi:'Zaroori Tips',i:'fa-lightbulb',
-     items:['Use the same mobile number every time — links all visits under one PID','Keep your PID handy — required for pharmacy and doctor lookups'],
-     itemsHi:['Har baar same mobile number use karo — saare visits ek PID se link honge','Apna PID yaad rakhein ya note kar lo — pharmacy aur doctor ke paas zaroori hai']}
-   ]},
-   {title:'AI Symptom Check',titleHi:'AI se Symptoms Check',secs:[
-    {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
-     body:'Before booking, patients describe their symptoms to the built-in AI Assistant. The AI analyzes the description, identifies the probable condition, assigns an urgency level, and recommends the most suitable doctor — all in the patient\'s own language.',
-     bodyHi:'Booking se pehle, patient built-in AI Assistant ko symptoms describe karta hai. AI condition identify karta hai, urgency level assign karta hai, aur sahi doctor recommend karta hai — patient ki apni bhaasha mein.'},
-    {t:'example',h:'Real-World Example',hHi:'Real Example',i:'fa-stethoscope',
-     body:'"Mera pet bahut dard kar raha hai, ulti bhi aa rahi hai" → AI: Gastroenteritis → Urgency: MEDIUM → Dr. Anjali Mehta (Gastroenterology) → First Aid: "Paani aur ORS lo, greasy khana mat khao."',
-     bodyHi:'"Mera pet bahut dard kar raha hai, ulti bhi aa rahi hai" → AI: Gastroenteritis → Urgency: MEDIUM → Dr. Anjali Mehta (Gastroenterology) → AI bolta hai: "Paani aur ORS lo, thoda aaram karo, greasy khana mat khao."'}
-   ]},
-   {title:'Doctor Booking',titleHi:'Doctor Booking',secs:[
-    {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
-     body:'After AI recommendation, the patient sees the matched doctor\'s profile: name, specialization, qualifications, cabin number, experience, and consultation fee. Patient selects a visit slot and confirms booking.',
-     bodyHi:'AI recommendation ke baad, patient matched doctor ki puri profile dekhta hai — naam, specialization, qualifications, cabin number, experience, aur fees. Patient visit slot select karta hai aur booking confirm karta hai.'},
-    {t:'flow',h:'Booking Flow',hHi:'Booking Steps',i:'fa-project-diagram',
-     steps:[
-      {l:'View Recommended Doctor',lHi:'Recommended Doctor Dekho',d:'See the AI-matched doctor\'s full profile with fees and cabin details.',dHi:'AI-matched doctor ki puri profile dekhein — fees aur cabin details ke saath.'},
-      {l:'Select Time Slot',lHi:'Time Slot Choose Karo',d:'Pick a visit date and time slot from the available schedule.',dHi:'Available schedule mein se visit date aur time slot chunein.'},
-      {l:'Confirm Booking',lHi:'Booking Confirm Karo',d:'Review booking summary — doctor name, slot, fee — then confirm.',dHi:'Booking summary review karo — doctor naam, slot, fee — phir confirm karo.'}
-     ]}
-   ]},
-   {title:'Payment & Queue Token',titleHi:'Payment & Queue Token',secs:[
-    {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
-     body:'Booking is only confirmed after successful payment of the consultation fee. On success, the patient receives a Queue Token and their Permanent Patient ID (PID-xxxx) is generated.',
-     bodyHi:'Booking tabhi confirm hoti hai jab consultation fee ka payment ho jaaye. Payment success hone par patient ko Queue Token milta hai aur Permanent Patient ID (PID-xxxx) generate hoti hai.'},
-    {t:'example',h:'Real-World Example',hHi:'Real Example',i:'fa-stethoscope',
-     body:'Patient pays ₹500 for Dr. Rohan Sharma. Payment confirmed → PID-1056 issued → Token T-14 assigned → Patient visible in real-time reception queue.',
-     bodyHi:'Patient Dr. Rohan Sharma ke liye ₹500 pay karta hai. Payment confirm → PID-1056 issue → Token T-14 assign → Patient turant reception queue mein dikhai deta hai.'}
-   ]},
-   {title:'Queue Tracking',titleHi:'Queue Track Karna',secs:[
-    {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
-     body:'After booking, patients track their real-time queue position. Status progresses: Waiting → In Cabin → Prescribed → Completed.',
-     bodyHi:'Booking ke baad, patient apna real-time queue position track kar sakta hai. Status aage badhta hai: Waiting → In Cabin → Prescribed → Completed.'},
-    {t:'tips',h:'Tracking Tips',hHi:'Tracking Tips',i:'fa-lightbulb',
-     items:['Page auto-updates every 5 seconds — no manual refresh needed','Reception will call your name or token at the cabin entrance'],
-     itemsHi:['Page har 5 seconds mein automatically update hota hai — manually refresh karne ki zaroorat nahi','Reception aapka naam ya token cabin ke bahar announce karega']}
-   ]},
-   {title:'My Records & PDF',titleHi:'Meri Records & PDF',secs:[
-    {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
-     body:'Patients view their complete medical history across all visits under their Permanent Patient ID. Prescriptions can be downloaded as professional hospital-style PDFs with unique Report IDs.',
-     bodyHi:'Patients apni Permanent Patient ID ke under saari visits ki complete medical history dekh sakte hain. Prescriptions professional hospital-style PDF ke roop mein download ki ja sakti hain — unique Report ID ke saath.'},
-    {t:'tips',h:'Best Practices',hHi:'Zaroori Tips',i:'fa-lightbulb',
-     items:['Always save your prescription PDF for insurance/medical records','The PDF includes your unique Report ID (REP-xxxxxx) — quote for follow-ups','Each re-prescription version has a different Report ID — get the latest one'],
-     itemsHi:['Prescription PDF hamesha save karo — insurance aur medical records ke liye kaam aata hai','PDF mein aapka unique Report ID (REP-xxxxxx) hota hai — follow-up ke waqt quote karein','Har re-prescription ka alag Report ID hota hai — latest wala use karein']},
-    {t:'conn',h:'Connected Modules',hHi:'Connected Modules',i:'fa-link',mods:['AI Assistant','Reception & Queue','Doctor Dashboard','Pharmacy & Inventory']}
-   ]}
+    {title:'Patient Login & Signup',titleHi:'Patient Login & Signup',secs:[
+     {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
+      body:'Patients access their secure health dashboard by logging in or registering. Account creation supports mock Aadhaar OTP verification (code 123456) for secure identity registration. Forgotten details can be recovered via a mobile OTP code.',
+      bodyHi:'Patients naya secure account bana kar ya log in karke health dashboard access karte hain. Account creation mein identity security ke liye mock Aadhaar OTP (code 123456) verification hoti hai. Password Reset mobile OTP ke zariye recover ho sakta hai.'},
+     {t:'who',h:'Who Uses It',hHi:'Kaun Use Karta Hai',i:'fa-user',tags:['Registered Patients','New Signups']},
+     {t:'tips',h:'Best Practices',hHi:'Zaroori Tips',i:'fa-lightbulb',
+      items:['Sign up with registered Aadhaar to link past OPD tickets automatically','For demonstration, use Aadhaar OTP 123456 to complete signup','Recover PID or reset password via Mobile verification OTP 123456'],
+      itemsHi:['Aadhaar card se signup karein taaki purane visits auto-link ho jaayein','Demo ke liye, signup ke waqt Aadhaar OTP 123456 enter karein','Password reset karne ke liye mobile verification OTP 123456 use karein']}
+    ]},
+    {title:'AI Symptom Check',titleHi:'AI se Symptoms Check',secs:[
+     {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
+      body:'Before booking, patients describe their symptoms to the built-in AI Assistant. The AI analyzes the description, identifies the probable condition, assigns an urgency level, and recommends the most suitable doctor — all in the patient\'s own language.',
+      bodyHi:'Booking se pehle, patient built-in AI Assistant ko symptoms describe karta hai. AI condition identify karta hai, urgency level assign karta hai, aur sahi doctor recommend karta hai — patient ki apni bhaasha mein.'},
+     {t:'example',h:'Real-World Example',hHi:'Real Example',i:'fa-stethoscope',
+      body:'"Mera pet bahut dard kar raha hai, ulti bhi aa rahi hai" → AI: Gastroenteritis → Urgency: MEDIUM → Dr. Anjali Mehta (Gastroenterology) → First Aid: "Paani aur ORS lo, greasy khana mat khao."',
+      bodyHi:'"Mera pet bahut dard kar raha hai, ulti bhi aa rahi hai" → AI: Gastroenteritis → Urgency: MEDIUM → Dr. Anjali Mehta (Gastroenterology) → AI bolta hai: "Paani aur ORS lo, thoda aaram karo, greasy khana mat khao."'}
+    ]},
+    {title:'Doctor Booking',titleHi:'Doctor Booking',secs:[
+     {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
+      body:'After AI recommendation, the patient sees the matched doctor\'s profile: name, specialization, qualifications, cabin number, experience, and consultation fee. Patient selects a visit slot and confirms booking.',
+      bodyHi:'AI recommendation ke baad, patient matched doctor ki puri profile dekhta hai — naam, specialization, qualifications, cabin number, experience, aur fees. Patient visit slot select karta hai aur booking confirm karta hai.'},
+     {t:'flow',h:'Booking Flow',hHi:'Booking Steps',i:'fa-project-diagram',
+      steps:[
+       {l:'View Recommended Doctor',lHi:'Recommended Doctor Dekho',d:'See the AI-matched doctor\'s full profile with fees and cabin details.',dHi:'AI-matched doctor ki puri profile dekhein — fees aur cabin details ke saath.'},
+       {l:'Select Time Slot',lHi:'Time Slot Choose Karo',d:'Pick a visit date and time slot from the available schedule.',dHi:'Available schedule mein se visit date aur time slot chunein.'},
+       {l:'Confirm Booking',lHi:'Booking Confirm Karo',d:'Review booking summary — doctor name, slot, fee — then confirm.',dHi:'Booking summary review karo — doctor naam, slot, fee — phir confirm karo.'}
+      ]}
+    ]},
+    {title:'Payment & Queue Token',titleHi:'Payment & Queue Token',secs:[
+     {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
+      body:'Booking is only confirmed after successful payment of the consultation fee. On success, the patient receives a Queue Token and their Permanent Patient ID (PID-xxxx) is generated.',
+      bodyHi:'Booking tabhi confirm hoti hai jab consultation fee ka payment ho jaaye. Payment success hone par patient ko Queue Token milta hai aur Permanent Patient ID (PID-xxxx) generate hoti hai.'},
+     {t:'example',h:'Real-World Example',hHi:'Real Example',i:'fa-stethoscope',
+      body:'Patient pays ₹500 for Dr. Rohan Sharma. Payment confirmed → PID-1056 issued → Token T-14 assigned → Patient visible in real-time reception queue.',
+      bodyHi:'Patient Dr. Rohan Sharma ke liye ₹500 pay karta hai. Payment confirm → PID-1056 issue → Token T-14 assign → Patient turant reception queue mein dikhai deta hai.'}
+    ]},
+    {title:'Queue Tracking',titleHi:'Queue Track Karna',secs:[
+     {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
+      body:'After booking, patients track their real-time queue position. Status progresses: Waiting → In Cabin → Prescribed → Completed.',
+      bodyHi:'Booking ke baad, patient apna real-time queue position track kar sakta hai. Status aage badhta hai: Waiting → In Cabin → Prescribed → Completed.'},
+     {t:'tips',h:'Tracking Tips',hHi:'Tracking Tips',i:'fa-lightbulb',
+      items:['Page auto-updates every 5 seconds — no manual refresh needed','Reception will call your name or token at the cabin entrance'],
+      itemsHi:['Page har 5 seconds mein automatically update hota hai — manually refresh karne ki zaroorat nahi','Reception aapka naam ya token cabin ke bahar announce karega']}
+    ]},
+    {title:'Reports History & PDF Exports',titleHi:'Reports History & PDF Exports',secs:[
+     {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
+      body:'Patients access a unified Reports & Documents Vault. They can view, upload, and download diagnostic documents, and export official hospital-style PDF Clinical Case Reports and PDF Prescriptions with doctor signatures.',
+      bodyHi:'Patients unified Reports & Documents Vault access kar sakte hain. Wo laboratory reports upload/download kar sakte hain, aur official hospital-style PDF Case Reports aur doctor-signed Prescriptions export kar sakte hain.'},
+     {t:'tips',h:'Best Practices',hHi:'Zaroori Tips',i:'fa-lightbulb',
+      items:['View recent case summary and prescriptions directly on the Overview panel','Download full clinical case report PDF under Visit History or Reports tab','Drag-and-drop or select any file (PDF/Image) up to 5MB to save it in your vault'],
+      itemsHi:['Overview panel par hi recent case reports aur prescriptions download kar sakte hain','Visit History ya Reports tab se full clinical case report PDF download karein','Apne personal report files (PDF/Image) 5MB tak drag-and-drop karke safe vault mein save karein']}
+    ]}
   ]}
 ];
 

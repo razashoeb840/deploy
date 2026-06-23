@@ -214,6 +214,21 @@
         }
         loadDoctors();
 
+        // Auto-fill logged-in patient details
+        document.addEventListener('DOMContentLoaded', () => {
+            const profileStr = localStorage.getItem('patientProfile');
+            if (profileStr) {
+                try {
+                    const profile = JSON.parse(profileStr);
+                    if (profile.name) document.getElementById('fn').value = profile.name;
+                    if (profile.age) document.getElementById('age').value = profile.age;
+                    if (profile.contact) document.getElementById('contact').value = profile.contact;
+                } catch (e) {
+                    console.error("Error parsing patient profile in portal:", e);
+                }
+            }
+        });
+
         async function analyzeSymptoms() {
             const problem = document.getElementById('problem').value.trim();
             const fn = document.getElementById('fn').value.trim();
@@ -333,12 +348,29 @@
         }
 
         async function submitRegistration() {
+            const profileStr = localStorage.getItem('patientProfile');
+            let extraPayload = {};
+            if (profileStr) {
+                try {
+                    const profile = JSON.parse(profileStr);
+                    extraPayload = {
+                        patientId: profile.patientId,
+                        aadhar: profile.aadhar,
+                        address: profile.address,
+                        gender: profile.gender
+                    };
+                } catch(e) {
+                    console.error("Error loading profile fields:", e);
+                }
+            }
+
             const payload = {
                 name: document.getElementById('fn').value.trim(),
                 age: document.getElementById('age').value.trim(),
                 contact: document.getElementById('contact').value.trim(),
                 problem: `[AI: ${aiProblemKeyword}] ` + document.getElementById('problem').value.trim(),
-                assignedDoctor: selectedDoctorId
+                assignedDoctor: selectedDoctorId,
+                ...extraPayload
             };
 
             try {

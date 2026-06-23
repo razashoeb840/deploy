@@ -6,6 +6,7 @@
     <title>MediPulse - Patient Personal Portal</title>
     <link rel="stylesheet" href="theme.css">
     <script src="theme.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -103,6 +104,10 @@
             .sidebar-menu { flex-direction: row; overflow-x: auto; padding-bottom: 5px; }
             .menu-item { white-space: nowrap; padding: 10px 15px; }
             .tab-panel { padding: 20px; }
+            .tab-panel div[style*="display: grid"] {
+                grid-template-columns: 1fr !important;
+                gap: 20px !important;
+            }
         }
     </style>
 </head>
@@ -239,7 +244,7 @@
                 <div class="menu-item" onclick="switchPanel('visits', this)"><i class="fas fa-calendar-alt"></i> Visit History</div>
                 <div class="menu-item" onclick="switchPanel('prescriptions', this)"><i class="fas fa-file-prescription"></i> Prescriptions</div>
                 <div class="menu-item" onclick="switchPanel('billing', this)"><i class="fas fa-receipt"></i> Billing & Invoices</div>
-                <div class="menu-item" onclick="switchPanel('reports', this)"><i class="fas fa-folder-open"></i> Documents Vault</div>
+                <div class="menu-item" onclick="switchPanel('reports', this)"><i class="fas fa-folder-open"></i> Reports & Documents</div>
                 <div class="menu-item" onclick="switchPanel('profile', this)"><i class="fas fa-address-card"></i> Medical ID Card</div>
                 <div class="menu-item" onclick="handleLogout()" style="margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 20px; color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Log Out</div>
             </div>
@@ -282,6 +287,22 @@
                     </div>
                     <a href="6patient_portal.html" class="btn-back" style="background:#064e3b; padding:10px 20px; white-space:nowrap; border:none; text-shadow:none;"><i class="fas fa-calendar-check"></i> Book OPD Ticket</a>
                 </div>
+
+                <!-- Recent Health Reports & Documents Grid -->
+                <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 25px; margin-top: 25px; text-align: left;">
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px;">
+                        <h3 style="font-size: 14px; font-weight: 700; color: #064e3b; margin-bottom: 15px; border-bottom: 1.5px solid #ecfdf5; padding-bottom: 8px;"><i class="fas fa-file-invoice"></i> Recent Hospital Reports & Prescriptions</h3>
+                        <div id="recentReportsContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                            <!-- populated dynamically -->
+                        </div>
+                    </div>
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px;">
+                        <h3 style="font-size: 14px; font-weight: 700; color: #064e3b; margin-bottom: 15px; border-bottom: 1.5px solid #ecfdf5; padding-bottom: 8px;"><i class="fas fa-folder-open"></i> Recent Uploaded Files</h3>
+                        <div id="recentUploadsContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                            <!-- populated dynamically -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- panel: Visits Timeline -->
@@ -321,20 +342,34 @@
                 </div>
             </div>
 
-            <!-- panel: Documents Vault -->
+            <!-- panel: Reports & Documents Vault -->
             <div class="tab-panel" id="panel-reports">
-                <h2 style="font-weight: 800; font-size: 20px; color: #064e3b; margin-bottom: 25px; text-align: left;"><i class="fas fa-shield-alt"></i> Secure Document Vault</h2>
+                <h2 style="font-weight: 800; font-size: 20px; color: #064e3b; margin-bottom: 25px; text-align: left;"><i class="fas fa-folder-open"></i> Reports & Documents Vault</h2>
                 
-                <div class="upload-area" onclick="document.getElementById('reportFileInput').click()">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <h3 style="font-size:15px; font-weight:700; color:#334155; margin-bottom:6px;">Upload New Report / Document</h3>
-                    <p style="font-size:12px; color:#64748b;">Supports PDF, PNG, JPG files. Max file size: 5MB.</p>
-                    <input type="file" id="reportFileInput" style="display:none;" onchange="handleFileUpload(this)">
-                </div>
+                <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; text-align: left;">
+                    <!-- Left column: Official Hospital Reports -->
+                    <div>
+                        <h3 style="font-size:14px; font-weight:700; color:#064e3b; margin-bottom:15px; border-bottom:2px solid #ecfdf5; padding-bottom:8px;"><i class="fas fa-file-medical"></i> Hospital Case Reports & Prescriptions</h3>
+                        <div style="display:flex; flex-direction:column; gap:12px;" id="hospitalReportsContainer">
+                            <!-- populated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Right column: Personal Document Vault -->
+                    <div>
+                        <h3 style="font-size:14px; font-weight:700; color:#064e3b; margin-bottom:15px; border-bottom:2px solid #ecfdf5; padding-bottom:8px;"><i class="fas fa-cloud-upload-alt"></i> Personal Uploaded Documents</h3>
+                        
+                        <div class="upload-area" onclick="document.getElementById('reportFileInput').click()" style="padding: 25px 20px; margin-bottom: 20px;">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 30px; margin-bottom: 8px;"></i>
+                            <h4 style="font-size:13px; font-weight:700; color:#334155; margin-bottom:4px;">Upload Diagnostic File</h4>
+                            <p style="font-size:11px; color:#64748b;">PDF, PNG, JPG files up to 5MB.</p>
+                            <input type="file" id="reportFileInput" style="display:none;" onchange="handleFileUpload(this)">
+                        </div>
 
-                <h3 style="font-size:15px; font-weight:700; color:#064e3b; margin-bottom:15px; border-bottom:2px solid #ecfdf5; padding-bottom:8px; text-align:left;">My Uploaded Health Records</h3>
-                <div style="display:flex; flex-direction:column; gap:12px; text-align:left;" id="uploadedReportsContainer">
-                    <!-- populated dynamically -->
+                        <div style="display:flex; flex-direction:column; gap:12px;" id="uploadedReportsContainer">
+                            <!-- populated dynamically -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -695,6 +730,7 @@
         // Logout
         function handleLogout() {
             localStorage.removeItem('patientToken');
+            localStorage.removeItem('patientProfile');
             dashboardData = null;
             
             // Show auth, hide dashboard
@@ -717,6 +753,7 @@
                 }
 
                 dashboardData = data;
+                localStorage.setItem('patientProfile', JSON.stringify(data.profile));
 
                 // Hide auth container, show dashboard
                 document.getElementById('authBox').style.display = 'none';
@@ -762,8 +799,65 @@
             // Render Invoices table
             renderBillingTable(visits);
 
-            // Render document vault files
-            renderReportsVault(profile.reports);
+            // Render document vault files and official records
+            renderReportsVault(visits, profile.reports);
+
+            // Render Overview lists
+            renderOverviewLists(visits, profile.reports);
+        }
+
+        // Overview Lists Renderer
+        function renderOverviewLists(visits, reports) {
+            // 1. Hospital Reports List (Visits with diagnosis/prescription)
+            const reportsContainer = document.getElementById('recentReportsContainer');
+            if (visits.length === 0) {
+                reportsContainer.innerHTML = '<p style="color: #94a3b8; font-size:12px; text-align:center; padding: 10px 0;">No official reports available.</p>';
+            } else {
+                // Get latest 3 visits
+                const recentVisits = visits.slice(0, 3);
+                reportsContainer.innerHTML = recentVisits.map((v, idx) => {
+                    const date = new Date(v.date).toLocaleDateString();
+                    const docName = v.doctor ? 'Dr. ' + v.doctor.name : 'General Consultant';
+                    const docDept = v.doctor ? v.doctor.specialization : 'OPD';
+                    
+                    const rxBtn = v.prescription ? 
+                        `<button class="receipt-btn" style="padding:4px 8px; font-size:10px; background:#10b981;" onclick="exportPrescriptionPDF(${idx})"><i class="fas fa-file-prescription"></i> Rx</button>` : '';
+                    
+                    return `
+                        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 15px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+                            <div>
+                                <div style="font-weight:700; color:#334155;">${docName} (${docDept})</div>
+                                <div style="color:#64748b; font-size:10px;">Date: ${date} | Symptoms: ${v.symptoms}</div>
+                            </div>
+                            <div style="display:flex; gap:5px; align-items:center;">
+                                ${rxBtn}
+                                <button class="receipt-btn" style="padding:4px 8px; font-size:10px; background:#04384b;" onclick="exportClinicalReportPDF(${idx})"><i class="fas fa-file-medical"></i> Case</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // 2. Uploaded Files List
+            const uploadsContainer = document.getElementById('recentUploadsContainer');
+            if (!reports || reports.length === 0) {
+                uploadsContainer.innerHTML = '<p style="color: #94a3b8; font-size:12px; text-align:center; padding: 10px 0;">No uploaded files.</p>';
+            } else {
+                // Get latest 3 reports
+                const recentReports = reports.slice(0, 3);
+                uploadsContainer.innerHTML = recentReports.map((r) => {
+                    const date = new Date(r.uploadedAt).toLocaleDateString();
+                    return `
+                        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 15px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+                            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px; text-align: left;">
+                                <div style="font-weight:700; color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.fileName}</div>
+                                <div style="color:#64748b; font-size:10px;">Uploaded: ${date}</div>
+                            </div>
+                            <button class="receipt-btn" style="padding:4px 8px; font-size:10px; background:#04384b;" onclick="downloadBase64File('${r.fileName}', '${r.fileData}')"><i class="fas fa-download"></i></button>
+                        </div>
+                    `;
+                }).join('');
+            }
         }
 
         // Visits Timeline Renderer
@@ -774,7 +868,7 @@
                 return;
             }
 
-            container.innerHTML = visits.map(v => {
+            container.innerHTML = visits.map((v, index) => {
                 const date = new Date(v.date);
                 const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) + ' at ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 
@@ -801,7 +895,7 @@
 
                 // Add vitals summary
                 let vitalsHtml = '';
-                if (v.vitals && v.vitals.bp !== '120/80' || v.vitals.temperature !== '98.6°F' || v.vitals.weight !== 'N/A') {
+                if (v.vitals && (v.vitals.bp !== '120/80' || v.vitals.temperature !== '98.6°F' || v.vitals.weight !== 'N/A')) {
                     vitalsHtml = `
                         <div class="vitals-subgrid">
                             <div class="vitals-item">Blood Pressure <span>${v.vitals.bp || '120/80'}</span></div>
@@ -813,12 +907,20 @@
                     `;
                 }
 
+                let actionsHtml = `
+                    <div style="margin-top: 15px; display:flex; gap:10px; flex-wrap: wrap;">
+                        <button class="receipt-btn" style="background:#04384b; font-size:11px;" onclick="exportClinicalReportPDF(${index})"><i class="fas fa-file-pdf"></i> Download Case Report</button>
+                        ${v.prescription ? `<button class="receipt-btn" style="background:#10b981; font-size:11px;" onclick="exportPrescriptionPDF(${index})"><i class="fas fa-file-prescription"></i> Download Prescription PDF</button>` : ''}
+                    </div>
+                `;
+
                 return `
                     <div class="timeline-item">
                         <div class="timeline-dot"></div>
                         <div class="timeline-date"><i class="far fa-calendar-check"></i> ${dateStr}</div>
                         ${details}
                         ${vitalsHtml}
+                        ${actionsHtml}
                     </div>
                 `;
             }).join('');
@@ -876,6 +978,10 @@
 
                         ${rx.instructions ? `<div style="font-size:12px; color:#475569; margin-top:10px; background:white; padding:10px; border-radius:6px; border:1px solid #e2e8f0;"><strong>Instructions:</strong> ${rx.instructions}</div>` : ''}
                         ${rx.remarks ? `<div style="font-size:12px; color:#475569; margin-top:5px; background:white; padding:10px; border-radius:6px; border:1px solid #e2e8f0;"><strong>Doctor Remarks:</strong> ${rx.remarks}</div>` : ''}
+                        
+                        <div style="margin-top: 15px; text-align: right;">
+                            <button class="receipt-btn" style="background:#10b981;" onclick="exportPrescriptionPDF(${visits.indexOf(v)})"><i class="fas fa-file-pdf"></i> Download Prescription (PDF)</button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -908,10 +1014,44 @@
         }
 
         // Document Vault Renderer
-        function renderReportsVault(reports) {
+        function renderReportsVault(visits, reports) {
+            // Render Hospital Clinical Reports on the left
+            const hospitalContainer = document.getElementById('hospitalReportsContainer');
+            if (visits.length === 0) {
+                hospitalContainer.innerHTML = '<p style="color: #94a3b8; text-align:center; padding: 20px;">No official hospital clinical reports found.</p>';
+            } else {
+                hospitalContainer.innerHTML = visits.map((v, index) => {
+                    const date = new Date(v.date).toLocaleDateString() + ' ' + new Date(v.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    const docName = v.doctor ? 'Dr. ' + v.doctor.name : 'General Consultant';
+                    const docDept = v.doctor ? v.doctor.specialization : 'OPD';
+                    
+                    const rxBtn = v.prescription ? 
+                        `<button class="receipt-btn" style="background:#10b981; font-size:11px;" onclick="exportPrescriptionPDF(${index})"><i class="fas fa-file-prescription"></i> Rx PDF</button>` : '';
+
+                    return `
+                        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="width:40px; height:40px; background:#dbeafe; color:#1d4ed8; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                                    <i class="fas fa-file-invoice"></i>
+                                </div>
+                                <div style="text-align: left;">
+                                    <h4 style="font-size:13px; font-weight:700; color:#334155;">Clinical Case Report</h4>
+                                    <span style="font-size:11px; color:#64748b;">${docName} (${docDept}) · ${date}</span>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:6px;">
+                                ${rxBtn}
+                                <button class="receipt-btn" style="background:#04384b; font-size:11px;" onclick="exportClinicalReportPDF(${index})"><i class="fas fa-file-medical"></i> Case PDF</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Render Personal Uploaded files on the right
             const container = document.getElementById('uploadedReportsContainer');
             if (reports.length === 0) {
-                container.innerHTML = '<p style="color: #94a3b8; text-align:center; padding: 20px;">Your secure vault is empty. Upload clinical files above.</p>';
+                container.innerHTML = '<p style="color: #94a3b8; text-align:center; padding: 20px;">Your secure vault is empty. Upload files.</p>';
                 return;
             }
 
@@ -923,15 +1063,464 @@
                             <div style="width:40px; height:40px; background:#dcfce7; color:#10b981; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;">
                                 <i class="fas fa-file-medical-alt"></i>
                             </div>
-                            <div>
-                                <h4 style="font-size:13px; font-weight:700; color:#334155; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.fileName}</h4>
+                            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px; text-align: left;">
+                                <h4 style="font-size:13px; font-weight:700; color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.fileName}</h4>
                                 <span style="font-size:10px; color:#64748b;">Uploaded: ${date}</span>
                             </div>
                         </div>
-                        <button class="receipt-btn" style="background:#04384b;" onclick="downloadBase64File('${r.fileName}', '${r.fileData}')"><i class="fas fa-download"></i> Download</button>
+                        <button class="receipt-btn" style="background:#04384b;" onclick="downloadBase64File('${r.fileName}', '${r.fileData}')"><i class="fas fa-download"></i></button>
                     </div>
                 `;
             }).join('');
+        }
+
+        // Export Prescription PDF (Client-side)
+        function exportPrescriptionPDF(visitIndex) {
+            if (!dashboardData || !dashboardData.visits[visitIndex]) return;
+            const visit = dashboardData.visits[visitIndex];
+            const rx = visit.prescription;
+            if (!rx) {
+                alert("No prescription found for this visit.");
+                return;
+            }
+            const profile = dashboardData.profile;
+            const doctor = visit.doctor;
+            const vitals = visit.vitals;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Header Banner Background (Navy Blue)
+            doc.setFillColor(15, 23, 42); // #0f172a
+            doc.rect(0, 0, 210, 32, 'F');
+
+            // Green Accent Line
+            doc.setFillColor(1, 202, 139); // #01ca8b
+            doc.rect(0, 32, 210, 2, 'F');
+
+            // Header Text
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(20);
+            doc.setTextColor(255, 255, 255);
+            doc.text("MEDIPULSE HOSPITAL", 14, 18);
+
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(203, 213, 225); // Slate 300
+            doc.text("Where Patient Flow Meets Smart Technology | Consultation Division", 14, 25);
+
+            // Document Title
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(14);
+            doc.setTextColor(15, 23, 42); // Slate 900
+            doc.text("PATIENT PRESCRIPTION & CLINICAL CASE REPORT", 14, 45);
+
+            // Two-Column Grid for Metadata (Report ID, Patient ID, Version, Date)
+            doc.setFillColor(248, 250, 252); // Slate 50
+            doc.rect(14, 50, 182, 16, 'F');
+            doc.setDrawColor(226, 232, 240); // Slate 200
+            doc.setLineWidth(0.3);
+            doc.rect(14, 50, 182, 16);
+
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(8.5);
+            doc.setTextColor(71, 85, 105); // Slate 600
+
+            doc.text("REPORT ID:", 18, 56);
+            doc.text("PATIENT ID:", 18, 62);
+            doc.text("VERSION:", 110, 56);
+            doc.text("DATE & TIME:", 110, 62);
+
+            doc.setFont("Helvetica", "normal");
+            doc.setTextColor(15, 23, 42); // Slate 900
+            doc.text(rx.reportId || 'REP-N/A', 40, 56);
+            doc.text(profile.patientId || 'PID-N/A', 40, 62);
+            doc.text(`v${rx.version || 1}`, 130, 56);
+            doc.text(rx.date ? new Date(rx.date).toLocaleString() : new Date(visit.date).toLocaleString(), 130, 62);
+
+            // Patient Demographics & Consultant Info
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(15, 23, 42);
+            doc.text("1. Patient Demographics & Consultant Information", 14, 75);
+
+            doc.setFontSize(9.5);
+            doc.setFont("Helvetica", "normal");
+
+            // Name / Age / Gender
+            doc.text(`Patient Name:`, 14, 83);
+            doc.setFont("Helvetica", "bold");
+            doc.text(profile.name || 'N/A', 40, 83);
+
+            doc.setFont("Helvetica", "normal");
+            doc.text(`Age / Gender:`, 14, 89);
+            doc.text(`${profile.age || 'N/A'} Yrs / ${profile.gender || 'Male'}`, 40, 89);
+
+            doc.text(`Contact No:`, 14, 95);
+            doc.text(profile.contact || 'N/A', 40, 95);
+
+            // Doctor details
+            doc.text(`Consultant:`, 110, 83);
+            doc.setFont("Helvetica", "bold");
+            doc.text(doctor ? 'Dr. ' + doctor.name : 'Dr. Consultant', 132, 83);
+
+            doc.setFont("Helvetica", "normal");
+            doc.text(`Specialization:`, 110, 89);
+            doc.text(doctor ? doctor.specialization : 'Clinical Generalist', 132, 89);
+
+            doc.text(`Primary Complaint:`, 110, 95);
+            doc.text(visit.symptoms || 'N/A', 142, 95, { maxWidth: 54 });
+
+            doc.line(14, 102, 196, 102);
+
+            // Clinical Vitals (Box / Table)
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text("2. Patient Clinical Vitals (Recorded at Reception)", 14, 110);
+
+            // Vitals Grid Table
+            doc.setFillColor(248, 250, 252);
+            doc.rect(14, 114, 182, 12, 'F');
+            doc.rect(14, 114, 182, 12);
+            doc.line(14, 120, 196, 120);
+            doc.line(44, 114, 44, 126);
+            doc.line(74, 114, 74, 126);
+            doc.line(104, 114, 104, 126);
+            doc.line(134, 114, 134, 126);
+            doc.line(164, 114, 164, 126);
+
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(8);
+            doc.setTextColor(71, 85, 105);
+
+            doc.text("BLOOD PRESSURE", 16, 118);
+            doc.text("TEMPERATURE", 46, 118);
+            doc.text("PULSE RATE", 76, 118);
+            doc.text("SPO2 LEVEL", 106, 118);
+            doc.text("WEIGHT", 136, 118);
+            doc.text("HEIGHT", 166, 118);
+
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(9);
+            doc.setTextColor(15, 23, 42);
+            doc.text(vitals.bp || '120/80', 16, 124);
+            doc.text(vitals.temperature || '98.6°F', 46, 124);
+            doc.text(vitals.pulseRate || '72 bpm', 76, 124);
+            doc.text(vitals.oxygenLevel || '98%', 106, 124);
+            doc.text(vitals.weight || 'N/A', 136, 124);
+            doc.text(vitals.height || 'N/A', 166, 124);
+
+            if (vitals.notes) {
+                doc.setFont("Helvetica", "normal");
+                doc.setFontSize(8.5);
+                doc.setTextColor(100, 116, 139);
+                doc.text(`Vitals Notes: ${vitals.notes}`, 14, 131, { maxWidth: 182 });
+            }
+
+            doc.setDrawColor(226, 232, 240);
+            doc.line(14, 135, 196, 135);
+
+            // Medicines Table
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(15, 23, 42);
+            doc.text("3. Prescribed Pharmacotherapy & Dosage Regime", 14, 143);
+
+            // Draw medicines table header
+            doc.setFillColor(15, 23, 42);
+            doc.rect(14, 147, 182, 8, 'F');
+            doc.setFontSize(8.5);
+            doc.setTextColor(255, 255, 255);
+            doc.text("MEDICINE NAME", 18, 152);
+            doc.text("DOSAGE", 100, 152);
+            doc.text("FREQUENCY", 130, 152);
+            doc.text("DURATION", 165, 152);
+
+            doc.setTextColor(15, 23, 42);
+            let startY = 161;
+            rx.medicines.forEach((m) => {
+                doc.setFont("Helvetica", "bold");
+                doc.text(m.medicineName, 18, startY);
+
+                doc.setFont("Helvetica", "normal");
+                doc.text(m.dosage || 'N/A', 100, startY);
+                doc.text(m.frequency || '1-0-1', 130, startY);
+                doc.text(m.duration || '5 Days', 165, startY);
+
+                // Draw thin separation line
+                doc.setDrawColor(241, 245, 249);
+                doc.line(14, startY + 3, 196, startY + 3);
+                startY += 8;
+            });
+
+            // Clinical Notes and Instructions
+            startY += 4;
+            doc.setDrawColor(226, 232, 240);
+            doc.line(14, startY, 196, startY);
+            startY += 6;
+
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text("4. Clinical Instructions, Diagnosis & Observations", 14, startY);
+            startY += 6;
+
+            doc.setFontSize(9);
+            if (rx.observations) {
+                doc.setFont("Helvetica", "bold");
+                doc.text("Clinical Observations & Findings:", 14, startY);
+                doc.setFont("Helvetica", "normal");
+                doc.text(rx.observations, 14, startY + 5, { maxWidth: 182 });
+                startY += Math.max(12, doc.splitTextToSize(rx.observations, 182).length * 4.5 + 6);
+            }
+
+            if (rx.instructions) {
+                doc.setFont("Helvetica", "bold");
+                doc.text("Patient Instructions:", 14, startY);
+                doc.setFont("Helvetica", "normal");
+                doc.text(rx.instructions, 14, startY + 5, { maxWidth: 182 });
+                startY += Math.max(12, doc.splitTextToSize(rx.instructions, 182).length * 4.5 + 6);
+            }
+
+            if (rx.remarks) {
+                doc.setFont("Helvetica", "bold");
+                doc.text("Follow-up Remarks:", 14, startY);
+                doc.setFont("Helvetica", "normal");
+                doc.text(rx.remarks, 14, startY + 5, { maxWidth: 182 });
+                startY += Math.max(12, doc.splitTextToSize(rx.remarks, 182).length * 4.5 + 6);
+            }
+
+            if (rx.notes) {
+                doc.setFont("Helvetica", "bold");
+                doc.text("Suggested Clinical Tests / Other Notes:", 14, startY);
+                doc.setFont("Helvetica", "normal");
+                doc.text(rx.notes, 14, startY + 5, { maxWidth: 182 });
+            }
+
+            // Doctor Signature footer
+            const pageHeight = doc.internal.pageSize.height;
+            doc.setDrawColor(203, 213, 225);
+            doc.line(14, pageHeight - 32, 196, pageHeight - 32);
+
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(9.5);
+            doc.setTextColor(15, 23, 42);
+            doc.text("AUTHORIZED SIGNATURE", 130, pageHeight - 24);
+
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(8.5);
+            doc.setTextColor(100, 116, 139);
+            doc.text(doctor ? 'Dr. ' + doctor.name : 'Medical Practitioner', 130, pageHeight - 19);
+            doc.text(`MediPulse Hospital Division`, 130, pageHeight - 14);
+
+            doc.save(`Prescription_${rx.reportId || 'REP-N/A'}.pdf`);
+        }
+
+        // Export Clinical Case Report PDF
+        function exportClinicalReportPDF(visitIndex) {
+            if (!dashboardData || !dashboardData.visits[visitIndex]) return;
+            const visit = dashboardData.visits[visitIndex];
+            const profile = dashboardData.profile;
+            const doctor = visit.doctor;
+            const vitals = visit.vitals;
+            const rx = visit.prescription;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Header Banner Background (Navy Blue)
+            doc.setFillColor(15, 23, 42); // #0f172a
+            doc.rect(0, 0, 210, 32, 'F');
+
+            // Green Accent Line
+            doc.setFillColor(1, 202, 139); // #01ca8b
+            doc.rect(0, 32, 210, 2, 'F');
+
+            // Header Text
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(20);
+            doc.setTextColor(255, 255, 255);
+            doc.text("MEDIPULSE CLINICAL REPORT", 14, 18);
+
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(203, 213, 225); // Slate 300
+            doc.text(`Patient Case Summary | Token ID: T-${visit.token || 'N/A'} | Permanent ID: ${profile.patientId || 'PID-N/A'}`, 14, 25);
+
+            // Document Title
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(14);
+            doc.setTextColor(15, 23, 42); // Slate 900
+            doc.text("COMPLETE MEDICAL HISTORY & DIAGNOSTIC LEDGER", 14, 45);
+
+            // General Details
+            doc.setFillColor(248, 250, 252); // Slate 50
+            doc.rect(14, 50, 182, 45, 'F');
+            doc.setDrawColor(226, 232, 240); // Slate 200
+            doc.setLineWidth(0.3);
+            doc.rect(14, 50, 182, 45);
+
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(9.5);
+            doc.setTextColor(71, 85, 105);
+            doc.text("PATIENT DEMOGRAPHICS", 18, 56);
+            doc.text("CONSULTATION SUMMARY", 110, 56);
+            doc.line(14, 59, 196, 59);
+
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(15, 23, 42);
+
+            doc.text(`Name: ${profile.name}`, 18, 65);
+            doc.text(`Age / Gender: ${profile.age} years / ${profile.gender}`, 18, 71);
+            doc.text(`Aadhar No: ${profile.aadhar || 'N/A'}`, 18, 77);
+            doc.text(`Contact: ${profile.contact || 'N/A'}`, 18, 83);
+            doc.text(`Permanent ID: ${profile.patientId || 'PID-N/A'}`, 18, 89);
+
+            doc.text(`Assigned Consultant: Dr. ${doctor ? doctor.name : 'Consultant'}`, 110, 65);
+            doc.text(`Department: ${doctor ? doctor.specialization : 'Clinical Generalist'}`, 110, 71);
+            doc.text(`Status: ${visit.status ? visit.status.toUpperCase() : 'N/A'}`, 110, 77);
+            doc.text(`Report Date: ${visit.date ? new Date(visit.date).toLocaleString() : new Date().toLocaleString()}`, 110, 83);
+            doc.text(`Prescription Version: v${rx ? rx.version || 1 : 1}`, 110, 89);
+
+            // Vitals Table
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(15, 23, 42);
+            doc.text("Clinical Vitals (Recorded at Intake)", 14, 105);
+
+            doc.setFillColor(248, 250, 252);
+            doc.rect(14, 109, 182, 12, 'F');
+            doc.rect(14, 109, 182, 12);
+            doc.line(14, 115, 196, 115);
+            doc.line(44, 109, 44, 121);
+            doc.line(74, 109, 74, 121);
+            doc.line(104, 109, 104, 121);
+            doc.line(134, 109, 134, 121);
+            doc.line(164, 109, 164, 121);
+
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(8);
+            doc.setTextColor(71, 85, 105);
+            doc.text("BLOOD PRESSURE", 16, 113);
+            doc.text("TEMPERATURE", 46, 113);
+            doc.text("PULSE RATE", 76, 113);
+            doc.text("SPO2 LEVEL", 106, 113);
+            doc.text("WEIGHT", 136, 113);
+            doc.text("HEIGHT", 166, 113);
+
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(9);
+            doc.setTextColor(15, 23, 42);
+            doc.text(vitals.bp || '120/80', 16, 119);
+            doc.text(vitals.temperature || '98.6°F', 46, 119);
+            doc.text(vitals.pulseRate || '72 bpm', 76, 119);
+            doc.text(vitals.oxygenLevel || '98%', 106, 119);
+            doc.text(vitals.weight || 'N/A', 136, 119);
+            doc.text(vitals.height || 'N/A', 166, 119);
+
+            doc.line(14, 126, 196, 126);
+
+            // Primary Complaint
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text("Primary Complaint / Symptom Presentation", 14, 133);
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(9.5);
+            doc.text(visit.symptoms || 'N/A', 14, 140, { maxWidth: 182 });
+
+            let startY = 150;
+            doc.line(14, startY, 196, startY);
+            startY += 8;
+
+            // Medicines if any
+            if (rx && rx.medicines && rx.medicines.length > 0) {
+                doc.setFont("Helvetica", "bold");
+                doc.setFontSize(11);
+                doc.text("Prescribed Pharmacotherapy regime", 14, startY);
+                startY += 4;
+
+                doc.setFillColor(15, 23, 42);
+                doc.rect(14, startY, 182, 8, 'F');
+                doc.setFontSize(8.5);
+                doc.setTextColor(255, 255, 255);
+                doc.text("MEDICINE NAME", 18, startY + 5);
+                doc.text("DOSAGE", 100, startY + 5);
+                doc.text("FREQUENCY", 130, startY + 5);
+                doc.text("DURATION", 165, startY + 5);
+
+                doc.setTextColor(15, 23, 42);
+                startY += 12;
+                rx.medicines.forEach((m) => {
+                    doc.setFont("Helvetica", "bold");
+                    doc.text(m.medicineName, 18, startY);
+                    doc.setFont("Helvetica", "normal");
+                    doc.text(m.dosage || 'N/A', 100, startY);
+                    doc.text(m.frequency || '1-0-1', 130, startY);
+                    doc.text(m.duration || '5 Days', 165, startY);
+                    startY += 7;
+                });
+
+                doc.setDrawColor(226, 232, 240);
+                doc.line(14, startY, 196, startY);
+                startY += 8;
+            }
+
+            // Diagnostic observations, instructions, remarks
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text("Clinical Consultation Records", 14, startY);
+            startY += 6;
+
+            doc.setFontSize(9);
+            if (rx) {
+                if (rx.observations) {
+                    doc.setFont("Helvetica", "bold");
+                    doc.text("Clinical Observations & Findings:", 14, startY);
+                    doc.setFont("Helvetica", "normal");
+                    doc.text(rx.observations, 14, startY + 4, { maxWidth: 182 });
+                    startY += Math.max(12, doc.splitTextToSize(rx.observations, 182).length * 4 + 6);
+                }
+                if (rx.instructions) {
+                    doc.setFont("Helvetica", "bold");
+                    doc.text("Patient Instructions:", 14, startY);
+                    doc.setFont("Helvetica", "normal");
+                    doc.text(rx.instructions, 14, startY + 4, { maxWidth: 182 });
+                    startY += Math.max(12, doc.splitTextToSize(rx.instructions, 182).length * 4 + 6);
+                }
+                if (rx.remarks) {
+                    doc.setFont("Helvetica", "bold");
+                    doc.text("Follow-up Remarks:", 14, startY);
+                    doc.setFont("Helvetica", "normal");
+                    doc.text(rx.remarks, 14, startY + 4, { maxWidth: 182 });
+                    startY += Math.max(12, doc.splitTextToSize(rx.remarks, 182).length * 4 + 6);
+                }
+                if (rx.notes) {
+                    doc.setFont("Helvetica", "bold");
+                    doc.text("Suggested Clinical Tests / Other Notes:", 14, startY);
+                    doc.setFont("Helvetica", "normal");
+                    doc.text(rx.notes, 14, startY + 4, { maxWidth: 182 });
+                }
+            } else {
+                doc.setFont("Helvetica", "normal");
+                doc.text("Consultation pending. No diagnosis or prescription records generated yet.", 14, startY);
+            }
+
+            // Signature Footer
+            const pageHeight = doc.internal.pageSize.height;
+            doc.setDrawColor(203, 213, 225);
+            doc.line(14, pageHeight - 32, 196, pageHeight - 32);
+
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(9.5);
+            doc.text("AUTHORIZED CLINICAL SIGNATURE", 115, pageHeight - 24);
+
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(8.5);
+            doc.setTextColor(100, 116, 139);
+            doc.text(doctor ? 'Dr. ' + doctor.name : 'Practitioner', 115, pageHeight - 19);
+            doc.text(`MediPulse Hospital Division`, 115, pageHeight - 14);
+
+            doc.save(`ClinicalReport_${profile.name.replace(/\s+/g, '_')}_${new Date(visit.date).toISOString().slice(0, 10)}.pdf`);
         }
 
         // File Uploader Handling

@@ -1115,7 +1115,7 @@
     let tempRx = [];
 
     // API URI Base
-    const API_BASE = '/api';
+    const API_BASE = window.location.port === '5000' ? '/api' : 'http://localhost:5000/api';
 
     let allDocsForLogin = [];
     let allMedicines = [];
