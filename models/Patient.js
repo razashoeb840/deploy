@@ -29,7 +29,15 @@ const PatientSchema = new mongoose.Schema({
     
     // Flow control
     inCabin: { type: Boolean, default: false },
-    priority: { type: String, enum: ['normal', 'emergency'], default: 'normal' }
+    priority: { type: String, enum: ['normal', 'emergency'], default: 'normal' },
+
+    // Security & Reports
+    password: { type: String },
+    reports: [{
+        fileName: { type: String },
+        fileData: { type: String }, // Base64 string of file
+        uploadedAt: { type: Date, default: Date.now }
+    }]
 });
 
 PatientSchema.index({ patientId: 1 });

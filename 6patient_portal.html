@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediPulse - Patient Self Registration</title>
     <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="theme.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -108,6 +109,26 @@
         <div class="header">
             <h1>MediPulse Patient Portal</h1>
             <p>Self-Register and generate your OPD Token instantly.</p>
+            <div style="margin-top: 15px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px;">
+                <span style="color:#475569; text-align: left; line-height: 1.4;">
+                    Want to track history, bills & prescriptions?
+                </span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <a href="10patient_dashboard.html" style="background: #04384b; color: white; border-radius: 8px; padding: 6px 12px; text-decoration: none; font-weight: 700; font-size: 12px; white-space: nowrap; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#04384b'">
+                        Patient Dashboard
+                    </a>
+                    <button type="button" onclick="togglePortalInfo()" style="background: none; border: none; color: #64748b; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px;" title="Read Info">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Info Tooltip Alert -->
+            <div id="portalInfoAlert" style="display: none; text-align: left; background: #ecfdf5; border: 1px solid #10b981; border-radius: 12px; padding: 12px; margin-top: 10px; font-size: 12px; color: #065f46; line-height: 1.5; position: relative;">
+                <span style="font-weight: 700; display: block; margin-bottom: 4px;"><i class="fas fa-info-circle"></i> Account Optional Information</span>
+                Creating an account is <strong>completely optional</strong>. You can book doctor slots and generate OPD tokens instantly without registering. Registration is an additional feature designed to let you securely track your lifetime visit history, prescriptions, uploaded reports, and invoices online.
+                <button type="button" onclick="togglePortalInfo()" style="position: absolute; top: 8px; right: 8px; background: none; border: none; color: #10b981; cursor: pointer; font-size: 14px; font-weight: 700;">&times;</button>
+            </div>
         </div>
         <div id="regForm">
             <div class="form-group">
@@ -341,6 +362,15 @@
                 }
             } catch(err) {
                 alert('Connection error');
+            }
+        }
+
+        function togglePortalInfo() {
+            const infoAlert = document.getElementById('portalInfoAlert');
+            if (infoAlert.style.display === 'none') {
+                infoAlert.style.display = 'block';
+            } else {
+                infoAlert.style.display = 'none';
             }
         }
     </script>

@@ -450,6 +450,248 @@ app.put('/api/patients/:id/status', async (req, res) => {
     }
 });
 
+// --- PATIENT AUTH & DASHBOARD APIs ---
+
+// Middleware to authenticate patient JWT token
+const authenticatePatientToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) return res.status(401).json({ error: 'Access denied. No token provided.' });
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'medipulse_secret_key_123');
+        req.patient = decoded;
+        next();
+    } catch (err) {
+        res.status(403).json({ error: 'Invalid or expired token.' });
+    }
+};
+
+// Signup Route (Generate Account)
+app.post('/api/patients/signup', async (req, res) => {
+    const { name, age, gender, contact, address, aadhar, password } = req.body;
+    try {
+        if (!name || !age || !contact || !aadhar || !password) {
+            return res.status(400).json({ error: 'All fields (Name, Age, Contact, Aadhaar, Password) are required' });
+        }
+
+        // Check if patient with this Aadhaar or Contact already has a password set
+        const existingWithPassword = await Patient.findOne({
+            $or: [{ aadhar: aadhar.trim() }, { contact: contact.trim() }],
+            password: { $exists: true, $ne: "" }
+        });
+
+        if (existingWithPassword) {
+            return res.status(400).json({ error: 'An account already exists with this Aadhaar or Contact. Please log in.' });
+        }
+
+        // Check if there is an existing patient record (without password)
+        const existingRecord = await Patient.findOne({
+            $or: [{ aadhar: aadhar.trim() }, { contact: contact.trim() }]
+        });
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        let pid;
+        if (existingRecord) {
+            pid = existingRecord.patientId;
+            // Update all existing records for this patient to have the password
+            await Patient.updateMany(
+                { patientId: pid },
+                { $set: { password: hashedPassword, address: address || existingRecord.address } }
+            );
+        } else {
+            pid = await generatePatientId();
+        }
+
+        // Create a base profile patient document representing the account (with status 'completed' so it's not active in queue)
+        const lastPatient = await Patient.findOne().sort({ token: -1 });
+        const token = lastPatient ? lastPatient.token + 1 : 1;
+
+        const newProfile = new Patient({
+            token,
+            patientId: pid,
+            name,
+            age,
+            gender: gender || 'Male',
+            contact: contact.trim(),
+            problem: 'Account Registration Profile',
+            address: address || 'N/A',
+            aadhar: aadhar.trim(),
+            password: hashedPassword,
+            status: 'completed', // Not in active queue
+            paymentStatus: 'Paid'
+        });
+
+        await newProfile.save();
+        res.status(201).json({ success: true, patientId: pid, name: newProfile.name });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Login Route
+app.post('/api/patients/login', async (req, res) => {
+    const { loginId, password } = req.body; // loginId can be Patient ID (PID-xxxx), Aadhaar, or Contact
+    try {
+        if (!loginId || !password) {
+            return res.status(400).json({ error: 'Login ID and Password are required' });
+        }
+
+        const patient = await Patient.findOne({
+            $or: [
+                { patientId: loginId.trim() },
+                { aadhar: loginId.trim() },
+                { contact: loginId.trim() }
+            ],
+            password: { $exists: true, $ne: "" }
+        }).sort({ createdAt: -1 }); // Get latest
+
+        if (!patient) {
+            return res.status(400).json({ error: 'Invalid login credentials or account does not exist' });
+        }
+
+        const isMatch = await bcrypt.compare(password, patient.password);
+        if (!isMatch) {
+            return res.status(400).json({ error: 'Invalid login credentials' });
+        }
+
+        // Generate JWT token
+        const jwtToken = jwt.sign(
+            { patientId: patient.patientId, name: patient.name },
+            process.env.JWT_SECRET || 'medipulse_secret_key_123',
+            { expiresIn: '7d' }
+        );
+
+        res.json({
+            success: true,
+            token: jwtToken,
+            patient: {
+                patientId: patient.patientId,
+                name: patient.name,
+                age: patient.age,
+                gender: patient.gender,
+                contact: patient.contact,
+                aadhar: patient.aadhar,
+                address: patient.address
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Get Personal Dashboard Data (Visits, Prescriptions, Bills, Documents)
+app.get('/api/patients/my-dashboard', authenticatePatientToken, async (req, res) => {
+    try {
+        const pid = req.patient.patientId;
+        
+        // Find latest profile data
+        const profile = await Patient.findOne({ patientId: pid, password: { $exists: true } }).sort({ createdAt: -1 });
+        if (!profile) return res.status(404).json({ error: 'Patient profile not found' });
+
+        // Get all historical visits for this PID
+        const visits = await Patient.find({ patientId: pid })
+            .populate('assignedDoctor', 'name specialization fee cabin')
+            .sort({ createdAt: -1 });
+
+        // Map visits to extract bills and prescriptions
+        const visitsWithPrescriptions = await Promise.all(visits.map(async (visit) => {
+            const prescription = await Prescription.findOne({ patientId: visit._id }).populate('doctorId', 'name specialization');
+            
+            // Check if there was a doctor fee to construct billing details
+            const fee = visit.assignedDoctor ? (visit.assignedDoctor.fee || 500) : 500;
+            
+            return {
+                visitId: visit._id,
+                date: visit.createdAt,
+                symptoms: visit.problem,
+                status: visit.status,
+                vitals: {
+                    bp: visit.bp,
+                    weight: visit.weight,
+                    height: visit.height,
+                    temperature: visit.temperature,
+                    oxygenLevel: visit.oxygenLevel,
+                    pulseRate: visit.pulseRate,
+                    notes: visit.vitalsNotes
+                },
+                doctor: visit.assignedDoctor ? {
+                    name: visit.assignedDoctor.name,
+                    specialization: visit.assignedDoctor.specialization,
+                    cabin: visit.assignedDoctor.cabin
+                } : null,
+                prescription: prescription ? {
+                    reportId: prescription.reportId,
+                    medicines: prescription.medicines,
+                    notes: prescription.notes,
+                    instructions: prescription.instructions,
+                    observations: prescription.observations,
+                    remarks: prescription.remarks,
+                    date: prescription.createdAt
+                } : null,
+                bill: {
+                    amount: fee,
+                    status: visit.paymentStatus || 'Paid',
+                    service: 'OPD Consultation'
+                }
+            };
+        }));
+
+        res.json({
+            success: true,
+            profile: {
+                patientId: profile.patientId,
+                name: profile.name,
+                age: profile.age,
+                gender: profile.gender,
+                contact: profile.contact,
+                aadhar: profile.aadhar,
+                address: profile.address,
+                reports: profile.reports || []
+            },
+            visits: visitsWithPrescriptions
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Upload Report Route
+app.post('/api/patients/upload-report', authenticatePatientToken, async (req, res) => {
+    const { fileName, fileData } = req.body; // fileData is base64 string
+    try {
+        if (!fileName || !fileData) {
+            return res.status(400).json({ error: 'File name and file content are required' });
+        }
+
+        const pid = req.patient.patientId;
+        
+        // Find latest profile document to append report to
+        const profile = await Patient.findOne({ patientId: pid, password: { $exists: true } }).sort({ createdAt: -1 });
+        if (!profile) return res.status(404).json({ error: 'Patient profile not found' });
+
+        // Push report
+        profile.reports.push({
+            fileName,
+            fileData,
+            uploadedAt: new Date()
+        });
+
+        await profile.save();
+
+        res.json({
+            success: true,
+            message: 'Report uploaded successfully',
+            reports: profile.reports
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // --- PRESCRIPTION APIs ---
 app.post('/api/prescriptions', async (req, res) => {
     const { patientId, doctorId, medicines, notes, instructions, observations, remarks } = req.body;

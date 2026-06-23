@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediPulse - Patient Personal Portal</title>
+    <link rel="stylesheet" href="theme.css">
+    <script src="theme.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background: #f0fdf4; color: #0f172a; min-height: 100vh; padding: 40px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 25px 35px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); border-left: 6px solid #10b981; }
+        .header h1 { color: #064e3b; font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .header p { color: #64748b; margin-top: 8px; font-size: 14px; font-weight: 500; }
+        
+        a.btn-back { background: #10b981; padding: 12px 24px; text-decoration: none; color: white; border-radius: 10px; font-weight: 600; font-size: 14px; transition: 0.3s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); border: none; cursor: pointer; }
+        a.btn-back:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); }
+
+        /* Auth Container */
+        .auth-container { max-width: 500px; margin: 40px auto; background: white; border-radius: 20px; box-shadow: 0 20px 45px rgba(0, 0, 0, 0.06); border: 1px solid #e2e8f0; overflow: hidden; }
+        .auth-tabs { display: flex; border-bottom: 2px solid #f1f5f9; background: #f8fafc; }
+        .auth-tab { flex: 1; padding: 16px; text-align: center; font-weight: 700; cursor: pointer; color: #64748b; border-bottom: 3px solid transparent; transition: 0.2s; }
+        .auth-tab.active { color: #10b981; border-bottom-color: #10b981; background: white; }
+        .auth-body { padding: 35px; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: #334155; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; transition: 0.2s; font-family: inherit; }
+        .form-group input:focus, .form-group select:focus { border-color: #10b981; }
+        .btn-submit { width: 100%; background: #10b981; color: white; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn-submit:hover { background: #059669; transform: translateY(-1px); }
+
+        /* Dashboard Layout */
+        .dashboard-container { display: flex; gap: 30px; margin-top: 20px; display: none; }
+        .sidebar { width: 260px; background: white; border-radius: 20px; padding: 25px 15px; height: fit-content; box-shadow: 0 10px 30px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
+        .sidebar-menu { display: flex; flex-direction: column; gap: 8px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 10px; font-weight: 600; color: #475569; cursor: pointer; transition: 0.2s; font-size: 14px; }
+        .menu-item:hover, .menu-item.active { background: #ecfdf5; color: #065f46; }
+        
+        .main-content { flex: 1; min-height: 500px; display: flex; flex-direction: column; gap: 35px; }
+        .tab-panel { display: none; background: white; padding: 35px; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        .tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+        
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 5px; }
+        .stat-card { background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.01); }
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .stat-icon.green { background: #dcfce7; color: #15803d; }
+        .stat-icon.blue { background: #dbeafe; color: #1d4ed8; }
+        .stat-icon.orange { background: #fef3c7; color: #b45309; }
+
+        /* Health Card Design */
+        .health-card-visual { background: linear-gradient(135deg, #064e3b 0%, #10b981 100%); color: white; border-radius: 20px; padding: 30px; position: relative; overflow: hidden; box-shadow: 0 15px 35px rgba(16, 185, 129, 0.25); max-width: 480px; margin: 0 auto 20px; text-align: left; }
+        .health-card-visual::after { content: ''; position: absolute; bottom: -50px; right: -50px; width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.08); }
+        .health-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 15px; margin-bottom: 20px; }
+        .health-card-title { font-weight: 800; font-size: 18px; letter-spacing: 0.5px; }
+        .health-card-pid { font-size: 20px; font-weight: 800; color: #a7f3d0; margin-bottom: 2px; }
+        .health-card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; font-size: 13px; margin-bottom: 15px; position: relative; z-index: 2; }
+        .health-card-item label { display: block; font-size: 11px; text-transform: uppercase; opacity: 0.7; margin-bottom: 2px; }
+        .health-card-item span { font-weight: 600; }
+
+        /* Timeline Visits styling */
+        .timeline { position: relative; border-left: 2px solid #e2e8f0; margin-left: 10px; padding-left: 25px; display: flex; flex-direction: column; gap: 30px; text-align: left; }
+        .timeline-item { position: relative; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; padding: 22px; transition: 0.2s; }
+        .timeline-item:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.02); }
+        .timeline-dot { position: absolute; left: -34px; top: 25px; width: 16px; height: 16px; border-radius: 50%; background: #10b981; border: 4px solid white; box-shadow: 0 0 0 4px #dcfce7; }
+        .timeline-date { font-size: 13px; font-weight: 700; color: #10b981; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .vitals-subgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-top: 15px; background: white; border-radius: 10px; padding: 12px; border: 1.5px dashed #cbd5e1; }
+        .vitals-item { font-size: 11px; display: flex; flex-direction: column; gap: 3px; }
+        .vitals-item span { font-weight: 700; color: #334155; font-size: 13px; }
+
+        /* Receipt simulation */
+        .invoice-card { border: 1px solid #cbd5e1; background: #fff; padding: 25px; border-radius: 12px; width: 100%; max-width: 420px; font-family: monospace; font-size: 13px; margin: 0 auto; color: #1e293b; box-shadow: 0 4px 15px rgba(0,0,0,0.02); text-align: left; }
+        .receipt-btn { background: #0f172a; color: white; padding: 8px 16px; border-radius: 6px; border: none; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+
+        /* Uploader Area */
+        .upload-area { border: 2px dashed #a7f3d0; background: #f0fdf4; border-radius: 16px; padding: 40px 20px; text-align: center; cursor: pointer; transition: 0.2s; margin-bottom: 25px; }
+        .upload-area:hover { border-color: #10b981; background: #ecfdf5; }
+        .upload-area i { font-size: 40px; color: #10b981; margin-bottom: 15px; }
+
+        /* Aadhaar Modal Styling */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal { background: white; padding: 35px; border-radius: 20px; width: 90%; max-width: 440px; text-align: center; animation: scaleUp 0.3s ease; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .modal h3 { margin-bottom: 12px; color: #0f172a; font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .modal p { color: #64748b; font-size: 13px; margin-bottom: 20px; line-height: 1.5; }
+        .otp-input-group { display: flex; gap: 10px; justify-content: center; margin-bottom: 25px; }
+        .otp-box { width: 50px; height: 50px; border: 2px solid #cbd5e1; text-align: center; font-size: 20px; font-weight: 800; border-radius: 8px; outline: none; font-family: inherit; }
+        .otp-box:focus { border-color: #10b981; }
+        
+        .success-account-card { padding: 25px; background: #ecfdf5; border: 2px solid #10b981; border-radius: 16px; margin: 20px 0; animation: scaleUp 0.3s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        @media(max-width: 900px) {
+            body { padding: 20px; }
+            .header { flex-direction: column; align-items: flex-start; gap: 15px; padding: 20px; }
+            .dashboard-container { flex-direction: column; }
+            .sidebar { width: 100%; }
+            .sidebar-menu { flex-direction: row; overflow-x: auto; padding-bottom: 5px; }
+            .menu-item { white-space: nowrap; padding: 10px 15px; }
+            .tab-panel { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div>
+            <h1><i class="fas fa-id-card-alt"></i> Patient Dashboard</h1>
+            <p>Access your health records, prescriptions, billing summaries, and clinical reports instantly.</p>
+        </div>
+        <div style="display:flex; gap: 15px; align-items:center;">
+            <div class="theme-selector-container"></div>
+            <a href="6patient_portal.html" class="btn-back"><i class="fas fa-home"></i> Patient Portal</a>
+        </div>
+    </div>
+
+    <!-- 1. AUTHORIZATION FORMS (Logged out) -->
+    <div class="auth-container" id="authBox">
+        <div class="auth-tabs">
+            <div class="auth-tab active" onclick="switchAuthTab('login')">PATIENT LOGIN</div>
+            <div class="auth-tab" onclick="switchAuthTab('signup')">CREATE ACCOUNT</div>
+        </div>
+        <div class="auth-body">
+            <!-- Login Form -->
+            <div id="loginForm">
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Login ID (Patient ID / Aadhaar / Contact)</label>
+                        <input type="text" id="loginId" placeholder="PID-xxxx or Aadhaar or mobile number" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="Enter account password" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Sign In to Dashboard</button>
+                </form>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signupForm" style="display: none;">
+                <form onsubmit="startSignup(event)">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="signName" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group" style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 15px;">
+                        <div>
+                            <label>Age</label>
+                            <input type="number" id="signAge" placeholder="Age" required>
+                        </div>
+                        <div>
+                            <label>Gender</label>
+                            <select id="signGender">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Mobile Number</label>
+                        <input type="text" id="signContact" placeholder="10 digit mobile number" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Aadhaar Card Number</label>
+                        <input type="text" id="signAadhar" placeholder="12 digit Aadhaar number" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Place / Permanent Address</label>
+                        <input type="text" id="signAddress" placeholder="City, State (e.g. Mumbai, MH)" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="signPassword" placeholder="Choose a secure login password" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Generate Account & Verify</button>
+                </form>
+            </div>
+
+            <!-- Success Registration Notification -->
+            <div id="signupSuccess" style="display:none; text-align: center;">
+                <div class="success-account-card">
+                    <h2 style="color: #065f46; font-size:18px; font-weight:800; margin-bottom:8px;">✓ Account Generated Successfully</h2>
+                    <p style="color: #1e293b; font-size:13px; line-height:1.5;">Please note down your unique Permanent Patient ID. Use this PID or your registered Aadhaar to log in.</p>
+                    <div style="font-size: 26px; font-weight:800; letter-spacing:1px; background: white; border: 1.5px solid #10b981; padding: 15px; border-radius:10px; margin: 15px 0; color: #0f172a;" id="displayPid">PID-xxxx</div>
+                    <button class="btn-submit" onclick="switchAuthTab('login')">Proceed to Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. DASHBOARD VIEW (Logged in) -->
+    <div class="dashboard-container" id="dashboardBox">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div style="text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1.5px dashed #cbd5e1;">
+                <div style="width: 60px; height: 60px; border-radius: 50%; background: #dcfce7; color: #10b981; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; margin-bottom: 10px;" id="patientAvatar">P</div>
+                <h3 style="font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 2px;" id="patientDisplayName">Patient Name</h3>
+                <span style="font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 4px 10px; border-radius: 12px;" id="patientDisplayPid">PID-xxxx</span>
+            </div>
+            <div class="sidebar-menu">
+                <div class="menu-item active" onclick="switchPanel('overview', this)"><i class="fas fa-chart-line"></i> Overview</div>
+                <div class="menu-item" onclick="switchPanel('visits', this)"><i class="fas fa-calendar-alt"></i> Visit History</div>
+                <div class="menu-item" onclick="switchPanel('prescriptions', this)"><i class="fas fa-file-prescription"></i> Prescriptions</div>
+                <div class="menu-item" onclick="switchPanel('billing', this)"><i class="fas fa-receipt"></i> Billing & Invoices</div>
+                <div class="menu-item" onclick="switchPanel('reports', this)"><i class="fas fa-folder-open"></i> Documents Vault</div>
+                <div class="menu-item" onclick="switchPanel('profile', this)"><i class="fas fa-address-card"></i> Medical ID Card</div>
+                <div class="menu-item" onclick="handleLogout()" style="margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 20px; color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Log Out</div>
+            </div>
+        </div>
+
+        <!-- Main Panel Content -->
+        <div class="main-content">
+            <!-- panel: Overview -->
+            <div class="tab-panel active" id="panel-overview">
+                <h2 style="font-weight: 800; font-size: 20px; color: #064e3b; margin-bottom: 25px; text-align: left;"><i class="fas fa-th-large"></i> Welcome Back!</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-hospital-user"></i></div>
+                        <div style="text-align: left;">
+                            <span style="font-size: 11px; color:#64748b; font-weight:600; text-transform:uppercase;">Total Visits</span>
+                            <h3 style="font-size: 22px; font-weight:800; color:#0f172a;" id="statVisits">0</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-file-signature"></i></div>
+                        <div style="text-align: left;">
+                            <span style="font-size: 11px; color:#64748b; font-weight:600; text-transform:uppercase;">Prescriptions</span>
+                            <h3 style="font-size: 22px; font-weight:800; color:#0f172a;" id="statPrescriptions">0</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fas fa-folder"></i></div>
+                        <div style="text-align: left;">
+                            <span style="font-size: 11px; color:#64748b; font-weight:600; text-transform:uppercase;">Files Uploaded</span>
+                            <h3 style="font-size: 22px; font-weight:800; color:#0f172a;" id="statReports">0</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 25px; background: #ecfdf5; border-left: 6px solid #10b981; border-radius: 12px; padding: 22px; display: flex; align-items: center; justify-content: space-between; gap: 15px; text-align: left;">
+                    <div>
+                        <h4 style="font-size: 15px; font-weight:700; color: #064e3b; margin-bottom: 6px;"><i class="fas fa-bell"></i> Need a medical checkup today?</h4>
+                        <p style="font-size: 13px; color: #15803d; line-height:1.4;">Skip the hospital queue by booking a consultant slot instantly online. No login is needed to book appointments.</p>
+                    </div>
+                    <a href="6patient_portal.html" class="btn-back" style="background:#064e3b; padding:10px 20px; white-space:nowrap; border:none; text-shadow:none;"><i class="fas fa-calendar-check"></i> Book OPD Ticket</a>
+                </div>
+            </div>
+
+            <!-- panel: Visits Timeline -->
+            <div class="tab-panel" id="panel-visits">
+                <h2 style="font-weight: 800; font-size: 20px; color: #064e3b; margin-bottom: 25px; text-align: left;"><i class="fas fa-history"></i> Visit Logs & Timelines</h2>
+                <div class="timeline" id="visitsTimelineContainer">
+                    <!-- populated dynamically -->
+                </div>
+            </div>
+
+            <!-- panel: Prescriptions -->
+            <div class="tab-panel" id="panel-prescriptions">
+                <h2 style="font-weight: 800; font-size: 20px; color: #064e3b; margin-bottom: 25px; text-align: left;"><i class="fas fa-file-prescription"></i> Prescription Vault</h2>
+                <div style="display:flex; flex-direction:column; gap:20px;" id="prescriptionsContainer">
+                    <!-- populated dynamically -->
+                </div>
+            </div>
+
+            <!-- panel: Billing & Invoices -->
+            <div class="tab-panel" id="panel-billing">
+                <h2 style="font-weight: 800; font-size: 20px; color: #064e3b; margin-bottom: 25px; text-align: left;"><i class="fas fa-file-invoice-dollar"></i> Billing & Paid Invoices</h2>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;" id="billingTable">
+                        <thead>
+                            <tr style="background:#04384b; color:white;">
+                                <th style="padding:15px; font-weight:600;">Date</th>
+                                <th style="padding:15px; font-weight:600;">Service Description</th>
+                                <th style="padding:15px; font-weight:600;">Consultant Doctor</th>
+                                <th style="padding:15px; font-weight:600;">Paid Amount</th>
+                                <th style="padding:15px; font-weight:600; text-align:center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="billingBody">
+                            <!-- populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- panel: Documents Vault -->
+            <div class="tab-panel" id="panel-reports">
+                <h2 style="font-weight: 800; font-size: 20px; color: #064e3b; margin-bottom: 25px; text-align: left;"><i class="fas fa-shield-alt"></i> Secure Document Vault</h2>
+                
+                <div class="upload-area" onclick="document.getElementById('reportFileInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3 style="font-size:15px; font-weight:700; color:#334155; margin-bottom:6px;">Upload New Report / Document</h3>
+                    <p style="font-size:12px; color:#64748b;">Supports PDF, PNG, JPG files. Max file size: 5MB.</p>
+                    <input type="file" id="reportFileInput" style="display:none;" onchange="handleFileUpload(this)">
+                </div>
+
+                <h3 style="font-size:15px; font-weight:700; color:#064e3b; margin-bottom:15px; border-bottom:2px solid #ecfdf5; padding-bottom:8px; text-align:left;">My Uploaded Health Records</h3>
+                <div style="display:flex; flex-direction:column; gap:12px; text-align:left;" id="uploadedReportsContainer">
+                    <!-- populated dynamically -->
+                </div>
+            </div>
+
+            <!-- panel: Digital ID Card -->
+            <div class="tab-panel" id="panel-profile">
+                <h2 style="font-weight: 800; font-size: 20px; color: #064e3b; margin-bottom: 25px; text-align: left;"><i class="fas fa-print"></i> Digital Health Card</h2>
+                
+                <!-- Digital card visual representation -->
+                <div class="health-card-visual" id="printableIDCard">
+                    <div class="health-card-header">
+                        <div class="health-card-title"><i class="fas fa-heartbeat"></i> MEDIPULSE HMS</div>
+                        <div style="font-size: 9px; border: 1px solid rgba(255,255,255,0.4); padding: 2px 6px; border-radius:4px; font-weight:700;">SECURE ID</div>
+                    </div>
+                    <div class="health-card-pid" id="cardPid">PID-xxxx</div>
+                    <div style="font-size:18px; font-weight:700; margin-bottom:15px;" id="cardName">Patient Name</div>
+                    
+                    <div class="health-card-grid">
+                        <div class="health-card-item">
+                            <label>Age & Gender</label>
+                            <span id="cardAgeGender">N/A</span>
+                        </div>
+                        <div class="health-card-item">
+                            <label>Registered Phone</label>
+                            <span id="cardContact">N/A</span>
+                        </div>
+                        <div class="health-card-item">
+                            <label>Aadhaar Number</label>
+                            <span id="cardAadhar">N/A</span>
+                        </div>
+                        <div class="health-card-item">
+                            <label>Residential Address</label>
+                            <span id="cardAddress">N/A</span>
+                        </div>
+                    </div>
+
+                    <!-- Mock Barcode / QR Code visual representation -->
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; border-top:1px solid rgba(255,255,255,0.15); padding-top:15px; margin-top:10px;">
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <span style="font-size:8px; opacity:0.8; text-transform:uppercase;">Issued Date</span>
+                            <span style="font-size:10px; font-weight:600;">SmartCare Integrated</span>
+                        </div>
+                        <div style="background: white; padding: 4px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; width:45px; height:45px;">
+                            <!-- Mock QR code -->
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=medipulse-hms-mock-card" width="37" height="37" alt="QR Code">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-back" style="border:none; cursor:pointer;" onclick="printHealthCard()"><i class="fas fa-print"></i> Print ID Card</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MOCK AADHAAR OTP MODAL OVERLAY -->
+    <div class="modal-overlay" id="aadhaarOtpModal">
+        <div class="modal">
+            <h3><i class="fas fa-shield-alt" style="color: #10b981;"></i> Aadhaar Secure Verification</h3>
+            <p>An OTP has been sent to the mobile number registered with Aadhaar <strong id="maskedAadhaar">XXXX-XXXX-XXXX</strong>. Please enter the code below to verify your identity.</p>
+            
+            <div class="otp-input-group">
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveOtpFocus(this, 'otp2')" id="otp1">
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveOtpFocus(this, 'otp3')" id="otp2">
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveOtpFocus(this, 'otp4')" id="otp3">
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveOtpFocus(this, 'otp5')" id="otp4">
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveOtpFocus(this, 'otp6')" id="otp5">
+                <input type="text" maxlength="1" class="otp-box" onkeyup="checkOtpSubmission(this)" id="otp6">
+            </div>
+
+            <p style="font-size:11px; color:#94a3b8; margin-top:-10px;">*For demonstration, enter the mock OTP code: <strong>123456</strong>.</p>
+
+            <button class="btn-submit" onclick="submitAadhaarOtp()" style="background:#0f172a;">Verify OTP & Create Account</button>
+            <button style="margin-top:10px; background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer;" onclick="closeOtpModal()">Cancel Verification</button>
+        </div>
+    </div>
+
+    <!-- MOCK BILL PRINT MODAL -->
+    <div class="modal-overlay" id="invoiceModal">
+        <div class="modal" style="max-width: 480px;">
+            <h3><i class="fas fa-print" style="color:#04384b;"></i> Medical Receipt</h3>
+            <p>Your printable OPD consulting fee receipt summary:</p>
+            
+            <div class="invoice-card" id="invoiceDetails">
+                <!-- Injected dynamically -->
+            </div>
+
+            <button class="btn-submit" onclick="window.print()" style="margin-top:20px; background:#04384b;"><i class="fas fa-print"></i> Print Document</button>
+            <button style="margin-top:10px; background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer;" onclick="closeInvoiceModal()">Close Receipt</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let dashboardData = null;
+        let pendingSignupPayload = null;
+
+        // Auto-check local storage on start to see if user is already logged in
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('patientToken');
+            if (token) {
+                loadDashboard(token);
+            }
+        });
+
+        // Auth Tabs switcher (Login vs Signup)
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('signupSuccess').style.display = 'none';
+
+            if (tab === 'login') {
+                document.querySelectorAll('.auth-tab')[0].classList.add('active');
+                document.getElementById('loginForm').style.display = 'block';
+            } else if (tab === 'signup') {
+                document.querySelectorAll('.auth-tab')[1].classList.add('active');
+                document.getElementById('signupForm').style.display = 'block';
+            }
+        }
+
+        // Panel Switcher (Dashboard navigation tabs)
+        function switchPanel(panelId, menuItem) {
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            menuItem.classList.add('active');
+
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('panel-' + panelId).classList.add('active');
+        }
+
+        // --- AUTH FLOWS ---
+
+        // Login Handler
+        async function handleLogin(e) {
+            e.preventDefault();
+            const loginId = document.getElementById('loginId').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            try {
+                const res = await fetch(`${API_BASE}/patients/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ loginId, password })
+                });
+                
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || 'Authentication failed');
+                }
+
+                localStorage.setItem('patientToken', data.token);
+                loadDashboard(data.token);
+            } catch (err) {
+                alert('Login Failed: ' + err.message);
+            }
+        }
+
+        // Trigger Signup (opens OTP Modal)
+        function startSignup(e) {
+            e.preventDefault();
+            const name = document.getElementById('signName').value.trim();
+            const age = document.getElementById('signAge').value.trim();
+            const gender = document.getElementById('signGender').value;
+            const contact = document.getElementById('signContact').value.trim();
+            const aadhar = document.getElementById('signAadhar').value.trim();
+            const address = document.getElementById('signAddress').value.trim();
+            const password = document.getElementById('signPassword').value.trim();
+
+            if (aadhar.length !== 12 || isNaN(aadhar)) {
+                alert('Please enter a valid 12-digit Aadhaar number');
+                return;
+            }
+
+            if (contact.length !== 10 || isNaN(contact)) {
+                alert('Please enter a valid 10-digit mobile number');
+                return;
+            }
+
+            pendingSignupPayload = { name, age, gender, contact, address, aadhar, password };
+
+            // Mask Aadhaar display in modal
+            const masked = aadhar.slice(0,4) + '-XXXX-XXXX';
+            document.getElementById('maskedAadhaar').textContent = masked;
+
+            // Open Aadhaar modal
+            document.getElementById('aadhaarOtpModal').classList.add('active');
+            
+            // Focus on first box
+            document.getElementById('otp1').focus();
+        }
+
+        // Move Aadhaar OTP Input focus
+        function moveOtpFocus(current, nextId) {
+            if (current.value.length === 1) {
+                document.getElementById(nextId).focus();
+            }
+        }
+
+        function checkOtpSubmission(current) {
+            if (current.value.length === 1) {
+                submitAadhaarOtp();
+            }
+        }
+
+        function closeOtpModal() {
+            document.getElementById('aadhaarOtpModal').classList.remove('active');
+            // Clear inputs
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById('otp' + i).value = '';
+            }
+            pendingSignupPayload = null;
+        }
+
+        // Verify OTP and complete Registration API submission
+        async function submitAadhaarOtp() {
+            let otp = '';
+            for (let i = 1; i <= 6; i++) {
+                otp += document.getElementById('otp' + i).value;
+            }
+
+            if (otp !== '123456') {
+                alert('Incorrect OTP code. For testing, please enter the mock code: 123456');
+                return;
+            }
+
+            if (!pendingSignupPayload) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/patients/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(pendingSignupPayload)
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || 'Account registration failed');
+                }
+
+                // Close OTP Modal
+                closeOtpModal();
+
+                // Display success box
+                document.getElementById('signupForm').style.display = 'none';
+                document.getElementById('signupSuccess').style.display = 'block';
+                document.getElementById('displayPid').textContent = data.patientId;
+            } catch (err) {
+                alert('Registration Failed: ' + err.message);
+                closeOtpModal();
+            }
+        }
+
+        // Logout
+        function handleLogout() {
+            localStorage.removeItem('patientToken');
+            dashboardData = null;
+            
+            // Show auth, hide dashboard
+            document.getElementById('dashboardBox').style.display = 'none';
+            document.getElementById('authBox').style.display = 'block';
+            switchAuthTab('login');
+        }
+
+        // --- DASHBOARD LOADING & RENDERING ---
+
+        async function loadDashboard(token) {
+            try {
+                const res = await fetch(`${API_BASE}/patients/my-dashboard`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || 'Session expired. Please log in again.');
+                }
+
+                dashboardData = data;
+
+                // Hide auth container, show dashboard
+                document.getElementById('authBox').style.display = 'none';
+                document.getElementById('dashboardBox').style.display = 'flex';
+
+                renderDashboard();
+            } catch (err) {
+                console.error(err);
+                handleLogout();
+            }
+        }
+
+        function renderDashboard() {
+            if (!dashboardData) return;
+            const profile = dashboardData.profile;
+            const visits = dashboardData.visits;
+
+            // Header profile data
+            document.getElementById('patientDisplayName').textContent = profile.name;
+            document.getElementById('patientDisplayPid').textContent = profile.patientId;
+            document.getElementById('patientAvatar').textContent = profile.name.charAt(0).toUpperCase();
+
+            // Stats Cards
+            document.getElementById('statVisits').textContent = visits.length;
+            const prescriptionCount = visits.filter(v => v.prescription !== null).length;
+            document.getElementById('statPrescriptions').textContent = prescriptionCount;
+            document.getElementById('statReports').textContent = profile.reports.length;
+
+            // Render Digital Health Card
+            document.getElementById('cardPid').textContent = profile.patientId;
+            document.getElementById('cardName').textContent = profile.name;
+            document.getElementById('cardAgeGender').textContent = `${profile.age} Years · ${profile.gender}`;
+            document.getElementById('cardContact').textContent = profile.contact || 'N/A';
+            document.getElementById('cardAadhar').textContent = profile.aadhar ? profile.aadhar.replace(/(\d{4})/g, '$1 ') : 'N/A';
+            document.getElementById('cardAddress').textContent = profile.address || 'N/A';
+
+            // Render Timeline Visits
+            renderTimeline(visits);
+
+            // Render Prescriptions list
+            renderPrescriptions(visits);
+
+            // Render Invoices table
+            renderBillingTable(visits);
+
+            // Render document vault files
+            renderReportsVault(profile.reports);
+        }
+
+        // Visits Timeline Renderer
+        function renderTimeline(visits) {
+            const container = document.getElementById('visitsTimelineContainer');
+            if (visits.length === 0) {
+                container.innerHTML = '<p style="color: #94a3b8; text-align:center; padding: 20px;">No visit records found for this account.</p>';
+                return;
+            }
+
+            container.innerHTML = visits.map(v => {
+                const date = new Date(v.date);
+                const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) + ' at ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                let details = '';
+                if (v.visitId) {
+                    const statusVal = v.status.toUpperCase();
+                    let statusColor = '#64748b';
+                    if (statusVal === 'WAITING') statusColor = '#f59e0b';
+                    else if (statusVal === 'COMPLETED') statusColor = '#10b981';
+                    else if (statusVal === 'PRESCRIBED') statusColor = '#1d4ed8';
+
+                    details = `
+                        <div style="margin-top: 10px; font-size:13px; color: #475569;">
+                            <span style="font-weight: 700; color: #1e293b;">Reason/Symptoms:</span> ${v.symptoms}
+                        </div>
+                        <div style="margin-top: 5px; font-size:13px; color: #475569;">
+                            <span style="font-weight: 700; color: #1e293b;">Assigned Doctor:</span> ${v.doctor ? 'Dr. ' + v.doctor.name + ' (' + v.doctor.specialization + ')' : 'General Physician'}
+                        </div>
+                        <div style="margin-top: 5px; font-size:13px; color: #475569;">
+                            <span style="font-weight: 700; color: #1e293b;">Visit Status:</span> <span style="background:${statusColor}; color:white; font-size:10px; font-weight:700; padding:2px 8px; border-radius:12px;">${statusVal}</span>
+                        </div>
+                    `;
+                }
+
+                // Add vitals summary
+                let vitalsHtml = '';
+                if (v.vitals && v.vitals.bp !== '120/80' || v.vitals.temperature !== '98.6°F' || v.vitals.weight !== 'N/A') {
+                    vitalsHtml = `
+                        <div class="vitals-subgrid">
+                            <div class="vitals-item">Blood Pressure <span>${v.vitals.bp || '120/80'}</span></div>
+                            <div class="vitals-item">Pulse Rate <span>${v.vitals.pulseRate || '72 bpm'}</span></div>
+                            <div class="vitals-item">Body Temp <span>${v.vitals.temperature || '98.6°F'}</span></div>
+                            <div class="vitals-item">Oxygen Level <span>${v.vitals.oxygenLevel || '98%'}</span></div>
+                            <div class="vitals-item">Weight <span>${v.vitals.weight || 'N/A'}</span></div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-date"><i class="far fa-calendar-check"></i> ${dateStr}</div>
+                        ${details}
+                        ${vitalsHtml}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Prescriptions Renderer
+        function renderPrescriptions(visits) {
+            const container = document.getElementById('prescriptionsContainer');
+            const prescriptionVisits = visits.filter(v => v.prescription !== null);
+
+            if (prescriptionVisits.length === 0) {
+                container.innerHTML = '<p style="color: #94a3b8; text-align:center; padding: 20px;">No medical prescriptions vault items found.</p>';
+                return;
+            }
+
+            container.innerHTML = prescriptionVisits.map(v => {
+                const rx = v.prescription;
+                const date = new Date(rx.date).toLocaleDateString();
+                
+                const medicinesList = rx.medicines.map(m => `
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td style="padding:10px 0; font-weight:700; color:#334155;">${m.medicineName}</td>
+                        <td style="padding:10px; color:#475569;">${m.dosage}</td>
+                        <td style="padding:10px; color:#475569;">${m.frequency}</td>
+                        <td style="padding:10px; color:#475569;">${m.duration}</td>
+                    </tr>
+                `).join('');
+
+                return `
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:25px; text-align:left;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px dashed #cbd5e1; padding-bottom:10px; margin-bottom:15px;">
+                            <div>
+                                <h3 style="font-size:15px; font-weight:700; color:#064e3b;"><i class="fas fa-stethoscope"></i> Prescribed by Dr. ${v.doctor ? v.doctor.name : 'Consultant'}</h3>
+                                <span style="font-size:11px; color:#64748b;">Specialization: ${v.doctor ? v.doctor.specialization : 'OPD'}</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <span style="font-size:12px; font-weight:700; color:#10b981;"><i class="far fa-calendar-alt"></i> Date: ${date}</span>
+                                <div style="font-size:10px; color:#64748b; font-weight:700;">Rx ID: ${rx.reportId}</div>
+                            </div>
+                        </div>
+
+                        <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:15px;">
+                            <thead>
+                                <tr style="color:#64748b; font-size:11px; border-bottom:1.5px solid #e2e8f0; text-transform:uppercase;">
+                                    <th style="padding:8px 0; font-weight:600; text-align:left;">Medicine Name</th>
+                                    <th style="padding:8px; font-weight:600; text-align:left;">Dosage</th>
+                                    <th style="padding:8px; font-weight:600; text-align:left;">Frequency</th>
+                                    <th style="padding:8px; font-weight:600; text-align:left;">Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${medicinesList}
+                            </tbody>
+                        </table>
+
+                        ${rx.instructions ? `<div style="font-size:12px; color:#475569; margin-top:10px; background:white; padding:10px; border-radius:6px; border:1px solid #e2e8f0;"><strong>Instructions:</strong> ${rx.instructions}</div>` : ''}
+                        ${rx.remarks ? `<div style="font-size:12px; color:#475569; margin-top:5px; background:white; padding:10px; border-radius:6px; border:1px solid #e2e8f0;"><strong>Doctor Remarks:</strong> ${rx.remarks}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Invoices Renderer
+        function renderBillingTable(visits) {
+            const body = document.getElementById('billingBody');
+            if (visits.length === 0) {
+                body.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">No invoices found.</td></tr>';
+                return;
+            }
+
+            body.innerHTML = visits.map((v, index) => {
+                const date = new Date(v.date).toLocaleDateString();
+                const docName = v.doctor ? 'Dr. ' + v.doctor.name : 'General Consultant';
+                
+                return `
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding:15px; font-weight:600; color:#334155;">${date}</td>
+                        <td style="padding:15px; color:#475569;">${v.bill.service}</td>
+                        <td style="padding:15px; font-weight:600;">${docName}</td>
+                        <td style="padding:15px; font-weight:700; color:#10b981;">₹ ${v.bill.amount}</td>
+                        <td style="padding:15px; text-align:center;">
+                            <button class="receipt-btn" onclick="openInvoiceModal(${index})"><i class="fas fa-file-invoice"></i> View Invoice</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Document Vault Renderer
+        function renderReportsVault(reports) {
+            const container = document.getElementById('uploadedReportsContainer');
+            if (reports.length === 0) {
+                container.innerHTML = '<p style="color: #94a3b8; text-align:center; padding: 20px;">Your secure vault is empty. Upload clinical files above.</p>';
+                return;
+            }
+
+            container.innerHTML = reports.map((r, index) => {
+                const date = new Date(r.uploadedAt).toLocaleDateString() + ' ' + new Date(r.uploadedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                return `
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="width:40px; height:40px; background:#dcfce7; color:#10b981; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                                <i class="fas fa-file-medical-alt"></i>
+                            </div>
+                            <div>
+                                <h4 style="font-size:13px; font-weight:700; color:#334155; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.fileName}</h4>
+                                <span style="font-size:10px; color:#64748b;">Uploaded: ${date}</span>
+                            </div>
+                        </div>
+                        <button class="receipt-btn" style="background:#04384b;" onclick="downloadBase64File('${r.fileName}', '${r.fileData}')"><i class="fas fa-download"></i> Download</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // File Uploader Handling
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size exceeds the 5MB limit. Please upload a smaller document.');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const base64Data = e.target.result;
+                const token = localStorage.getItem('patientToken');
+
+                try {
+                    const res = await fetch(`${API_BASE}/patients/upload-report`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            fileName: file.name,
+                            fileData: base64Data
+                        })
+                    });
+
+                    const data = await res.json();
+                    if (!res.ok) {
+                        throw new Error(data.error || 'Failed to upload report document');
+                    }
+
+                    // Reload dashboard values
+                    alert('Document uploaded successfully to vault.');
+                    loadDashboard(token);
+                } catch (err) {
+                    alert('Upload Error: ' + err.message);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Download Base64 helper
+        function downloadBase64File(fileName, base64String) {
+            const link = document.createElement('a');
+            link.href = base64String;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Printable Bill Mock dialog
+        function openInvoiceModal(visitIndex) {
+            if (!dashboardData) return;
+            const visit = dashboardData.visits[visitIndex];
+            const profile = dashboardData.profile;
+            
+            const date = new Date(visit.date).toLocaleDateString();
+            const invoiceDetails = document.getElementById('invoiceDetails');
+
+            invoiceDetails.innerHTML = `
+----------------------------------------
+            MEDIPULSE HMS RECEIPT
+----------------------------------------
+Date:         ${date}
+Patient ID:   ${profile.patientId}
+Patient Name: ${profile.name}
+Age / Sex:    ${profile.age} / ${profile.gender}
+Aadhaar:      ${profile.aadhar ? profile.aadhar.slice(0,4) + '-XXXX-XXXX' : 'N/A'}
+----------------------------------------
+SERVICE CHARGED       PHYSICIAN    FEE
+----------------------------------------
+OPD Consultation      Dr. ${visit.doctor ? visit.doctor.name.padEnd(10).slice(0,10) : 'General'}   ₹ ${visit.bill.amount}
+----------------------------------------
+TOTAL PAID:                        ₹ ${visit.bill.amount}
+Payment Status:       VERIFIED (SUCCESS)
+----------------------------------------
+      Thank you for choosing MediPulse.
+          Wish you a speedy recovery.
+----------------------------------------
+            `;
+
+            document.getElementById('invoiceModal').classList.add('active');
+        }
+
+        function closeInvoiceModal() {
+            document.getElementById('invoiceModal').classList.remove('active');
+        }
+
+        // Health Card Print utility
+        function printHealthCard() {
+            const printContent = document.getElementById('printableIDCard').outerHTML;
+            const style = `
+                <style>
+                    body { font-family: 'Poppins', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: white; }
+                    .health-card-visual { background: linear-gradient(135deg, #064e3b 0%, #10b981 100%) !important; color: white !important; border-radius: 20px; padding: 30px; width: 450px; box-shadow: none; border: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .health-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 15px; margin-bottom: 20px; }
+                    .health-card-title { font-weight: 800; font-size: 18px; }
+                    .health-card-pid { font-size: 20px; font-weight: 800; color: #a7f3d0 !important; margin-bottom: 2px; }
+                    .health-card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; font-size: 13px; margin-bottom: 15px; }
+                    .health-card-item label { display: block; font-size: 11px; text-transform: uppercase; opacity: 0.7; margin-bottom: 2px; }
+                    .health-card-item span { font-weight: 600; }
+                    img { background: white; padding: 3px; border-radius: 4px; }
+                </style>
+            `;
+            
+            const win = window.open('', '', 'width=600,height=500');
+            win.document.write(style);
+            win.document.write(printContent);
+            win.document.close();
+            win.focus();
+            
+            // Allow layout render
+            setTimeout(() => {
+                win.print();
+                win.close();
+            }, 350);
+        }
+    </script>
+</body>
+</html>
