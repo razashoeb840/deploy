@@ -583,6 +583,85 @@ app.post('/api/patients/login', async (req, res) => {
     }
 });
 
+// Forgot Details Route (Initiates Password Reset by checking identifier and simulating OTP)
+app.post('/api/patients/forgot-details', async (req, res) => {
+    const { identifier } = req.body; // Can be Patient ID (PID-xxxx) or registered Mobile Number
+    try {
+        if (!identifier) {
+            return res.status(400).json({ error: 'Patient ID or registered Mobile Number is required' });
+        }
+
+        // Find the patient document that has a password set
+        const patient = await Patient.findOne({
+            $or: [
+                { patientId: identifier.trim() },
+                { contact: identifier.trim() }
+            ],
+            password: { $exists: true, $ne: "" }
+        }).sort({ createdAt: -1 });
+
+        if (!patient) {
+            return res.status(404).json({ error: 'No account found matching this Patient ID or Mobile Number.' });
+        }
+
+        // Mask contact number for response display (e.g. 9876XXXX12)
+        const phone = patient.contact;
+        const maskedPhone = phone.slice(0, 4) + 'XXXX' + phone.slice(-2);
+
+        res.json({
+            success: true,
+            message: 'OTP has been sent to your registered mobile number',
+            contact: maskedPhone,
+            patientId: patient.patientId
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Reset Password Route (Validates OTP and sets a new password)
+app.post('/api/patients/reset-password', async (req, res) => {
+    const { identifier, otp, newPassword } = req.body;
+    try {
+        if (!identifier || !otp || !newPassword) {
+            return res.status(400).json({ error: 'All fields (ID/Mobile, OTP, and New Password) are required' });
+        }
+
+        if (otp !== '123456') {
+            return res.status(400).json({ error: 'Invalid verification OTP' });
+        }
+
+        // Find patient records matching the Patient ID or mobile
+        const patient = await Patient.findOne({
+            $or: [
+                { patientId: identifier.trim() },
+                { contact: identifier.trim() }
+            ],
+            password: { $exists: true, $ne: "" }
+        }).sort({ createdAt: -1 });
+
+        if (!patient) {
+            return res.status(404).json({ error: 'No account found matching this Patient ID or Mobile Number.' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Update password for all visits of this Patient ID
+        await Patient.updateMany(
+            { patientId: patient.patientId },
+            { $set: { password: hashedPassword } }
+        );
+
+        res.json({
+            success: true,
+            message: 'Password reset successful! You can now log in with your new password.'
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Get Personal Dashboard Data (Visits, Prescriptions, Bills, Documents)
 app.get('/api/patients/my-dashboard', authenticatePatientToken, async (req, res) => {
     try {

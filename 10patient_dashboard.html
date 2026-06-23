@@ -137,6 +137,9 @@
                         <label>Password</label>
                         <input type="password" id="loginPassword" placeholder="Enter account password" required>
                     </div>
+                    <div style="text-align: right; margin-top: -10px; margin-bottom: 20px;">
+                        <a href="#" onclick="showForgotForm()" style="color: #10b981; font-size: 12px; font-weight: 600; text-decoration: none;">Forgot details / Reset password?</a>
+                    </div>
                     <button type="submit" class="btn-submit">Sign In to Dashboard</button>
                 </form>
             </div>
@@ -175,7 +178,7 @@
                         <input type="text" id="signAddress" placeholder="City, State (e.g. Mumbai, MH)" required>
                     </div>
                     <div class="form-group">
-                        <label>Password</label>
+                        <label>Password (for Login)</label>
                         <input type="password" id="signPassword" placeholder="Choose a secure login password" required>
                     </div>
                     <button type="submit" class="btn-submit">Generate Account & Verify</button>
@@ -190,6 +193,34 @@
                     <div style="font-size: 26px; font-weight:800; letter-spacing:1px; background: white; border: 1.5px solid #10b981; padding: 15px; border-radius:10px; margin: 15px 0; color: #0f172a;" id="displayPid">PID-xxxx</div>
                     <button class="btn-submit" onclick="switchAuthTab('login')">Proceed to Login</button>
                 </div>
+            </div>
+
+            <!-- Forgot Password / Details Form -->
+            <div id="forgotForm" style="display: none;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #04384b; margin-bottom: 15px;"><i class="fas fa-key"></i> Recover Password</h3>
+                <p style="font-size:12px; color:#64748b; margin-bottom:15px;">Enter your registered Mobile Number or Patient ID (PID) to verify and reset your password.</p>
+                <form onsubmit="handleForgotDetails(event)">
+                    <div class="form-group">
+                        <label>Patient ID (PID) or Mobile Number</label>
+                        <input type="text" id="forgotIdentifier" placeholder="e.g. PID-1001 or 9876543210" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Send Verification OTP</button>
+                    <button type="button" class="btn-submit" onclick="cancelForgotFlow()" style="background:#64748b; margin-top: 10px;">Back to Login</button>
+                </form>
+            </div>
+
+            <!-- New Password Form -->
+            <div id="newPasswordForm" style="display: none;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #064e3b; margin-bottom: 15px;"><i class="fas fa-lock"></i> Set New Password</h3>
+                <p style="font-size:12px; color:#64748b; margin-bottom:15px;" id="resetNotifyText">Setting a new password for account.</p>
+                <form onsubmit="handleResetPasswordSubmit(event)">
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password" id="resetNewPassword" placeholder="Enter new login password" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Reset & Update Password</button>
+                    <button type="button" class="btn-submit" onclick="cancelForgotFlow()" style="background:#64748b; margin-top: 10px;">Cancel</button>
+                </form>
             </div>
         </div>
     </div>
@@ -398,6 +429,8 @@
         const API_BASE = '/api';
         let dashboardData = null;
         let pendingSignupPayload = null;
+        let otpVerificationMode = 'signup'; // 'signup' or 'reset'
+        let resetIdentifier = '';
 
         // Auto-check local storage on start to see if user is already logged in
         document.addEventListener('DOMContentLoaded', () => {
@@ -481,10 +514,12 @@
             }
 
             pendingSignupPayload = { name, age, gender, contact, address, aadhar, password };
+            otpVerificationMode = 'signup';
 
-            // Mask Aadhaar display in modal
+            // Configure Aadhaar/Mobile OTP Verification Modal for Aadhaar registration
+            document.querySelector('#aadhaarOtpModal h3').innerHTML = '<i class="fas fa-shield-alt" style="color: #10b981;"></i> Aadhaar Secure Verification';
             const masked = aadhar.slice(0,4) + '-XXXX-XXXX';
-            document.getElementById('maskedAadhaar').textContent = masked;
+            document.querySelector('#aadhaarOtpModal p').innerHTML = 'An OTP has been sent to the mobile number registered with Aadhaar <strong id="maskedAadhaar">' + masked + '</strong>. Please enter the code below to verify your identity.';
 
             // Open Aadhaar modal
             document.getElementById('aadhaarOtpModal').classList.add('active');
@@ -515,7 +550,7 @@
             pendingSignupPayload = null;
         }
 
-        // Verify OTP and complete Registration API submission
+        // Verify OTP and complete registration or password reset transition
         async function submitAadhaarOtp() {
             let otp = '';
             for (let i = 1; i <= 6; i++) {
@@ -524,6 +559,17 @@
 
             if (otp !== '123456') {
                 alert('Incorrect OTP code. For testing, please enter the mock code: 123456');
+                return;
+            }
+
+            if (otpVerificationMode === 'reset') {
+                // Verified reset OTP! Move to reset password input form
+                closeOtpModal();
+                document.getElementById('forgotForm').style.display = 'none';
+                document.getElementById('newPasswordForm').style.display = 'block';
+                document.getElementById('resetNotifyText').textContent = 'Enter a new password for Patient ID: ' + resetIdentifier;
+                document.getElementById('resetNewPassword').value = '';
+                document.getElementById('resetNewPassword').focus();
                 return;
             }
 
@@ -551,6 +597,98 @@
             } catch (err) {
                 alert('Registration Failed: ' + err.message);
                 closeOtpModal();
+            }
+        }
+
+        // --- PASSWORD RECOVERY FLOW ---
+
+        function showForgotForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('signupSuccess').style.display = 'none';
+            document.getElementById('newPasswordForm').style.display = 'none';
+            
+            document.getElementById('forgotForm').style.display = 'block';
+            document.getElementById('forgotIdentifier').value = '';
+            document.getElementById('forgotIdentifier').focus();
+        }
+
+        function cancelForgotFlow() {
+            document.getElementById('forgotForm').style.display = 'none';
+            document.getElementById('newPasswordForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+            switchAuthTab('login');
+        }
+
+        async function handleForgotDetails(e) {
+            e.preventDefault();
+            const identifier = document.getElementById('forgotIdentifier').value.trim();
+            if (!identifier) return;
+
+            const btn = document.querySelector('#forgotForm .btn-submit');
+            const originalText = btn.textContent;
+            btn.textContent = 'Checking details...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/patients/forgot-details`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || 'Account details check failed');
+                }
+
+                // Switch verification mode to reset password
+                otpVerificationMode = 'reset';
+                resetIdentifier = data.patientId;
+
+                // Configure Aadhaar/Mobile OTP Verification Modal for reset password
+                document.querySelector('#aadhaarOtpModal h3').innerHTML = '<i class="fas fa-key" style="color: #10b981;"></i> Mobile OTP Verification';
+                document.querySelector('#aadhaarOtpModal p').innerHTML = 'An OTP has been sent to your registered mobile number: <strong>' + data.contact + '</strong> (linked with Patient ID ' + data.patientId + '). Please enter the code below to verify and reset your password.';
+                
+                // Open verification modal
+                document.getElementById('aadhaarOtpModal').classList.add('active');
+                document.getElementById('otp1').focus();
+
+            } catch (err) {
+                alert('Recovery Error: ' + err.message);
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function handleResetPasswordSubmit(e) {
+            e.preventDefault();
+            const newPassword = document.getElementById('resetNewPassword').value.trim();
+            if (!newPassword) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/patients/reset-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        identifier: resetIdentifier,
+                        otp: '123456', // Mock OTP code validated
+                        newPassword
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || 'Password reset failed');
+                }
+
+                alert('Password reset successful! Please login with your new password.');
+                document.getElementById('resetNewPassword').value = '';
+                cancelForgotFlow();
+
+            } catch (err) {
+                alert('Reset Error: ' + err.message);
             }
         }
 
