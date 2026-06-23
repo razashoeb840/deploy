@@ -260,7 +260,7 @@
                     <div class="stat-card">
                         <div class="stat-icon green"><i class="fas fa-hospital-user"></i></div>
                         <div style="text-align: left;">
-                            <span style="font-size: 11px; color:#64748b; font-weight:600; text-transform:uppercase;">Total Visits</span>
+                            <span style="font-size: 11px; color:#64748b; font-weight:600; text-transform:uppercase;">Completed Cycles</span>
                             <h3 style="font-size: 22px; font-weight:800; color:#0f172a;" id="statVisits">0</h3>
                         </div>
                     </div>
@@ -466,6 +466,15 @@
         let pendingSignupPayload = null;
         let otpVerificationMode = 'signup'; // 'signup' or 'reset'
         let resetIdentifier = '';
+
+        function formatDoctorName(name) {
+            if (!name) return 'General Consultant';
+            let clean = name.trim();
+            // Remove multiple "dr." or "dr" case insensitively
+            clean = clean.replace(/^(dr\.\s*)+/i, '');
+            clean = clean.replace(/^(dr\s*)+/i, '');
+            return 'Dr. ' + clean;
+        }
 
         // Auto-check local storage on start to see if user is already logged in
         document.addEventListener('DOMContentLoaded', () => {
@@ -752,6 +761,11 @@
                     throw new Error(data.error || 'Session expired. Please log in again.');
                 }
 
+                // Filter out dummy registration profile visits
+                if (data.visits) {
+                    data.visits = data.visits.filter(v => v.symptoms !== 'Account Registration Profile');
+                }
+
                 dashboardData = data;
                 localStorage.setItem('patientProfile', JSON.stringify(data.profile));
 
@@ -776,8 +790,18 @@
             document.getElementById('patientDisplayPid').textContent = profile.patientId;
             document.getElementById('patientAvatar').textContent = profile.name.charAt(0).toUpperCase();
 
-            // Stats Cards
-            document.getElementById('statVisits').textContent = visits.length;
+            // Calculate cycles chronologically (oldest valid visit gets Cycle #1)
+            const cycleVisits = [...visits]
+                .filter(v => v.status === 'completed' || v.status === 'prescribed')
+                .reverse(); // Older visits first for assigning numbers chronologically
+
+            window.visitCycleMap = {};
+            cycleVisits.forEach((v, index) => {
+                window.visitCycleMap[v.visitId] = index + 1;
+            });
+
+            // Stats Cards - Total Completed Cycles
+            document.getElementById('statVisits').textContent = cycleVisits.length;
             const prescriptionCount = visits.filter(v => v.prescription !== null).length;
             document.getElementById('statPrescriptions').textContent = prescriptionCount;
             document.getElementById('statReports').textContent = profile.reports.length;
@@ -815,23 +839,27 @@
             } else {
                 // Get latest 3 visits
                 const recentVisits = visits.slice(0, 3);
-                reportsContainer.innerHTML = recentVisits.map((v, idx) => {
+                reportsContainer.innerHTML = recentVisits.map((v) => {
+                    const originalIdx = visits.indexOf(v);
                     const date = new Date(v.date).toLocaleDateString();
-                    const docName = v.doctor ? 'Dr. ' + v.doctor.name : 'General Consultant';
+                    const docName = v.doctor ? formatDoctorName(v.doctor.name) : 'General Consultant';
                     const docDept = v.doctor ? v.doctor.specialization : 'OPD';
                     
+                    const cycleNum = window.visitCycleMap[v.visitId];
+                    const cycleLabel = cycleNum ? `Cycle #${cycleNum}` : 'In Queue';
+                    
                     const rxBtn = v.prescription ? 
-                        `<button class="receipt-btn" style="padding:4px 8px; font-size:10px; background:#10b981;" onclick="exportPrescriptionPDF(${idx})"><i class="fas fa-file-prescription"></i> Rx</button>` : '';
+                        `<button class="receipt-btn" style="padding:4px 8px; font-size:10px; background:#10b981;" onclick="exportPrescriptionPDF(${originalIdx})"><i class="fas fa-file-prescription"></i> Rx</button>` : '';
                     
                     return `
                         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 15px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
                             <div>
-                                <div style="font-weight:700; color:#334155;">${docName} (${docDept})</div>
+                                <div style="font-weight:700; color:#334155;">${docName} (${docDept}) <span style="font-size:10px; font-weight:bold; color:#064e3b; background:#e6f4ea; padding:2px 6px; border-radius:8px; margin-left:5px;">${cycleLabel}</span></div>
                                 <div style="color:#64748b; font-size:10px;">Date: ${date} | Symptoms: ${v.symptoms}</div>
                             </div>
                             <div style="display:flex; gap:5px; align-items:center;">
                                 ${rxBtn}
-                                <button class="receipt-btn" style="padding:4px 8px; font-size:10px; background:#04384b;" onclick="exportClinicalReportPDF(${idx})"><i class="fas fa-file-medical"></i> Case</button>
+                                <button class="receipt-btn" style="padding:4px 8px; font-size:10px; background:#04384b;" onclick="exportClinicalReportPDF(${originalIdx})"><i class="fas fa-file-medical"></i> Case</button>
                             </div>
                         </div>
                     `;
@@ -880,15 +908,21 @@
                     else if (statusVal === 'COMPLETED') statusColor = '#10b981';
                     else if (statusVal === 'PRESCRIBED') statusColor = '#1d4ed8';
 
+                    const cycleNum = window.visitCycleMap[v.visitId];
+                    const cycleBadge = cycleNum ? 
+                        `<span style="background:#064e3b; color:white; font-size:11px; font-weight:700; padding:4px 10px; border-radius:12px; margin-left: 10px;"><i class="fas fa-sync-alt"></i> Consultation Cycle #${cycleNum}</span>` :
+                        `<span style="background:#f59e0b; color:white; font-size:11px; font-weight:700; padding:4px 10px; border-radius:12px; margin-left: 10px;"><i class="fas fa-hourglass-half"></i> Waiting in Queue</span>`;
+
                     details = `
                         <div style="margin-top: 10px; font-size:13px; color: #475569;">
                             <span style="font-weight: 700; color: #1e293b;">Reason/Symptoms:</span> ${v.symptoms}
                         </div>
                         <div style="margin-top: 5px; font-size:13px; color: #475569;">
-                            <span style="font-weight: 700; color: #1e293b;">Assigned Doctor:</span> ${v.doctor ? 'Dr. ' + v.doctor.name + ' (' + v.doctor.specialization + ')' : 'General Physician'}
+                            <span style="font-weight: 700; color: #1e293b;">Assigned Doctor:</span> ${v.doctor ? formatDoctorName(v.doctor.name) + ' (' + v.doctor.specialization + ')' : 'General Physician'}
                         </div>
                         <div style="margin-top: 5px; font-size:13px; color: #475569;">
                             <span style="font-weight: 700; color: #1e293b;">Visit Status:</span> <span style="background:${statusColor}; color:white; font-size:10px; font-weight:700; padding:2px 8px; border-radius:12px;">${statusVal}</span>
+                            ${cycleBadge}
                         </div>
                     `;
                 }
@@ -939,6 +973,8 @@
             container.innerHTML = prescriptionVisits.map(v => {
                 const rx = v.prescription;
                 const date = new Date(rx.date).toLocaleDateString();
+                const cycleNum = window.visitCycleMap[v.visitId];
+                const cycleLabel = cycleNum ? `(Cycle #${cycleNum})` : '';
                 
                 const medicinesList = rx.medicines.map(m => `
                     <tr style="border-bottom:1px solid #f1f5f9;">
@@ -953,7 +989,7 @@
                     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:25px; text-align:left;">
                         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px dashed #cbd5e1; padding-bottom:10px; margin-bottom:15px;">
                             <div>
-                                <h3 style="font-size:15px; font-weight:700; color:#064e3b;"><i class="fas fa-stethoscope"></i> Prescribed by Dr. ${v.doctor ? v.doctor.name : 'Consultant'}</h3>
+                                <h3 style="font-size:15px; font-weight:700; color:#064e3b;"><i class="fas fa-stethoscope"></i> Prescribed by ${formatDoctorName(v.doctor ? v.doctor.name : '')} ${cycleLabel}</h3>
                                 <span style="font-size:11px; color:#64748b;">Specialization: ${v.doctor ? v.doctor.specialization : 'OPD'}</span>
                             </div>
                             <div style="text-align:right;">
@@ -997,12 +1033,14 @@
 
             body.innerHTML = visits.map((v, index) => {
                 const date = new Date(v.date).toLocaleDateString();
-                const docName = v.doctor ? 'Dr. ' + v.doctor.name : 'General Consultant';
+                const docName = v.doctor ? formatDoctorName(v.doctor.name) : 'General Consultant';
+                const cycleNum = window.visitCycleMap[v.visitId];
+                const cycleLabel = cycleNum ? `Cycle #${cycleNum}` : 'In Queue';
                 
                 return `
                     <tr style="border-bottom: 1px solid #f1f5f9;">
                         <td style="padding:15px; font-weight:600; color:#334155;">${date}</td>
-                        <td style="padding:15px; color:#475569;">${v.bill.service}</td>
+                        <td style="padding:15px; color:#475569;">${v.bill.service} <span style="font-size:10px; font-weight:bold; color:#064e3b; background:#e6f4ea; padding:2px 6px; border-radius:8px; margin-left:5px;">${cycleLabel}</span></td>
                         <td style="padding:15px; font-weight:600;">${docName}</td>
                         <td style="padding:15px; font-weight:700; color:#10b981;">₹ ${v.bill.amount}</td>
                         <td style="padding:15px; text-align:center;">
@@ -1022,8 +1060,10 @@
             } else {
                 hospitalContainer.innerHTML = visits.map((v, index) => {
                     const date = new Date(v.date).toLocaleDateString() + ' ' + new Date(v.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    const docName = v.doctor ? 'Dr. ' + v.doctor.name : 'General Consultant';
+                    const docName = v.doctor ? formatDoctorName(v.doctor.name) : 'General Consultant';
                     const docDept = v.doctor ? v.doctor.specialization : 'OPD';
+                    const cycleNum = window.visitCycleMap[v.visitId];
+                    const cycleLabel = cycleNum ? `Cycle #${cycleNum}` : 'In Queue';
                     
                     const rxBtn = v.prescription ? 
                         `<button class="receipt-btn" style="background:#10b981; font-size:11px;" onclick="exportPrescriptionPDF(${index})"><i class="fas fa-file-prescription"></i> Rx PDF</button>` : '';
@@ -1035,7 +1075,7 @@
                                     <i class="fas fa-file-invoice"></i>
                                 </div>
                                 <div style="text-align: left;">
-                                    <h4 style="font-size:13px; font-weight:700; color:#334155;">Clinical Case Report</h4>
+                                    <h4 style="font-size:13px; font-weight:700; color:#334155;">Clinical Case Report <span style="font-size:10px; font-weight:bold; color:#064e3b; background:#e6f4ea; padding:2px 6px; border-radius:8px; margin-left:5px;">${cycleLabel}</span></h4>
                                     <span style="font-size:11px; color:#64748b;">${docName} (${docDept}) · ${date}</span>
                                 </div>
                             </div>
@@ -1126,16 +1166,18 @@
             doc.setFontSize(8.5);
             doc.setTextColor(71, 85, 105); // Slate 600
 
+            const cycleNum = window.visitCycleMap[visit.visitId];
+
             doc.text("REPORT ID:", 18, 56);
             doc.text("PATIENT ID:", 18, 62);
-            doc.text("VERSION:", 110, 56);
+            doc.text("CYCLE / VER:", 110, 56);
             doc.text("DATE & TIME:", 110, 62);
 
             doc.setFont("Helvetica", "normal");
             doc.setTextColor(15, 23, 42); // Slate 900
             doc.text(rx.reportId || 'REP-N/A', 40, 56);
             doc.text(profile.patientId || 'PID-N/A', 40, 62);
-            doc.text(`v${rx.version || 1}`, 130, 56);
+            doc.text(`${cycleNum ? 'Cycle #' + cycleNum : 'N/A'} / v${rx.version || 1}`, 130, 56);
             doc.text(rx.date ? new Date(rx.date).toLocaleString() : new Date(visit.date).toLocaleString(), 130, 62);
 
             // Patient Demographics & Consultant Info
@@ -1162,7 +1204,7 @@
             // Doctor details
             doc.text(`Consultant:`, 110, 83);
             doc.setFont("Helvetica", "bold");
-            doc.text(doctor ? 'Dr. ' + doctor.name : 'Dr. Consultant', 132, 83);
+            doc.text(doctor ? formatDoctorName(doctor.name) : 'Dr. Consultant', 132, 83);
 
             doc.setFont("Helvetica", "normal");
             doc.text(`Specialization:`, 110, 89);
@@ -1309,7 +1351,7 @@
             doc.setFont("Helvetica", "normal");
             doc.setFontSize(8.5);
             doc.setTextColor(100, 116, 139);
-            doc.text(doctor ? 'Dr. ' + doctor.name : 'Medical Practitioner', 130, pageHeight - 19);
+            doc.text(doctor ? formatDoctorName(doctor.name) : 'Medical Practitioner', 130, pageHeight - 19);
             doc.text(`MediPulse Hospital Division`, 130, pageHeight - 14);
 
             doc.save(`Prescription_${rx.reportId || 'REP-N/A'}.pdf`);
@@ -1370,17 +1412,19 @@
             doc.setFontSize(9);
             doc.setTextColor(15, 23, 42);
 
+            const cycleNum = window.visitCycleMap[visit.visitId];
+
             doc.text(`Name: ${profile.name}`, 18, 65);
             doc.text(`Age / Gender: ${profile.age} years / ${profile.gender}`, 18, 71);
             doc.text(`Aadhar No: ${profile.aadhar || 'N/A'}`, 18, 77);
             doc.text(`Contact: ${profile.contact || 'N/A'}`, 18, 83);
             doc.text(`Permanent ID: ${profile.patientId || 'PID-N/A'}`, 18, 89);
 
-            doc.text(`Assigned Consultant: Dr. ${doctor ? doctor.name : 'Consultant'}`, 110, 65);
+            doc.text(`Assigned Consultant: ${doctor ? formatDoctorName(doctor.name) : 'Consultant'}`, 110, 65);
             doc.text(`Department: ${doctor ? doctor.specialization : 'Clinical Generalist'}`, 110, 71);
             doc.text(`Status: ${visit.status ? visit.status.toUpperCase() : 'N/A'}`, 110, 77);
             doc.text(`Report Date: ${visit.date ? new Date(visit.date).toLocaleString() : new Date().toLocaleString()}`, 110, 83);
-            doc.text(`Prescription Version: v${rx ? rx.version || 1 : 1}`, 110, 89);
+            doc.text(`Consultation Cycle: ${cycleNum ? 'Cycle #' + cycleNum : 'N/A'} (v${rx ? rx.version || 1 : 1})`, 110, 89);
 
             // Vitals Table
             doc.setFont("Helvetica", "bold");
@@ -1517,7 +1561,7 @@
             doc.setFont("Helvetica", "normal");
             doc.setFontSize(8.5);
             doc.setTextColor(100, 116, 139);
-            doc.text(doctor ? 'Dr. ' + doctor.name : 'Practitioner', 115, pageHeight - 19);
+            doc.text(doctor ? formatDoctorName(doctor.name) : 'Practitioner', 115, pageHeight - 19);
             doc.text(`MediPulse Hospital Division`, 115, pageHeight - 14);
 
             doc.save(`ClinicalReport_${profile.name.replace(/\s+/g, '_')}_${new Date(visit.date).toISOString().slice(0, 10)}.pdf`);
@@ -1585,6 +1629,8 @@
             
             const date = new Date(visit.date).toLocaleDateString();
             const invoiceDetails = document.getElementById('invoiceDetails');
+            const cycleNum = window.visitCycleMap[visit.visitId];
+            const cycleLabel = cycleNum ? `Cycle #${cycleNum}` : 'In Queue';
 
             invoiceDetails.innerHTML = `
 ----------------------------------------
@@ -1595,10 +1641,11 @@ Patient ID:   ${profile.patientId}
 Patient Name: ${profile.name}
 Age / Sex:    ${profile.age} / ${profile.gender}
 Aadhaar:      ${profile.aadhar ? profile.aadhar.slice(0,4) + '-XXXX-XXXX' : 'N/A'}
+Cycle:        ${cycleLabel}
 ----------------------------------------
 SERVICE CHARGED       PHYSICIAN    FEE
 ----------------------------------------
-OPD Consultation      Dr. ${visit.doctor ? visit.doctor.name.padEnd(10).slice(0,10) : 'General'}   ₹ ${visit.bill.amount}
+OPD Consultation      ${visit.doctor ? formatDoctorName(visit.doctor.name).padEnd(14).slice(0,14) : 'General'}   ₹ ${visit.bill.amount}
 ----------------------------------------
 TOTAL PAID:                        ₹ ${visit.bill.amount}
 Payment Status:       VERIFIED (SUCCESS)

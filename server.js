@@ -322,9 +322,19 @@ app.get('/api/patients/lookup', async (req, res) => {
 // Get complete visit history for a specific permanent Patient ID
 app.get('/api/patients/history/:patientId', async (req, res) => {
     try {
-        const history = await Patient.find({ patientId: req.params.patientId })
-            .populate('assignedDoctor', 'name specialization')
-            .sort({ createdAt: -1 });
+        const history = await Patient.find({ 
+            patientId: req.params.patientId,
+            problem: { $ne: 'Account Registration Profile' }
+        })
+        .populate('assignedDoctor', 'name specialization')
+        .sort({ createdAt: -1 });
+
+        // Fetch patient profile to get the uploaded reports list
+        const profile = await Patient.findOne({ 
+            patientId: req.params.patientId, 
+            password: { $exists: true } 
+        });
+        const reports = profile ? (profile.reports || []) : [];
 
         // For each visit, populate its prescription details too
         const historyWithPrescriptions = await Promise.all(history.map(async (visit) => {
@@ -335,7 +345,10 @@ app.get('/api/patients/history/:patientId', async (req, res) => {
             };
         }));
 
-        res.json(historyWithPrescriptions);
+        res.json({
+            history: historyWithPrescriptions,
+            reports: reports
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

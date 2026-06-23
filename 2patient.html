@@ -1641,8 +1641,13 @@
       <!-- History Section for Existing Patient -->
       <div id="existingHistorySection" style="display:none; margin-top:20px; border-top:1.5px solid #cbd5e1; padding-top:15px;">
         <h4 style="font-weight:700; color:#0f172a; margin-bottom:10px; font-size:14px;"><i class="fas fa-history" style="color:#01ca8b;"></i> Past Medical Visits & Prescriptions</h4>
-        <div id="existingHistoryContent" style="max-height:180px; overflow-y:auto; font-size:12px; color:#475569; border:1px solid #cbd5e1; border-radius:8px; padding:10px; background:#f8fafc;">
+        <div id="existingHistoryContent" style="max-height:180px; overflow-y:auto; font-size:12px; color:#475569; border:1px solid #cbd5e1; border-radius:8px; padding:10px; background:#f8fafc; margin-bottom: 15px;">
           No history loaded. Lookup patient first.
+        </div>
+
+        <h4 style="font-weight:700; color:#0f172a; margin-bottom:10px; font-size:14px;"><i class="fas fa-folder-open" style="color:#10b981;"></i> Patient Uploaded Diagnostic Reports</h4>
+        <div id="existingReportsContent" style="max-height:150px; overflow-y:auto; font-size:12px; color:#475569; border:1px solid #cbd5e1; border-radius:8px; padding:10px; background:#f8fafc;">
+          No uploaded reports loaded. Lookup patient first.
         </div>
       </div>
 
@@ -2084,42 +2089,85 @@
       }
     }
 
+    function downloadBase64File(fileName, base64String) {
+      const link = document.createElement('a');
+      link.href = base64String;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     async function loadExistingPatientHistory(patientId) {
       const histContent = document.getElementById('existingHistoryContent');
+      const reportsContent = document.getElementById('existingReportsContent');
       histContent.innerHTML = 'Loading history...';
+      if (reportsContent) reportsContent.innerHTML = 'Loading reports...';
 
       try {
         const res = await fetch(`${API_BASE}/patients/history/${patientId}`);
         const data = await res.json();
 
-        if (data.length === 0) {
-          histContent.innerHTML = 'No past medical visits found.';
-          return;
+        let visits = [];
+        let reports = [];
+        if (Array.isArray(data)) {
+          visits = data;
+        } else {
+          visits = data.history || [];
+          reports = data.reports || [];
         }
 
-        let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
-        data.forEach(item => {
-          const date = new Date(item.visit.createdAt).toLocaleDateString();
-          const docName = item.visit.assignedDoctor ? item.visit.assignedDoctor.name : 'Unknown';
-          const rxStr = item.prescription 
-            ? item.prescription.medicines.map(m => `${m.medicineName} (${m.dosage})`).join(', ')
-            : 'No prescription written';
+        if (visits.length === 0) {
+          histContent.innerHTML = 'No past medical visits found.';
+        } else {
+          let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
+          visits.forEach(item => {
+            const date = new Date(item.visit.createdAt).toLocaleDateString();
+            const docName = item.visit.assignedDoctor ? item.visit.assignedDoctor.name : 'Unknown';
+            const rxStr = item.prescription 
+              ? item.prescription.medicines.map(m => `${m.medicineName} (${m.dosage})`).join(', ')
+              : 'No prescription written';
 
-          html += `
-            <div style="border-left:3px solid #01ca8b; padding-left:10px; background:#f8fafc; padding:8px; border-radius:6px; text-align:left;">
-              <strong>Date:</strong> ${date} | <strong>Doctor:</strong> ${docName} | <strong>Status:</strong> ${item.visit.status.toUpperCase()}<br>
-              <strong>Vitals:</strong> BP: ${item.visit.bp} | Temp: ${item.visit.temperature} | Pulse: ${item.visit.pulseRate}<br>
-              <strong>Diagnosis/Complaint:</strong> ${item.visit.problem}<br>
-              <strong>Prescribed:</strong> ${rxStr}
-            </div>
-          `;
-        });
-        html += '</div>';
-        histContent.innerHTML = html;
+            html += `
+              <div style="border-left:3px solid #01ca8b; padding-left:10px; background:#f8fafc; padding:8px; border-radius:6px; text-align:left;">
+                <strong>Date:</strong> ${date} | <strong>Doctor:</strong> ${docName} | <strong>Status:</strong> ${item.visit.status.toUpperCase()}<br>
+                <strong>Vitals:</strong> BP: ${item.visit.bp} | Temp: ${item.visit.temperature} | Pulse: ${item.visit.pulseRate}<br>
+                <strong>Diagnosis/Complaint:</strong> ${item.visit.problem}<br>
+                <strong>Prescribed:</strong> ${rxStr}
+              </div>
+            `;
+          });
+          html += '</div>';
+          histContent.innerHTML = html;
+        }
+
+        if (!reportsContent) return;
+        if (reports.length === 0) {
+          reportsContent.innerHTML = 'No patient uploaded reports found.';
+        } else {
+          let reportsHtml = '<div style="display:flex; flex-direction:column; gap:8px;">';
+          reports.forEach(r => {
+            const date = new Date(r.uploadedAt).toLocaleDateString();
+            reportsHtml += `
+              <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; padding:6px 10px; border-radius:6px; font-size:11.5px; text-align:left;">
+                <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  <strong>${r.fileName}</strong><br>
+                  <span style="font-size:10px; color:#64748b;">Uploaded: ${date}</span>
+                </div>
+                <button class="mbtn-sec" style="padding:2px 6px; font-size:10px; cursor:pointer;" onclick="downloadBase64File('${r.fileName}', '${r.fileData}')">
+                  <i class="fas fa-download"></i> Download
+                </button>
+              </div>
+            `;
+          });
+          reportsHtml += '</div>';
+          reportsContent.innerHTML = reportsHtml;
+        }
 
       } catch (err) {
         console.error(err);
         histContent.innerHTML = 'Error loading history timeline.';
+        if (reportsContent) reportsContent.innerHTML = 'Error loading reports.';
       }
     }
 
