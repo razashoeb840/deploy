@@ -426,7 +426,7 @@
     </div>
 
     <script>
-        const API_BASE = '/api';
+        const API_BASE = window.location.port === '5000' ? '/api' : 'http://localhost:5000/api';
         let dashboardData = null;
         let pendingSignupPayload = null;
         let otpVerificationMode = 'signup'; // 'signup' or 'reset'
