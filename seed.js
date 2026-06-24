@@ -35,13 +35,12 @@ async function seed() {
                 qualifications: 'MBBS, MD (Cardiology), FACC',
                 contactNumber: '9876500101',
                 address: 'Flat 3B, Sunrise Apts, Bandra West, Mumbai',
-                aadhar: '1234-5678-0101',
                 cabin: 'Cabin A (Room 101)',
                 fee: 900,
+                bloodGroup: 'B+',
+                photo: 'https://randomuser.me/api/portraits/men/32.jpg',
                 about: 'Dr. Arjun Mehta is a senior cardiologist with 14 years of experience in interventional cardiology and echocardiography.',
-                password: doctorPw,
-                plainPassword: 'doctor123',
-                isActive: true
+                password: doctorPw, plainPassword: 'doctor123', isActive: true
             },
             {
                 doctorId: 'DOC-102',
@@ -51,13 +50,12 @@ async function seed() {
                 qualifications: 'MBBS, DM (Neurology)',
                 contactNumber: '9876500102',
                 address: 'House 12, Lake View Colony, Pune',
-                aadhar: '1234-5678-0102',
                 cabin: 'Cabin B (Room 102)',
                 fee: 750,
+                bloodGroup: 'O+',
+                photo: 'https://randomuser.me/api/portraits/women/44.jpg',
                 about: 'Dr. Priya Nair specializes in headache disorders, epilepsy, and stroke management with 11 years of clinical expertise.',
-                password: doctorPw,
-                plainPassword: 'doctor123',
-                isActive: true
+                password: doctorPw, plainPassword: 'doctor123', isActive: true
             },
             {
                 doctorId: 'DOC-103',
@@ -67,13 +65,12 @@ async function seed() {
                 qualifications: 'MBBS, MD (General Medicine)',
                 contactNumber: '9876500103',
                 address: 'Plot 7, Green Park, Chennai',
-                aadhar: '1234-5678-0103',
                 cabin: 'Cabin C (Room 103)',
                 fee: 450,
+                bloodGroup: 'A+',
+                photo: 'https://randomuser.me/api/portraits/men/55.jpg',
                 about: 'Dr. Suresh Iyer is a general physician experienced in managing chronic diseases, fever, and infectious diseases.',
-                password: doctorPw,
-                plainPassword: 'doctor123',
-                isActive: true
+                password: doctorPw, plainPassword: 'doctor123', isActive: true
             },
             {
                 doctorId: 'DOC-104',
@@ -83,13 +80,12 @@ async function seed() {
                 qualifications: 'MBBS, MD (Pediatrics), DCH',
                 contactNumber: '9876500104',
                 address: '22A, Garden Estate, Hyderabad',
-                aadhar: '1234-5678-0104',
                 cabin: 'Cabin D (Room 104)',
                 fee: 600,
+                bloodGroup: 'AB+',
+                photo: 'https://randomuser.me/api/portraits/women/68.jpg',
                 about: 'Dr. Kavya Reddy is a compassionate pediatrician with expertise in newborn care, childhood diseases, and vaccinations.',
-                password: doctorPw,
-                plainPassword: 'doctor123',
-                isActive: true
+                password: doctorPw, plainPassword: 'doctor123', isActive: true
             },
             {
                 doctorId: 'DOC-105',
@@ -99,13 +95,12 @@ async function seed() {
                 qualifications: 'MBBS, MS (Orthopedics), DNB',
                 contactNumber: '9876500105',
                 address: 'Block C-5, Sector 18, Noida',
-                aadhar: '1234-5678-0105',
                 cabin: 'Cabin E (Room 105)',
                 fee: 800,
+                bloodGroup: 'O-',
+                photo: 'https://randomuser.me/api/portraits/men/76.jpg',
                 about: 'Dr. Rahul Sharma is an orthopedic surgeon specializing in joint replacement, sports injuries, and spine disorders.',
-                password: doctorPw,
-                plainPassword: 'doctor123',
-                isActive: true
+                password: doctorPw, plainPassword: 'doctor123', isActive: true
             },
             {
                 doctorId: 'DOC-106',
@@ -115,13 +110,12 @@ async function seed() {
                 qualifications: 'MBBS, MD (Dermatology)',
                 contactNumber: '9876500106',
                 address: '8, Residency Road, Bengaluru',
-                aadhar: '1234-5678-0106',
                 cabin: 'Cabin F (Room 106)',
                 fee: 650,
+                bloodGroup: 'A-',
+                photo: 'https://randomuser.me/api/portraits/women/25.jpg',
                 about: 'Dr. Ananya Singh is a dermatologist with expertise in acne, eczema, psoriasis, and cosmetic dermatology.',
-                password: doctorPw,
-                plainPassword: 'doctor123',
-                isActive: false
+                password: doctorPw, plainPassword: 'doctor123', isActive: false
             },
             {
                 doctorId: 'DOC-107',
@@ -131,13 +125,12 @@ async function seed() {
                 qualifications: 'MBBS, MD, DM (Gastroenterology)',
                 contactNumber: '9876500107',
                 address: 'Tower B, Prestige Towers, Ahmedabad',
-                aadhar: '1234-5678-0107',
                 cabin: 'Cabin G (Room 107)',
                 fee: 850,
+                bloodGroup: 'B-',
+                photo: 'https://randomuser.me/api/portraits/men/41.jpg',
                 about: 'Dr. Vikram Patel is a senior gastroenterologist with 16 years of experience in endoscopy and liver disorders.',
-                password: doctorPw,
-                plainPassword: 'doctor123',
-                isActive: true
+                password: doctorPw, plainPassword: 'doctor123', isActive: true
             },
             {
                 doctorId: 'DOC-108',
@@ -147,13 +140,12 @@ async function seed() {
                 qualifications: 'MBBS, MS (OB-GYN)',
                 contactNumber: '9876500108',
                 address: '14, Heritage Lane, Jaipur',
-                aadhar: '1234-5678-0108',
                 cabin: 'Cabin H (Room 108)',
                 fee: 700,
+                bloodGroup: 'AB-',
+                photo: 'https://randomuser.me/api/portraits/women/57.jpg',
                 about: 'Dr. Meera Joshi is a gynecologist experienced in high-risk pregnancies, laparoscopic surgeries, and women\'s health.',
-                password: doctorPw,
-                plainPassword: 'doctor123',
-                isActive: true
+                password: doctorPw, plainPassword: 'doctor123', isActive: true
             },
             {
                 doctorId: 'DOC-109',
@@ -163,13 +155,12 @@ async function seed() {
                 qualifications: 'MBBS, MS (Ophthalmology), FICO',
                 contactNumber: '9876500109',
                 address: '5, Lotus Tower, Surat',
-                aadhar: '1234-5678-0109',
                 cabin: 'Cabin I (Room 109)',
                 fee: 600,
+                bloodGroup: 'O+',
+                photo: 'https://randomuser.me/api/portraits/men/63.jpg',
                 about: 'Dr. Kiran Desai is an ophthalmologist specializing in cataract surgeries, LASIK, and retinal disorders.',
-                password: doctorPw,
-                plainPassword: 'doctor123',
-                isActive: true
+                password: doctorPw, plainPassword: 'doctor123', isActive: true
             },
             {
                 doctorId: 'DOC-110',
@@ -179,13 +170,12 @@ async function seed() {
                 qualifications: 'MBBS, MS (ENT)',
                 contactNumber: '9876500110',
                 address: 'Wing D, Harmony Heights, Kolkata',
-                aadhar: '1234-5678-0110',
                 cabin: 'Cabin J (Room 110)',
                 fee: 550,
+                bloodGroup: 'A+',
+                photo: 'https://randomuser.me/api/portraits/men/29.jpg',
                 about: 'Dr. Aditya Bansal is an ENT specialist with expertise in sinusitis, hearing loss, tonsillitis, and endoscopic sinus surgery.',
-                password: doctorPw,
-                plainPassword: 'doctor123',
-                isActive: true
+                password: doctorPw, plainPassword: 'doctor123', isActive: true
             }
         ];
 
@@ -206,7 +196,8 @@ async function seed() {
                 role: 'admin',
                 contactNumber: '9900001111',
                 address: 'H-Block, Staff Quarters, City Hospital Campus, Mumbai',
-                aadhar: '9999-8888-0001',
+                bloodGroup: 'A+',
+                photo: 'https://randomuser.me/api/portraits/men/85.jpg',
                 password: adminPw,
                 plainPassword: 'admin@123'
             },
@@ -216,7 +207,8 @@ async function seed() {
                 role: 'receptionist',
                 contactNumber: '9900002222',
                 address: 'B-12, Andheri East, Mumbai',
-                aadhar: '9999-8888-0002',
+                bloodGroup: 'B+',
+                photo: 'https://randomuser.me/api/portraits/women/33.jpg',
                 password: recPw,
                 plainPassword: 'recep@123'
             },
@@ -226,7 +218,8 @@ async function seed() {
                 role: 'pharmacy',
                 contactNumber: '9900003333',
                 address: 'Room 4, Staff Hostel, Bhandup, Mumbai',
-                aadhar: '9999-8888-0003',
+                bloodGroup: 'O+',
+                photo: 'https://randomuser.me/api/portraits/men/52.jpg',
                 password: pharmPw,
                 plainPassword: 'pharma@123'
             }

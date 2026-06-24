@@ -13,6 +13,7 @@ const DoctorSchema = new mongoose.Schema({
     aadhar: { type: String, default: 'N/A' },
     cabin: { type: String, default: 'General Ward' },
     fee: { type: Number, default: 500 },
+    bloodGroup: { type: String, default: 'N/A' },
     about: { type: String, default: 'Dedicated to providing excellent patient care.' },
     isActive: { type: Boolean, default: true },
     photo: { type: String, default: '' },

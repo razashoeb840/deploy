@@ -1352,7 +1352,8 @@ app.post('/api/auth/login', async (req, res) => {
             genericId: user.doctorId || user.staffId,
             fee: user.fee || 500,
             contactNumber: user.contactNumber || 'N/A',
-            specialization: user.specialization || ''
+            specialization: user.specialization || '',
+            bloodGroup: user.bloodGroup || 'N/A'
         });
     } catch (err) {
         res.status(500).json({ error: err.message });

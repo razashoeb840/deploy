@@ -9,6 +9,7 @@ const StaffSchema = new mongoose.Schema({
     contactNumber: { type: String, default: 'N/A' },
     address: { type: String, default: 'N/A' },
     aadhar: { type: String, default: 'N/A' },
+    bloodGroup: { type: String, default: 'N/A' },
     photo: { type: String, default: '' },
     signature: { type: String, default: '' },
     addedAt: { type: Date, default: Date.now }
