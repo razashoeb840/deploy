@@ -29,6 +29,11 @@
       overflow-x: hidden;
     }
 
+    html.modal-open, body.modal-open {
+      overflow: hidden !important;
+      height: 100vh !important;
+    }
+
     .mp-wrap {
       display: flex;
       flex-direction: column;
@@ -3346,8 +3351,32 @@
       }
     }
 
+    // Automatically manage body scroll lock when modal states change
+    function updateBodyScrollLock() {
+      const openModals = document.querySelectorAll('.ov-wrap.open, .del-confirm-wrap.open, .rec-msg-overlay.open');
+      if (openModals.length > 0) {
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
+      } else {
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       renderHeaderProfile();
+      
+      // Set up MutationObserver to watch for modal class changes
+      const observer = new MutationObserver(() => {
+        updateBodyScrollLock();
+      });
+      
+      document.querySelectorAll('.ov-wrap, .del-confirm-wrap, .rec-msg-overlay').forEach(modal => {
+        observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
+      });
+
+      // Initial check
+      updateBodyScrollLock();
     });
   </script>
 
