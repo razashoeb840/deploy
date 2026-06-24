@@ -1201,6 +1201,9 @@
           localStorage.setItem('userSignature', currentDoctor.signature || '');
           localStorage.setItem('genericId', currentDoctor.doctorId || currentDoctor._id);
           localStorage.setItem('userFee', currentDoctor.fee || '500');
+          localStorage.setItem('userPhone', currentDoctor.contactNumber || 'N/A');
+          localStorage.setItem('userAddress', currentDoctor.address || 'N/A');
+          localStorage.setItem('userSpecialization', currentDoctor.specialization || '');
 
           // Render Profile Dropdown & Avatar
           const docAvatarLabel = document.getElementById('docAvatarLabel');
