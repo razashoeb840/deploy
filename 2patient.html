@@ -1393,6 +1393,10 @@
         </div>
       </div>
 
+      <a href="1index.html" title="Go to Home" style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; background:linear-gradient(135deg,#01ca8b,#008f62); color:#fff; border-radius:8px; font-size:12px; font-weight:600; text-decoration:none; box-shadow:0 3px 8px rgba(1,202,139,0.25); transition:all 0.2s ease; white-space:nowrap; flex-shrink:0;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 14px rgba(1,202,139,0.35)'" onmouseout="this.style.transform='';this.style.boxShadow='0 3px 8px rgba(1,202,139,0.25)'">
+        <i class="fas fa-home"></i> Home
+      </a>
+
       <div class="mp-search">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#01ca8b" stroke-width="2">
           <circle cx="11" cy="11" r="8" />
@@ -3424,9 +3428,18 @@
       }
     }
 
+    // Helper: returns YYYY-MM-DD in local timezone (not UTC)
+    function getLocalDateStr(date) {
+      const d = date || new Date();
+      const yr = d.getFullYear();
+      const mo = String(d.getMonth() + 1).padStart(2, '0');
+      const dy = String(d.getDate()).padStart(2, '0');
+      return `${yr}-${mo}-${dy}`;
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-      // Set date filters default to today
-      const todayStr = new Date().toISOString().split('T')[0];
+      // Set date filters default to today (local timezone)
+      const todayStr = getLocalDateStr();
       const activityDateInput = document.getElementById('activityDateFilter');
       if (activityDateInput) {
         activityDateInput.value = todayStr;

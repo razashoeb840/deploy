@@ -253,6 +253,10 @@ body{
         <div class="mp-logo-tagline">Smart Pharmacy POS</div>
       </div>
     </div>
+
+    <a href="1index.html" title="Go to Home" style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; background:linear-gradient(135deg,#01ca8b,#008f62); color:#fff; border-radius:8px; font-size:12px; font-weight:600; text-decoration:none; box-shadow:0 3px 8px rgba(1,202,139,0.25); transition:all 0.2s ease; white-space:nowrap; flex-shrink:0;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 14px rgba(1,202,139,0.35)'" onmouseout="this.style.transform='';this.style.boxShadow='0 3px 8px rgba(1,202,139,0.25)'">
+      <i class="fas fa-home"></i> Home
+    </a>
     
     <div class="mp-hactions">
       <div class="theme-selector-container">
@@ -1012,9 +1016,18 @@ function clearSalesHistoryFilter() {
     fetchSalesHistory();
 }
 
+    // Helper: returns YYYY-MM-DD in local timezone (not UTC)
+    function getLocalDateStr(d) {
+      const dt = d || new Date();
+      const yr = dt.getFullYear();
+      const mo = String(dt.getMonth() + 1).padStart(2, '0');
+      const dy = String(dt.getDate()).padStart(2, '0');
+      return `${yr}-${mo}-${dy}`;
+    }
+
 async function fetchTodaySales() {
   try {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateStr();
     const res = await fetch(`${API_BASE}/medicines/sales?date=${todayStr}`);
     if (res.ok) {
       const data = await res.json();
@@ -1256,7 +1269,7 @@ async function fetchYesterdaySales() {
   try {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const yesterdayStr = getLocalDateStr(yesterday);
     const res = await fetch(`${API_BASE}/medicines/sales?date=${yesterdayStr}`);
     if (res.ok) {
       const data = await res.json();
