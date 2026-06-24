@@ -278,7 +278,13 @@
                                 </div>
                             </td>
                             <td style="color: #10b981; font-weight: 800; font-size: 16px;">T-${p.token}</td>
-                            <td style="font-weight: 600;">${p.assignedDoctor ? '<i class="fas fa-stethoscope" style="color:#94a3b8; margin-right:5px;"></i> Dr. ' + p.assignedDoctor.name : '<span style="color:#94a3b8;">Unassigned</span>'}</td>
+                            <td style="font-weight: 600;">
+                                ${p.assignedDoctor ? `
+                                    <i class="fas fa-stethoscope" style="color:#94a3b8; margin-right:5px;"></i> Dr. ${p.assignedDoctor.name}
+                                    <br>
+                                    <span style="font-size: 11px; color: #10b981; font-weight: 700; margin-left: 22px;">₹${p.assignedDoctor.fee || 500}</span>
+                                ` : '<span style="color:#94a3b8;">Unassigned</span>'}
+                            </td>
                             <td style="color: #475569;">${p.problem}</td>
                             <td><span class="badge ${statusClass}"><i class="fas ${icon}"></i> ${p.status.toUpperCase()}</span></td>
                             <td>

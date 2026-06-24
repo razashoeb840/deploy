@@ -26,7 +26,8 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(compression());
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Serve static frontend files with caching (except HTML files to guarantee instant updates)
 app.use(express.static(__dirname, {
@@ -94,9 +95,9 @@ async function autoSeed() {
 
         // 1. Seed Doctors
         const doctors = [
-            { doctorId: 'DOC-101', name: 'Dr. Rohan Sharma', specialization: 'Cardiology', password: defaultPasswordHash, plainPassword: '123456' },
-            { doctorId: 'DOC-102', name: 'Dr. Anjali Verma', specialization: 'Neurology', password: defaultPasswordHash, plainPassword: '123456' },
-            { doctorId: 'DOC-103', name: 'Dr. Prakash Iyer', specialization: 'General Physician', password: defaultPasswordHash, plainPassword: '123456' }
+            { doctorId: 'DOC-101', name: 'Dr. Rohan Sharma', specialization: 'Cardiology', password: defaultPasswordHash, plainPassword: '123456', fee: 800 },
+            { doctorId: 'DOC-102', name: 'Dr. Anjali Verma', specialization: 'Neurology', password: defaultPasswordHash, plainPassword: '123456', fee: 600 },
+            { doctorId: 'DOC-103', name: 'Dr. Prakash Iyer', specialization: 'General Physician', password: defaultPasswordHash, plainPassword: '123456', fee: 450 }
         ];
         await Doctor.insertMany(doctors);
         console.log('Seeded default Doctors.');
@@ -326,7 +327,7 @@ app.get('/api/patients/history/:patientId', async (req, res) => {
             patientId: req.params.patientId,
             problem: { $ne: 'Account Registration Profile' }
         })
-        .populate('assignedDoctor', 'name specialization')
+        .populate('assignedDoctor', 'name specialization fee cabin')
         .sort({ createdAt: -1 });
 
         // Fetch patient profile to get the uploaded reports list
@@ -357,7 +358,7 @@ app.get('/api/patients/history/:patientId', async (req, res) => {
 app.get('/api/patients/queue', async (req, res) => {
     try {
         const queue = await Patient.find({ status: { $ne: 'completed' } })
-            .populate('assignedDoctor', 'name specialization')
+            .populate('assignedDoctor', 'name specialization fee cabin')
             .sort({ token: 1 });
         res.json(queue);
     } catch (err) {
@@ -368,7 +369,7 @@ app.get('/api/patients/queue', async (req, res) => {
 app.get('/api/patients', async (req, res) => {
     try {
         const history = await Patient.find() 
-            .populate('assignedDoctor', 'name specialization')
+            .populate('assignedDoctor', 'name specialization fee cabin')
             .sort({ createdAt: -1 });
         res.json(history);
     } catch (err) {
@@ -411,7 +412,7 @@ app.get('/api/patients/history', async (req, res) => {
         }
 
         let history = await Patient.find(query)
-            .populate('assignedDoctor', 'name specialization')
+            .populate('assignedDoctor', 'name specialization fee cabin')
             .sort({ createdAt: -1 })
             .lean();
 
@@ -991,10 +992,34 @@ app.get('/api/admin/stats', async (req, res) => {
 app.get('/api/admin/staff', async (req, res) => {
     try {
         const doctors = await Doctor.find().lean();
-        const d_mapped = doctors.map(d => ({ id: d.doctorId, name: d.name, role: 'Doctor (' + d.specialization + ')', password: d.plainPassword || '123456' }));
+        const d_mapped = doctors.map(d => ({ 
+            id: d.doctorId, 
+            name: d.name, 
+            role: 'Doctor (' + d.specialization + ')', 
+            password: d.plainPassword || '123456',
+            fee: d.fee || 500,
+            specialization: d.specialization,
+            qualifications: d.qualifications || 'MBBS',
+            experience: d.experience || 0,
+            contactNumber: d.contactNumber || '',
+            address: d.address || '',
+            aadhar: d.aadhar || '',
+            photo: d.photo || '',
+            signature: d.signature || ''
+        }));
         
         const staffList = await Staff.find().lean();
-        const s_mapped = staffList.map(s => ({ id: s.staffId, name: s.name, role: s.role.toUpperCase(), password: s.plainPassword || '123456' }));
+        const s_mapped = staffList.map(s => ({ 
+            id: s.staffId, 
+            name: s.name, 
+            role: s.role.toUpperCase(), 
+            password: s.plainPassword || '123456',
+            contactNumber: s.contactNumber || '',
+            address: s.address || '',
+            aadhar: s.aadhar || '',
+            photo: s.photo || '',
+            signature: s.signature || ''
+        }));
         
         res.json([...d_mapped, ...s_mapped]);
     } catch(err) {
@@ -1062,7 +1087,7 @@ app.get('/api/admin/doctor-performance', async (req, res) => {
 });
 
 app.post('/api/admin/register-staff', async (req, res) => {
-    const { name, role, specialization, experience, qualifications, contactNumber, address, aadhar } = req.body;
+    const { name, role, specialization, experience, qualifications, contactNumber, address, aadhar, fee, photo, signature } = req.body;
     try {
         const year = new Date().getFullYear();
         const randomHex = Math.floor(1000 + Math.random() * 9000);
@@ -1072,14 +1097,39 @@ app.post('/api/admin/register-staff', async (req, res) => {
 
         if(role === 'doctor') {
             const doctorId = `DOC-${year}-${randomHex}`;
-            const newDoc = new Doctor({ doctorId, name: 'Dr. ' + name, password: hashedPassword, plainPassword: rawPassword, specialization, experience: experience || 0, qualifications: qualifications || 'MBBS', contactNumber: contactNumber || 'N/A', address: address || 'N/A', aadhar: aadhar || 'N/A' });
+            const newDoc = new Doctor({ 
+                doctorId, 
+                name: 'Dr. ' + name, 
+                password: hashedPassword, 
+                plainPassword: rawPassword, 
+                specialization, 
+                experience: experience || 0, 
+                qualifications: qualifications || 'MBBS', 
+                contactNumber: contactNumber || 'N/A', 
+                address: address || 'N/A', 
+                aadhar: aadhar || 'N/A',
+                fee: parseFloat(fee) || 500,
+                photo: photo || '',
+                signature: signature || ''
+            });
             await newDoc.save();
             io.emit('admin_action', { action: 'register_doctor', targetName: newDoc.name, details: newDoc.specialization });
             res.json({ success: true, user: newDoc, rawPassword });
         } else {
             const prefix = role.substring(0,3).toUpperCase();
             const staffId = `${prefix}-${year}-${randomHex}`;
-            const newStaff = new Staff({ staffId, name, password: hashedPassword, plainPassword: rawPassword, role, contactNumber: contactNumber || 'N/A', address: address || 'N/A', aadhar: aadhar || 'N/A' });
+            const newStaff = new Staff({ 
+                staffId, 
+                name, 
+                password: hashedPassword, 
+                plainPassword: rawPassword, 
+                role, 
+                contactNumber: contactNumber || 'N/A', 
+                address: address || 'N/A', 
+                aadhar: aadhar || 'N/A',
+                photo: photo || '',
+                signature: signature || ''
+            });
             await newStaff.save();
             io.emit('admin_action', { action: 'register_staff', targetName: newStaff.name, details: `Role: ${role}` });
             res.json({ success: true, user: newStaff, rawPassword });
@@ -1089,13 +1139,49 @@ app.post('/api/admin/register-staff', async (req, res) => {
     }
 });
 
+app.put('/api/admin/staff/:id', async (req, res) => {
+    const id = req.params.id;
+    const { name, specialization, experience, qualifications, contactNumber, address, aadhar, fee, photo, signature } = req.body;
+    try {
+        if(id.startsWith('DOC')) {
+            const doc = await Doctor.findOne({ doctorId: id });
+            if (!doc) return res.status(404).json({ success: false, error: 'Doctor not found' });
+            if (name !== undefined) doc.name = name;
+            if (specialization !== undefined) doc.specialization = specialization;
+            if (experience !== undefined) doc.experience = parseInt(experience) || doc.experience;
+            if (qualifications !== undefined) doc.qualifications = qualifications;
+            if (contactNumber !== undefined) doc.contactNumber = contactNumber;
+            if (address !== undefined) doc.address = address;
+            if (aadhar !== undefined) doc.aadhar = aadhar;
+            if (fee !== undefined) doc.fee = parseFloat(fee) || doc.fee;
+            if (photo !== undefined) doc.photo = photo;
+            if (signature !== undefined) doc.signature = signature;
+            await doc.save();
+            res.json({ success: true, user: doc });
+        } else {
+            const stf = await Staff.findOne({ staffId: id });
+            if (!stf) return res.status(404).json({ success: false, error: 'Staff not found' });
+            if (name !== undefined) stf.name = name;
+            if (contactNumber !== undefined) stf.contactNumber = contactNumber;
+            if (address !== undefined) stf.address = address;
+            if (aadhar !== undefined) stf.aadhar = aadhar;
+            if (photo !== undefined) stf.photo = photo;
+            if (signature !== undefined) stf.signature = signature;
+            await stf.save();
+            res.json({ success: true, user: stf });
+        }
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // --- AUTH API ---
 app.post('/api/auth/login', async (req, res) => {
     const { id, password, role } = req.body;
     try {
         let user = null;
         if (role === 'guest') {
-            const token = jwt.sign({ id: 'guest', role: 'guest' }, 'smartcare_secret_key', { expiresIn: '12h' });
+            const token = jwt.sign({ id: 'guest', role: 'guest' }, 'smartcare_secret_key', { expiresIn: '30d' });
             return res.json({ success: true, token, role: 'guest', userName: 'Guest' });
         } else if (role === 'doctor') {
             user = await Doctor.findOne({ doctorId: id });
@@ -1112,8 +1198,19 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(401).json({ success: false, message: 'Invalid password' });
         }
 
-        const token = jwt.sign({ id: user._id, role, genericId: user.doctorId || user.staffId }, 'smartcare_secret_key', { expiresIn: '12h' });
-        res.json({ success: true, token, role, userName: user.name });
+        const token = jwt.sign({ id: user._id, role, genericId: user.doctorId || user.staffId }, 'smartcare_secret_key', { expiresIn: '30d' });
+        res.json({ 
+            success: true, 
+            token, 
+            role, 
+            userName: user.name,
+            photo: user.photo || '',
+            signature: user.signature || '',
+            genericId: user.doctorId || user.staffId,
+            fee: user.fee || 500,
+            contactNumber: user.contactNumber || 'N/A',
+            specialization: user.specialization || ''
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

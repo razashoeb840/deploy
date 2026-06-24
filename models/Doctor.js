@@ -14,7 +14,9 @@ const DoctorSchema = new mongoose.Schema({
     cabin: { type: String, default: 'General Ward' },
     fee: { type: Number, default: 500 },
     about: { type: String, default: 'Dedicated to providing excellent patient care.' },
-    isActive: { type: Boolean, default: true }
+    isActive: { type: Boolean, default: true },
+    photo: { type: String, default: '' },
+    signature: { type: String, default: '' }
 });
 
 DoctorSchema.index({ name: 1 });

@@ -109,6 +109,36 @@
             color: #10b981;
             text-decoration: underline;
         }
+
+        @media print {
+            body > * {
+                display: none !important;
+            }
+            #idCardModal {
+                display: flex !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                background: transparent !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+                visibility: visible !important;
+                z-index: 99999 !important;
+            }
+            #idCardModal > div, #idCardModal .modal-content > div {
+                border: none !important;
+                box-shadow: none !important;
+                margin: auto !important;
+                background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            #idCardModal button, #idCardModal .close-modal {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -208,9 +238,9 @@
                 <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow-x: auto; margin-bottom: 30px; -webkit-overflow-scrolling: touch;">
                     <table>
                         <thead>
-                            <tr><th>ID</th><th>Name</th><th>Specialization</th><th>Password</th><th style="width: 80px;">Action</th></tr>
+                            <tr><th>ID</th><th>Name</th><th>Specialization</th><th>Consultation Fee</th><th>Password</th><th style="width: 140px;">Action</th></tr>
                         </thead>
-                        <tbody id="docTableBody"><tr><td colspan="4">Loading...</td></tr></tbody>
+                        <tbody id="docTableBody"><tr><td colspan="6">Loading...</td></tr></tbody>
                     </table>
                 </div>
                 
@@ -218,7 +248,7 @@
                 <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow-x: auto; margin-bottom: 30px; -webkit-overflow-scrolling: touch;">
                     <table>
                         <thead>
-                            <tr><th>ID</th><th>Name</th><th>Role</th><th>Password</th><th style="width: 80px;">Action</th></tr>
+                            <tr><th>ID</th><th>Name</th><th>Role</th><th>Password</th><th style="width: 140px;">Action</th></tr>
                         </thead>
                         <tbody id="recTableBody"><tr><td colspan="5">Loading...</td></tr></tbody>
                     </table>
@@ -228,7 +258,7 @@
                 <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow-x: auto; margin-bottom: 10px; -webkit-overflow-scrolling: touch;">
                     <table>
                         <thead>
-                            <tr><th>ID</th><th>Name</th><th>Role</th><th>Password</th><th style="width: 80px;">Action</th></tr>
+                            <tr><th>ID</th><th>Name</th><th>Role</th><th>Password</th><th style="width: 140px;">Action</th></tr>
                         </thead>
                         <tbody id="pharTableBody"><tr><td colspan="5">Loading...</td></tr></tbody>
                     </table>
@@ -240,7 +270,7 @@
 
     <!-- ADD DOCTOR MODAL -->
     <div class="modal-overlay" id="doctorModal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width:550px; max-height:90vh; overflow-y:auto;">
             <button class="close-modal" onclick="closeModal('doctorModal')">&times;</button>
             <h3 style="margin-bottom:20px; font-size:18px; color:#0f172a;">Register New Doctor</h3>
             <form onsubmit="registerPersonnel(event, 'doctor')">
@@ -262,6 +292,10 @@
                         <input type="number" id="docExp" placeholder="e.g. 5" min="0" required>
                     </div>
                     <div class="form-group" style="margin:0;">
+                        <label>Consultation Fee (₹)</label>
+                        <input type="number" id="docFee" placeholder="e.g. 500" min="0" value="500" required>
+                    </div>
+                    <div class="form-group" style="margin:0;">
                         <label>Contact Number (Optional)</label>
                         <input type="text" id="docPhone" placeholder="+91 ...">
                     </div>
@@ -269,9 +303,17 @@
                         <label>Residential Address (Optional)</label>
                         <input type="text" id="docAddr" placeholder="e.g. Mumbai, MH">
                     </div>
-                    <div class="form-group" style="margin:0; grid-column:1/-1;">
+                    <div class="form-group" style="margin:0;">
                         <label>Aadhar ID Proof (Optional)</label>
                         <input type="text" id="docAadhar" placeholder="xxxx-xxxx-xxxx">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Profile Picture (Optional)</label>
+                        <input type="file" id="docPhoto" accept="image/*" style="padding: 8px;">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Signature Scan (Optional)</label>
+                        <input type="file" id="docSignature" accept="image/*" style="padding: 8px;">
                     </div>
                 </div>
                 <button type="submit" class="btn-submit" id="btn-doctor">Assign ID & Register</button>
@@ -281,14 +323,14 @@
 
     <!-- ADD STAFF MODAL -->
     <div class="modal-overlay" id="staffModal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width:550px; max-height:90vh; overflow-y:auto;">
             <button class="close-modal" onclick="closeModal('staffModal')">&times;</button>
             <h3 style="margin-bottom:20px; font-size:18px; color:#0f172a;">Register Core Staff</h3>
             <form onsubmit="registerPersonnel(event, 'staff')">
                 <div class="form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
                     <div class="form-group" style="margin:0;">
                         <label>System Role *</label>
-                        <select id="staffRole" required style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:12px; outline:none;">
+                        <select id="staffRole" required style="width:100%; border:2px solid #e2e8f0; border-radius:10px; padding:12px; outline:none;">
                             <option value="">-- Choose Role --</option>
                             <option value="admin">Administrator</option>
                             <option value="receptionist">Receptionist</option>
@@ -311,8 +353,90 @@
                         <label>Aadhar ID Proof (Optional)</label>
                         <input type="text" id="staffAadhar" placeholder="xxxx-xxxx-xxxx">
                     </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Profile Picture (Optional)</label>
+                        <input type="file" id="staffPhoto" accept="image/*" style="padding: 8px;">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Signature Scan (Optional)</label>
+                        <input type="file" id="staffSignature" accept="image/*" style="padding: 8px;">
+                    </div>
                 </div>
                 <button type="submit" class="btn-submit" id="btn-staff">Assign ID & Register</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT STAFF MODAL -->
+    <div class="modal-overlay" id="editStaffModal">
+        <div class="modal-content" style="max-width:550px; max-height:90vh; overflow-y:auto;">
+            <button class="close-modal" onclick="closeModal('editStaffModal')">&times;</button>
+            <h3 style="margin-bottom:20px; font-size:18px; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-edit" style="color:#10b981;"></i> Edit Profile & Settings
+            </h3>
+            <form onsubmit="saveStaffEdit(event)">
+                <input type="hidden" id="editStaffId">
+                <div class="form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
+                    <div class="form-group" style="margin:0; grid-column:1/-1;">
+                        <label>Personnel ID</label>
+                        <input type="text" id="editDisplayId" readonly style="background:#f8fafc; font-weight:700; color:#059669;">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Full Name</label>
+                        <input type="text" id="editStaffName" required>
+                    </div>
+                    <div class="form-group" id="editDocSpecGroup" style="margin:0;">
+                        <label>Specialization</label>
+                        <input type="text" id="editDocSpec">
+                    </div>
+                    <div class="form-group" id="editDocQualGroup" style="margin:0;">
+                        <label>Qualifications</label>
+                        <input type="text" id="editDocQual">
+                    </div>
+                    <div class="form-group" id="editDocExpGroup" style="margin:0;">
+                        <label>Experience (Years)</label>
+                        <input type="number" id="editDocExp" min="0">
+                    </div>
+                    <div class="form-group" id="editDocFeeGroup" style="margin:0;">
+                        <label>Consultation Fee (₹)</label>
+                        <input type="number" id="editDocFee" min="0">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Contact Number (Optional)</label>
+                        <input type="text" id="editStaffPhone">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Residential Address (Optional)</label>
+                        <input type="text" id="editStaffAddr">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Aadhar ID Proof (Optional)</label>
+                        <input type="text" id="editStaffAadhar">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>New Profile Picture (Optional)</label>
+                        <input type="file" id="editStaffPhoto" accept="image/*" style="padding: 8px;">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>New Signature Scan (Optional)</label>
+                        <input type="file" id="editStaffSignature" accept="image/*" style="padding: 8px;">
+                    </div>
+                </div>
+                <div style="display:flex; gap:15px; margin-bottom:20px; padding:10px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0; font-size:12px;">
+                    <div style="flex:1; text-align:center;">
+                        <strong>Current Photo</strong>
+                        <div id="editCurrentPhotoContainer" style="margin-top:5px; height:80px; display:flex; align-items:center; justify-content:center; background:white; border-radius:6px; border:1px dashed #cbd5e1; overflow:hidden;">
+                            No image
+                        </div>
+                    </div>
+                    <div style="flex:1; text-align:center;">
+                        <strong>Current Signature</strong>
+                        <div id="editCurrentSignatureContainer" style="margin-top:5px; height:80px; display:flex; align-items:center; justify-content:center; background:white; border-radius:6px; border:1px dashed #cbd5e1; overflow:hidden;">
+                            No signature
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit" id="btn-edit-staff">Save Modifications</button>
             </form>
         </div>
     </div>
@@ -434,30 +558,148 @@
                 
                 staff.forEach((s, index) => {
                     const passId = `pass-${index}`;
-                    const tr = `<tr>
-                        <td style="color:#059669; font-weight:700; width:120px;">${s.id}</td>
-                        <td style="font-weight:600;">${s.name}</td>
-                        <td><span class="role-badge">${s.role}</span></td>
-                        <td>
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <input type="password" id="${passId}" value="${s.password}" readonly style="border:none; background:transparent; font-family:inherit; color:#334155; font-weight:600; width:80px; outline:none;" />
-                                <i class="fas fa-eye" style="cursor:pointer; color:#64748b;" onclick="togglePassword('${passId}', this)"></i>
-                            </div>
-                        </td>
-                        <td><button class="btn-del" onclick="deleteStaff('${s.id}')"><i class="fas fa-trash"></i></button></td>
-                    </tr>`;
+                    const escapedStaff = encodeURIComponent(JSON.stringify(s));
+                    const actionButtons = `
+                        <button class="btn-outline" style="padding: 6px 10px; margin-right: 5px; font-size:12px; border-width: 1.5px; margin-left:0;" onclick="openEditStaffModal('${escapedStaff}')"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="btn-del" onclick="deleteStaff('${s.id}')"><i class="fas fa-trash"></i></button>
+                    `;
 
                     if(s.id.startsWith('DOC')) {
+                        const spec = s.role.replace('Doctor (', '').replace(')', '');
+                        const tr = `<tr>
+                            <td style="color:#059669; font-weight:700; width:120px;">${s.id}</td>
+                            <td style="font-weight:600;">${s.name}</td>
+                            <td><span class="role-badge">${spec}</span></td>
+                            <td style="font-weight:700; color:#0f172a;">₹${s.fee || 500}</td>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <input type="password" id="${passId}" value="${s.password}" readonly style="border:none; background:transparent; font-family:inherit; color:#334155; font-weight:600; width:80px; outline:none;" />
+                                    <i class="fas fa-eye" style="cursor:pointer; color:#64748b;" onclick="togglePassword('${passId}', this)"></i>
+                                </div>
+                            </td>
+                            <td><div style="display:flex; gap:5px;">${actionButtons}</div></td>
+                        </tr>`;
                         docTbody.innerHTML += tr;
-                    } else if(s.id.startsWith('REC')) {
-                        recTbody.innerHTML += tr;
                     } else {
-                        pharTbody.innerHTML += tr;
+                        const tr = `<tr>
+                            <td style="color:#059669; font-weight:700; width:120px;">${s.id}</td>
+                            <td style="font-weight:600;">${s.name}</td>
+                            <td><span class="role-badge">${s.role}</span></td>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <input type="password" id="${passId}" value="${s.password}" readonly style="border:none; background:transparent; font-family:inherit; color:#334155; font-weight:600; width:80px; outline:none;" />
+                                    <i class="fas fa-eye" style="cursor:pointer; color:#64748b;" onclick="togglePassword('${passId}', this)"></i>
+                                </div>
+                            </td>
+                            <td><div style="display:flex; gap:5px;">${actionButtons}</div></td>
+                        </tr>`;
+                        if(s.id.startsWith('REC')) {
+                            recTbody.innerHTML += tr;
+                        } else {
+                            pharTbody.innerHTML += tr;
+                        }
                     }
                 });
             } catch(e) {
                 console.error('Failed to load staff list', e);
             }
+        }
+
+        function openEditStaffModal(escapedStaff) {
+            const s = JSON.parse(decodeURIComponent(escapedStaff));
+            document.getElementById('editStaffId').value = s.id;
+            document.getElementById('editDisplayId').value = s.id;
+            document.getElementById('editStaffName').value = s.name.replace('Dr. ', '');
+            document.getElementById('editStaffPhone').value = s.contactNumber || '';
+            document.getElementById('editStaffAddr').value = s.address || '';
+            document.getElementById('editStaffAadhar').value = s.aadhar || '';
+            
+            document.getElementById('editStaffPhoto').value = '';
+            document.getElementById('editStaffSignature').value = '';
+
+            const isDoc = s.id.startsWith('DOC');
+            document.getElementById('editDocSpecGroup').style.display = isDoc ? 'block' : 'none';
+            document.getElementById('editDocQualGroup').style.display = isDoc ? 'block' : 'none';
+            document.getElementById('editDocExpGroup').style.display = isDoc ? 'block' : 'none';
+            document.getElementById('editDocFeeGroup').style.display = isDoc ? 'block' : 'none';
+
+            if(isDoc) {
+                document.getElementById('editDocSpec').value = s.specialization || '';
+                document.getElementById('editDocQual').value = s.qualifications || '';
+                document.getElementById('editDocExp').value = s.experience || 0;
+                document.getElementById('editDocFee').value = s.fee || 500;
+            }
+
+            const photoCont = document.getElementById('editCurrentPhotoContainer');
+            if(s.photo) {
+                photoCont.innerHTML = `<img src="${s.photo}" style="height:100%; width:100%; object-fit:cover;" />`;
+            } else {
+                photoCont.innerHTML = `<span style="color:#94a3b8;">No image</span>`;
+            }
+
+            const sigCont = document.getElementById('editCurrentSignatureContainer');
+            if(s.signature) {
+                sigCont.innerHTML = `<img src="${s.signature}" style="max-height:100%; max-width:100%; object-fit:contain;" />`;
+            } else {
+                sigCont.innerHTML = `<span style="color:#94a3b8;">No signature</span>`;
+            }
+
+            openModal('editStaffModal');
+        }
+
+        async function saveStaffEdit(event) {
+            event.preventDefault();
+            const id = document.getElementById('editStaffId').value;
+            const isDoc = id.startsWith('DOC');
+
+            const photoFile = document.getElementById('editStaffPhoto').files[0];
+            const sigFile = document.getElementById('editStaffSignature').files[0];
+            const photoBase64 = photoFile ? await getBase64(photoFile) : undefined;
+            const sigBase64 = sigFile ? await getBase64(sigFile) : undefined;
+
+            const payload = {
+                name: (isDoc ? 'Dr. ' : '') + document.getElementById('editStaffName').value,
+                contactNumber: document.getElementById('editStaffPhone').value,
+                address: document.getElementById('editStaffAddr').value,
+                aadhar: document.getElementById('editStaffAadhar').value
+            };
+
+            if(photoBase64) payload.photo = photoBase64;
+            if(sigBase64) payload.signature = sigBase64;
+
+            if(isDoc) {
+                payload.specialization = document.getElementById('editDocSpec').value;
+                payload.qualifications = document.getElementById('editDocQual').value;
+                payload.experience = parseInt(document.getElementById('editDocExp').value) || 0;
+                payload.fee = parseFloat(document.getElementById('editDocFee').value) || 500;
+            }
+
+            const btn = document.getElementById('btn-edit-staff');
+            btn.innerHTML = 'Saving...';
+
+            try {
+                const res = await fetch(`/api/admin/staff/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if(data.success) {
+                    closeModal('editStaffModal');
+                    fetchStaff();
+                    fetchStats();
+                    if(id === localStorage.getItem('genericId') || id === 'ADM-001') {
+                        if(photoBase64) localStorage.setItem('userPhoto', photoBase64);
+                        localStorage.setItem('userName', payload.name);
+                    }
+                    window.location.reload();
+                } else {
+                    alert('Modification failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch(e) {
+                alert('Connection Error to Backend');
+            }
+            btn.innerHTML = 'Save Modifications';
         }
 
         function togglePassword(inputId, icon) {
@@ -473,6 +715,16 @@
             }
         }
 
+        function getBase64(file) {
+            return new Promise((resolve) => {
+                if(!file) return resolve('');
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => resolve('');
+                reader.readAsDataURL(file);
+            });
+        }
+
         async function registerPersonnel(event, type) {
             event.preventDefault();
             
@@ -480,24 +732,39 @@
             let btnId = '';
 
             if(type === 'doctor') {
+                const photoFile = document.getElementById('docPhoto').files[0];
+                const sigFile = document.getElementById('docSignature').files[0];
+                const photoBase64 = photoFile ? await getBase64(photoFile) : '';
+                const sigBase64 = sigFile ? await getBase64(sigFile) : '';
+
                 payload = { 
                     role: 'doctor', 
                     name: document.getElementById('docName').value, 
                     specialization: document.getElementById('docSpec').value,
                     qualifications: document.getElementById('docQual').value,
                     experience: document.getElementById('docExp').value,
+                    fee: document.getElementById('docFee').value,
                     contactNumber: document.getElementById('docPhone').value,
                     address: document.getElementById('docAddr').value,
-                    aadhar: document.getElementById('docAadhar').value
+                    aadhar: document.getElementById('docAadhar').value,
+                    photo: photoBase64,
+                    signature: sigBase64
                 };
                 btnId = 'btn-doctor';
             } else {
+                const photoFile = document.getElementById('staffPhoto').files[0];
+                const sigFile = document.getElementById('staffSignature').files[0];
+                const photoBase64 = photoFile ? await getBase64(photoFile) : '';
+                const sigBase64 = sigFile ? await getBase64(sigFile) : '';
+
                 payload = { 
                     role: document.getElementById('staffRole').value, 
                     name: document.getElementById('staffName').value,
                     contactNumber: document.getElementById('staffPhone').value,
                     address: document.getElementById('staffAddr').value,
-                    aadhar: document.getElementById('staffAadhar').value
+                    aadhar: document.getElementById('staffAadhar').value,
+                    photo: photoBase64,
+                    signature: sigBase64
                 };
                 btnId = 'btn-staff';
             }
@@ -514,13 +781,11 @@
                 
                 const data = await res.json();
                 if(data.success) {
-                    // Remove the intrusive alert, just update table seamlessly.
-                    // The new user and their password will appear in the table below.
                     event.target.reset();
                     closeModal(type === 'doctor' ? 'doctorModal' : 'staffModal');
                     fetchStaff();
                     fetchStats();
-                    window.location.reload(); // Force hot reload for all UI components
+                    window.location.reload();
                 } else {
                     alert('Registration failed');
                 }
@@ -763,6 +1028,7 @@
         }
 
         // Initialize Page
+        renderHeaderProfile();
         fetchStats();
         fetchStaff();
         fetchLeaves();
@@ -775,6 +1041,156 @@
         setInterval(fetchLeaves, 5000);
         setInterval(fetchAlerts, 5000);
         setInterval(fetchDoctorPerformance, 5000);
+
+        function toggleProfileDropdown() {
+            const menu = document.getElementById('headerProfileDropdown');
+            if(menu) {
+                menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+        
+        document.addEventListener('click', function(e) {
+            const trigger = document.getElementById('profileDropdownTrigger');
+            if(trigger && !trigger.contains(e.target)) {
+                const dropdown = document.getElementById('headerProfileDropdown');
+                if(dropdown) dropdown.style.display = 'none';
+            }
+        });
+
+        function renderHeaderProfile() {
+            const name = localStorage.getItem('userName') || 'Admin';
+            const role = localStorage.getItem('userRole') || 'admin';
+            const photo = localStorage.getItem('userPhoto');
+            
+            const containers = document.querySelectorAll('.top-nav > div:last-child');
+            containers.forEach(container => {
+                const initial = name.charAt(0).toUpperCase();
+                const avatarHtml = photo ? `<img src="${photo}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid #10b981; cursor:pointer;" />` 
+                                         : `<div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #10b981, #0ea5e9); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px; cursor:pointer;">${initial}</div>`;
+                
+                const selectTheme = container.querySelector('.theme-selector-container');
+                const themeHtml = selectTheme ? selectTheme.outerHTML : '';
+                
+                container.innerHTML = `
+                    ${themeHtml}
+                    <div style="display: flex; align-items: center; gap: 10px; position:relative; z-index:110;" id="profileDropdownTrigger" onclick="toggleProfileDropdown()">
+                        ${avatarHtml}
+                        <span style="font-size: 14px; font-weight:600; cursor:pointer;" class="hidden-xs">${name}</span>
+                        <div id="headerProfileDropdown" style="display:none; position:absolute; right:0; top:45px; background:white; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.15); min-width:180px; overflow:hidden; z-index:1000; border:1px solid #f1f5f9; text-align:left; color:#334155;">
+                            <div style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; background:#f8fafc;">
+                                <div style="font-weight:700; color:#0f172a; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${name}</div>
+                                <div style="font-size:10px; color:#10b981; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">${role} PORTAL</div>
+                            </div>
+                            <div style="padding: 6px 0;">
+                                <a href="javascript:void(0)" onclick="openAdminIdCard()" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:#475569; font-size:13px; text-decoration:none; font-weight:500; transition:0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                    <i class="fas fa-id-card" style="color:#10b981;"></i> View ID Card
+                                </a>
+                                <a href="javascript:void(0)" onclick="logout()" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:#ef4444; font-size:13px; text-decoration:none; font-weight:500; transition:0.2s; border-top:1px solid #f1f5f9;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function openAdminIdCard() {
+            const role = localStorage.getItem('userRole') || 'admin';
+            const name = localStorage.getItem('userName') || 'Admin';
+            const photo = localStorage.getItem('userPhoto');
+            const signature = localStorage.getItem('userSignature');
+            const genericId = localStorage.getItem('genericId') || 'ADM-001';
+            const phone = localStorage.getItem('userPhone') || 'N/A';
+            const spec = localStorage.getItem('userSpecialization') || '';
+
+            document.getElementById('idCardName').textContent = name;
+            document.getElementById('idCardRole').textContent = role.toUpperCase();
+            document.getElementById('idCardStaffId').textContent = genericId;
+            document.getElementById('idCardPhone').textContent = phone;
+            document.getElementById('idCardAadhar').textContent = 'xxxx-xxxx-xxxx';
+
+            const specDiv = document.getElementById('idCardSpecDiv');
+            const specEl = document.getElementById('idCardSpec');
+            if (role.toLowerCase() === 'doctor' && spec) {
+                specEl.textContent = spec;
+                specDiv.style.display = 'block';
+            } else {
+                specDiv.style.display = 'none';
+            }
+
+            const photoCont = document.getElementById('idCardPhotoContainer');
+            if(photo) {
+                photoCont.innerHTML = `<img src="${photo}" style="width:100%; height:100%; object-fit:cover;" />`;
+            } else {
+                const initial = name.replace('Dr. ', '').substring(0,2).toUpperCase();
+                photoCont.innerHTML = `<span style="font-size:24px; font-weight:800; color:white;">${initial}</span>`;
+            }
+
+            const sigCont = document.getElementById('idCardSignatureContainer');
+            if(signature) {
+                sigCont.innerHTML = `<img src="${signature}" style="max-height:100%; max-width:100%; object-fit:contain;" />`;
+            } else {
+                sigCont.innerHTML = `<span style="font-family: 'Courier New', monospace; font-style: italic; color: rgba(255,255,255,0.4); font-size: 13px;">Authorized</span>`;
+            }
+
+            openModal('idCardModal');
+        }
     </script>
+
+    <!-- DIGITAL ID CARD MODAL -->
+    <div class="modal-overlay" id="idCardModal" style="z-index: 1010;">
+        <div class="modal-content" style="max-width: 400px; padding: 0; background: transparent; border: none; box-shadow: none;">
+            <button class="close-modal" onclick="closeModal('idCardModal')" style="color: white; right: 10px; top: -35px; font-size: 32px;">&times;</button>
+            <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border-radius: 20px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1.5px solid rgba(255,255,255,0.1); position: relative; overflow: hidden; font-family: 'Poppins', sans-serif;">
+                <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; border-radius: 50%; background: rgba(16, 185, 129, 0.05); pointer-events: none;"></div>
+                <div style="position: absolute; bottom: -50px; left: -50px; width: 150px; height: 150px; border-radius: 50%; background: rgba(14, 165, 233, 0.05); pointer-events: none;"></div>
+                
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-heartbeat" style="color:#10b981; font-size: 20px;"></i>
+                        <span style="font-weight: 800; font-size: 16px; letter-spacing: 0.5px; color: white;">Medi<span style="color:#10b981;">Pulse</span></span>
+                    </div>
+                    <span style="font-size: 9px; font-weight: 700; color: #10b981; background: rgba(16,185,129,0.1); padding: 4px 8px; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.5px;">HOSPITAL ID CARD</span>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <div id="idCardPhotoContainer" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid #10b981; box-shadow: 0 8px 20px rgba(0,0,0,0.3); overflow: hidden; background: linear-gradient(135deg, #1e293b, #0f172a); display: flex; align-items: center; justify-content: center; margin-bottom: 15px;"></div>
+                    
+                    <h3 id="idCardName" style="font-size: 18px; font-weight: 700; color: white; margin-bottom: 4px;">Admin Staff</h3>
+                    <span id="idCardRole" style="font-size: 11px; font-weight: 700; color: #cbd5e1; background: rgba(255,255,255,0.06); padding: 3px 12px; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 20px;">Administrator</span>
+                    
+                    <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 11px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); text-align: left; margin-bottom: 20px; box-sizing:border-box;">
+                        <div>
+                            <label style="display: block; font-size: 8.5px; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px;">Personnel ID</label>
+                            <span id="idCardStaffId" style="font-weight: 700; color: white;">ADM-001</span>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 8.5px; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px;">Mobile Number</label>
+                            <span id="idCardPhone" style="font-weight: 700; color: white;">N/A</span>
+                        </div>
+                        <div id="idCardSpecDiv" style="display: none; grid-column: 1 / -1;">
+                            <label style="display: block; font-size: 8.5px; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px;">Specialization</label>
+                            <span id="idCardSpec" style="font-weight: 700; color: #10b981;">N/A</span>
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <label style="display: block; font-size: 8.5px; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px;">Aadhaar Number</label>
+                            <span id="idCardAadhar" style="font-weight: 700; color: white;">xxxx-xxxx-xxxx</span>
+                        </div>
+                    </div>
+                    
+                    <div style="width: 100%; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <span style="font-size: 8px; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">AUTHORIZED SIGNATURE</span>
+                        <div id="idCardSignatureContainer" style="height: 40px; width: 150px; background: rgba(255,255,255,0.02); border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden;"></div>
+                    </div>
+
+                    <!-- Print Button -->
+                    <button onclick="window.print()" style="margin-top: 20px; width: 100%; padding: 10px; border-radius: 10px; border: none; background: #10b981; color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; transition: 0.2s;">
+                        <i class="fas fa-print"></i> Print ID Card
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

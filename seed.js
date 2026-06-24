@@ -22,9 +22,9 @@ async function seed() {
 
         // Seed Doctors
         const doctors = [
-            { doctorId: 'DOC-101', name: 'Dr. Rohan Sharma', specialization: 'Cardiology', password: defaultPasswordHash, plainPassword: '123456' },
-            { doctorId: 'DOC-102', name: 'Dr. Anjali Verma', specialization: 'Neurology', password: defaultPasswordHash, plainPassword: '123456' },
-            { doctorId: 'DOC-103', name: 'Dr. Prakash Iyer', specialization: 'General Physician', password: defaultPasswordHash, plainPassword: '123456' }
+            { doctorId: 'DOC-101', name: 'Dr. Rohan Sharma', specialization: 'Cardiology', password: defaultPasswordHash, plainPassword: '123456', fee: 800 },
+            { doctorId: 'DOC-102', name: 'Dr. Anjali Verma', specialization: 'Neurology', password: defaultPasswordHash, plainPassword: '123456', fee: 600 },
+            { doctorId: 'DOC-103', name: 'Dr. Prakash Iyer', specialization: 'General Physician', password: defaultPasswordHash, plainPassword: '123456', fee: 450 }
         ];
         await Doctor.insertMany(doctors);
         console.log('Doctors seeded.');

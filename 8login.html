@@ -459,6 +459,12 @@
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('userRole', data.role);
                     localStorage.setItem('userName', data.userName || uid);
+                    localStorage.setItem('userPhoto', data.photo || '');
+                    localStorage.setItem('userSignature', data.signature || '');
+                    localStorage.setItem('genericId', data.genericId || '');
+                    localStorage.setItem('userFee', data.fee || '500');
+                    localStorage.setItem('userPhone', data.contactNumber || 'N/A');
+                    localStorage.setItem('userSpecialization', data.specialization || '');
 
                     switch (role) {
                         case 'guest':
