@@ -16,6 +16,7 @@ const Staff = require('./models/Staff');
 const Message = require('./models/Message');
 const Leave = require('./models/Leave');
 const MedicineSale = require('./models/MedicineSale');
+const ActivityLog = require('./models/ActivityLog');
 
 const path = require('path');
 
@@ -24,6 +25,17 @@ const compression = require('compression');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
+
+// Activity logger helper
+async function logActivity(message, type = 'info') {
+    try {
+        const log = new ActivityLog({ message, type, timestamp: new Date() });
+        await log.save();
+        io.emit('activity_log', log);
+    } catch (err) {
+        console.error('Error saving activity log:', err);
+    }
+}
 
 app.use(compression());
 app.use(cors());
@@ -130,6 +142,67 @@ async function autoSeed() {
         ];
         await Medicine.insertMany(medicines);
         console.log('Seeded default Medicines stock.');
+
+        // 5. Seed Patients & Prescriptions
+        const savedDocs = await Doctor.find();
+        const doc1 = savedDocs[0];
+        const doc2 = savedDocs[1];
+        const doc3 = savedDocs[2];
+
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const getOffsetDate = (baseDate, hoursOffset) => {
+            const d = new Date(baseDate);
+            d.setHours(d.getHours() + hoursOffset);
+            return d;
+        };
+
+        const patientsData = [
+            { token: 1, patientId: 'PID-1001', name: 'Aarav Mehta', age: 45, gender: 'Male', contact: '9876543210', problem: 'Chest pain and sweating', assignedDoctor: doc1._id, bp: '140/90', weight: '75', height: '172', temperature: '98.4°F', oxygenLevel: '95%', pulseRate: '88 bpm', priority: 'emergency', status: 'completed', createdAt: getOffsetDate(yesterday, -10), consultedAt: getOffsetDate(yesterday, -9), completedAt: getOffsetDate(yesterday, -8) },
+            { token: 2, patientId: 'PID-1002', name: 'Riya Sen', age: 29, gender: 'Female', contact: '9876543211', problem: 'Severe migraine headache', assignedDoctor: doc2._id, bp: '120/80', weight: '58', height: '160', temperature: '98.6°F', oxygenLevel: '99%', pulseRate: '72 bpm', priority: 'normal', status: 'completed', createdAt: getOffsetDate(yesterday, -8), consultedAt: getOffsetDate(yesterday, -7), completedAt: getOffsetDate(yesterday, -6) },
+            { token: 3, patientId: 'PID-1003', name: 'Kabir Kapoor', age: 62, gender: 'Male', contact: '9876543212', problem: 'Fever and constant cough', assignedDoctor: doc3._id, bp: '130/85', weight: '80', height: '175', temperature: '101.2°F', oxygenLevel: '96%', pulseRate: '85 bpm', priority: 'normal', status: 'completed', createdAt: getOffsetDate(yesterday, -4), consultedAt: getOffsetDate(yesterday, -3), completedAt: getOffsetDate(yesterday, -2) },
+            
+            { token: 4, patientId: 'PID-1004', name: 'Amit Sharma', age: 50, gender: 'Male', contact: '9876543213', problem: 'High blood pressure', assignedDoctor: doc1._id, bp: '150/95', weight: '82', height: '170', temperature: '98.5°F', oxygenLevel: '97%', pulseRate: '90 bpm', priority: 'normal', status: 'completed', createdAt: getOffsetDate(today, -8), consultedAt: getOffsetDate(today, -7.5), completedAt: getOffsetDate(today, -7) },
+            { token: 5, patientId: 'PID-1005', name: 'Sneha Patel', age: 34, gender: 'Female', contact: '9876543214', problem: 'Sprained left ankle', assignedDoctor: doc3._id, bp: '115/75', weight: '60', height: '163', temperature: '98.6°F', oxygenLevel: '99%', pulseRate: '74 bpm', priority: 'normal', status: 'completed', createdAt: getOffsetDate(today, -6), consultedAt: getOffsetDate(today, -5.5), completedAt: getOffsetDate(today, -5) },
+            { token: 6, patientId: 'PID-1006', name: 'Ishaan Verma', age: 12, gender: 'Male', contact: '9876543215', problem: 'Stomach ache and vomiting', assignedDoctor: doc3._id, bp: '110/70', weight: '42', height: '145', temperature: '99.0°F', oxygenLevel: '98%', pulseRate: '80 bpm', priority: 'normal', status: 'prescribed', createdAt: getOffsetDate(today, -4), consultedAt: getOffsetDate(today, -3.5) },
+            { token: 7, patientId: 'PID-1007', name: 'Zara Khan', age: 27, gender: 'Female', contact: '9876543216', problem: 'Asthma flare up', assignedDoctor: doc1._id, bp: '122/80', weight: '55', height: '165', temperature: '98.4°F', oxygenLevel: '93%', pulseRate: '92 bpm', priority: 'emergency', status: 'waiting', createdAt: getOffsetDate(today, -2) },
+            { token: 8, patientId: 'PID-1008', name: 'Vijay Malhotra', age: 55, gender: 'Male', contact: '9876543217', problem: 'Joint pain and swelling', assignedDoctor: doc2._id, bp: '135/88', weight: '88', height: '178', temperature: '98.8°F', oxygenLevel: '98%', pulseRate: '76 bpm', priority: 'normal', status: 'waiting', createdAt: getOffsetDate(today, -1) }
+        ];
+
+        const savedPatients = await Patient.insertMany(patientsData);
+        console.log('Seeded default Patients visits.');
+
+        const p1 = savedPatients.find(p => p.name === 'Aarav Mehta');
+        const p2 = savedPatients.find(p => p.name === 'Riya Sen');
+        const p3 = savedPatients.find(p => p.name === 'Kabir Kapoor');
+        const p4 = savedPatients.find(p => p.name === 'Amit Sharma');
+        const p5 = savedPatients.find(p => p.name === 'Sneha Patel');
+        const p6 = savedPatients.find(p => p.name === 'Ishaan Verma');
+
+        const prescriptionsData = [
+            { patientId: p1._id, doctorId: doc1._id, reportId: 'REP-100001', medicines: [{ medicineName: 'Paracetamol', dosage: '1-0-1', duration: '5 days', instructions: 'After meals' }], notes: 'Rest for 2 days', createdAt: p1.consultedAt },
+            { patientId: p2._id, doctorId: doc2._id, reportId: 'REP-100002', medicines: [{ medicineName: 'Ibuprofen', dosage: '1-0-1', duration: '3 days', instructions: 'After meals' }], notes: 'Avoid screen time', createdAt: p2.consultedAt },
+            { patientId: p3._id, doctorId: doc3._id, reportId: 'REP-100003', medicines: [{ medicineName: 'Cough Syrup', dosage: '1-1-1', duration: '7 days', instructions: 'Before meals' }], notes: 'Drink warm water', createdAt: p3.consultedAt },
+            { patientId: p4._id, doctorId: doc1._id, reportId: 'REP-100004', medicines: [{ medicineName: 'Paracetamol', dosage: '1-0-1', duration: '10 days', instructions: 'Morning and night' }], notes: 'Reduce salt intake', createdAt: p4.consultedAt },
+            { patientId: p5._id, doctorId: doc3._id, reportId: 'REP-100005', medicines: [{ medicineName: 'Ibuprofen', dosage: '1-0-1', duration: '5 days', instructions: 'After meals' }], notes: 'Keep leg elevated', createdAt: p5.consultedAt },
+            { patientId: p6._id, doctorId: doc3._id, reportId: 'REP-100006', medicines: [{ medicineName: 'Cetirizine', dosage: '0-0-1', duration: '3 days', instructions: 'At bedtime' }], notes: 'Light diet only', createdAt: p6.consultedAt }
+        ];
+        await Prescription.insertMany(prescriptionsData);
+        console.log('Seeded default Prescriptions.');
+
+        const salesData = [
+            { medicineName: 'Paracetamol', quantity: 15, pricePerUnit: 10, totalPrice: 150, soldAt: getOffsetDate(yesterday, -5) },
+            { medicineName: 'Amoxicillin', quantity: 4, pricePerUnit: 50, totalPrice: 200, soldAt: getOffsetDate(yesterday, -4) },
+            { medicineName: 'Cough Syrup', quantity: 2, pricePerUnit: 80, totalPrice: 160, soldAt: getOffsetDate(yesterday, -2) },
+            { medicineName: 'Ibuprofen', quantity: 10, pricePerUnit: 15, totalPrice: 150, soldAt: getOffsetDate(yesterday, -1) },
+            { medicineName: 'Paracetamol', quantity: 5, pricePerUnit: 10, totalPrice: 50, soldAt: getOffsetDate(today, -6) },
+            { medicineName: 'Cetirizine', quantity: 20, pricePerUnit: 5, totalPrice: 100, soldAt: getOffsetDate(today, -3) }
+        ];
+        await MedicineSale.insertMany(salesData);
+        console.log('Seeded default Pharmacy Sales.');
+
         console.log('Auto-seeding completed successfully!');
     } catch (err) {
         console.error('Error auto-seeding:', err);
@@ -243,6 +316,10 @@ app.post('/api/patients/register', async (req, res) => {
         await newPatient.save();
         const populatedPatient = await Patient.findById(newPatient._id).populate('assignedDoctor');
         io.emit('patient_added', populatedPatient);
+        
+        const mode = (address && address.includes('Slot Booking')) ? 'Web Portal Slot Booking' : 'Walk-in Reception';
+        await logActivity(`Token <strong>T-${newPatient.token}</strong> (${newPatient.name}) registered via <strong>${mode}</strong>`, 'success');
+
         res.status(201).json({ success: true, patient: newPatient, doctor });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -296,6 +373,10 @@ app.put('/api/patients/:id/send-to-cabin', async (req, res) => {
 
         const populatedPatient = await patient.populate('assignedDoctor');
         io.emit('patient_updated', populatedPatient);
+        
+        const docName = populatedPatient.assignedDoctor ? populatedPatient.assignedDoctor.name : 'assigned Doctor';
+        await logActivity(`Token <strong>T-${populatedPatient.token}</strong> (${populatedPatient.name}) entered <strong>${docName}'s</strong> cabin`, 'warning');
+
         res.json({ success: true, patient });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -445,6 +526,13 @@ app.put('/api/patients/:id', async (req, res) => {
         const patient = await Patient.findByIdAndUpdate(req.params.id, updateData, { new: true });
         const populatedPatient = await patient.populate('assignedDoctor');
         io.emit('patient_updated', populatedPatient);
+
+        if (status === 'completed') {
+            await logActivity(`Billing completed for Token <strong>T-${populatedPatient.token}</strong> (${populatedPatient.name})`, 'success');
+        } else {
+            await logActivity(`Token <strong>T-${populatedPatient.token}</strong> (${populatedPatient.name}) status updated to: <em>${status}</em>`, 'info');
+        }
+
         res.json({ success: true, patient });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -459,6 +547,13 @@ app.put('/api/patients/:id/status', async (req, res) => {
         const patient = await Patient.findByIdAndUpdate(req.params.id, updateData, { new: true });
         const populatedPatient = await patient.populate('assignedDoctor');
         io.emit('patient_updated', populatedPatient);
+
+        if (status === 'completed') {
+            await logActivity(`Billing completed for Token <strong>T-${populatedPatient.token}</strong> (${populatedPatient.name})`, 'success');
+        } else {
+            await logActivity(`Token <strong>T-${populatedPatient.token}</strong> (${populatedPatient.name}) status updated to: <em>${status}</em>`, 'info');
+        }
+
         res.json({ success: true, patient });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -849,6 +944,10 @@ app.post('/api/prescriptions', async (req, res) => {
         };
         io.emit('patient_updated', patientObj);
 
+        const docName = populatedPatient.assignedDoctor ? populatedPatient.assignedDoctor.name : 'assigned Doctor';
+        const medText = medicines && medicines.length > 0 ? ` (${medicines.length} meds: ${medicines.map(m => m.medicineName).join(', ')})` : '';
+        await logActivity(`<strong>${docName}</strong> prescribed medicines${medText} for Token <strong>T-${populatedPatient.token}</strong>`, 'primary');
+
         res.status(201).json({ success: true, prescription });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -895,6 +994,14 @@ app.put('/api/beds/:id', async (req, res) => {
 
         const populatedBed = await Bed.findById(req.params.id).populate('patient');
         io.emit('bed_updated', populatedBed);
+
+        const patName = populatedBed.patient ? populatedBed.patient.name : 'patient';
+        if (status === 'free') {
+            await logActivity(`Bed <strong>${populatedBed.bedId}</strong> discharged and is now available`, 'success');
+        } else {
+            const type = status === 'emg' ? 'Emergency' : 'General';
+            await logActivity(`Bed <strong>${populatedBed.bedId}</strong> allocated to <strong>${patName}</strong> (${type})`, 'danger');
+        }
 
         res.json({ success: true, bed: populatedBed });
     } catch (err) {
@@ -1147,6 +1254,7 @@ app.post('/api/admin/register-staff', async (req, res) => {
             });
             await newDoc.save();
             io.emit('admin_action', { action: 'register_doctor', targetName: newDoc.name, details: newDoc.specialization });
+            await logActivity(`Admin registered new Doctor: <strong>${newDoc.name}</strong> (${newDoc.specialization})`, 'success');
             res.json({ success: true, user: newDoc, rawPassword });
         } else {
             const prefix = role.substring(0,3).toUpperCase();
@@ -1165,6 +1273,7 @@ app.post('/api/admin/register-staff', async (req, res) => {
             });
             await newStaff.save();
             io.emit('admin_action', { action: 'register_staff', targetName: newStaff.name, details: `Role: ${role}` });
+            await logActivity(`Admin registered new Staff: <strong>${newStaff.name}</strong> (Role: ${role})`, 'success');
             res.json({ success: true, user: newStaff, rawPassword });
         }
     } catch(err) {
@@ -1236,6 +1345,7 @@ app.post('/api/auth/login', async (req, res) => {
             success: true, 
             token, 
             role, 
+            userId: user._id,
             userName: user.name,
             photo: user.photo || '',
             signature: user.signature || '',
@@ -1291,10 +1401,12 @@ app.delete('/api/admin/staff/:id', async (req, res) => {
             const doc = await Doctor.findOneAndDelete({ doctorId: id });
             const docName = doc ? doc.name : id;
             io.emit('admin_action', { action: 'delete_staff', targetName: `${docName} (${id})` });
+            await logActivity(`Admin removed staff member: <strong>${docName} (${id})</strong>`, 'danger');
         } else {
             const stf = await Staff.findOneAndDelete({ staffId: id });
             const stfName = stf ? stf.name : id;
             io.emit('admin_action', { action: 'delete_staff', targetName: `${stfName} (${id})` });
+            await logActivity(`Admin removed staff member: <strong>${stfName} (${id})</strong>`, 'danger');
         }
         res.json({ success: true });
     } catch(err) {
@@ -1371,27 +1483,149 @@ app.put('/api/doctors/:id/active', async (req, res) => {
         const { isActive } = req.body;
         const doctor = await Doctor.findByIdAndUpdate(req.params.id, { isActive }, { new: true });
         io.emit('admin_action', { action: 'toggle_doctor_active', targetName: doctor ? doctor.name : 'Doctor', details: isActive ? 'Active' : 'Away' });
+        await logActivity(`Admin updated <strong>${doctor ? doctor.name : 'Doctor'}</strong> status to: <strong>${isActive ? 'Active' : 'Away'}</strong>`, 'warning');
         res.json({ success: true });
     } catch(err) {
          res.status(500).json({ error: err.message });
     }
 });
 
+// --- ACTIVITY FEED & ANALYTICS APIs ---
+app.get('/api/activity-logs', async (req, res) => {
+    try {
+        const query = {};
+        if (req.query.date) {
+            const startOfDay = new Date(req.query.date);
+            startOfDay.setHours(0, 0, 0, 0);
+
+            const endOfDay = new Date(req.query.date);
+            endOfDay.setHours(23, 59, 59, 999);
+
+            query.timestamp = {
+                $gte: startOfDay,
+                $lte: endOfDay
+            };
+        }
+        const logs = await ActivityLog.find(query).sort({ timestamp: 1 });
+        res.json(logs);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/analytics/doctor-load', async (req, res) => {
+    const { date } = req.query;
+    try {
+        if (!date) return res.status(400).json({ error: 'Date is required' });
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const doctorLoad = await Patient.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: startOfDay, $lte: endOfDay }
+                }
+            },
+            {
+                $group: {
+                    _id: '$assignedDoctor',
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const loadMap = {};
+        doctorLoad.forEach(item => {
+            if (item._id) {
+                loadMap[item._id.toString()] = item.count;
+            }
+        });
+
+        const doctors = await Doctor.find();
+        const result = doctors.map(doc => ({
+            doctorId: doc._id,
+            doctorName: doc.name,
+            specialization: doc.specialization,
+            count: loadMap[doc._id.toString()] || 0
+        }));
+
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/analytics/patient-flow', async (req, res) => {
+    const { date } = req.query;
+    try {
+        if (!date) return res.status(400).json({ error: 'Date is required' });
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const patients = await Patient.find({
+            createdAt: { $gte: startOfDay, $lte: endOfDay }
+        }, 'createdAt');
+
+        const buckets = Array(12).fill(0);
+        patients.forEach(p => {
+            const hr = new Date(p.createdAt).getHours();
+            const bucketIdx = Math.floor(hr / 2);
+            buckets[bucketIdx] += 1;
+        });
+
+        res.json(buckets);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // --- LEAVE MANAGEMENT APIs ---
 app.post('/api/leaves', async (req, res) => {
-    const { doctorId, leaveDate, reason } = req.body;
+    const { doctorId, staffId, role, leaveDate, reason } = req.body;
     try {
-        const doctor = await Doctor.findById(doctorId);
-        if (!doctor) return res.status(404).json({ success: false, error: 'Doctor not found' });
-        
-        const newLeave = new Leave({
-            doctor: doctor._id,
-            doctorName: doctor.name,
+        const leaveData = {
             leaveDate,
             reason,
+            role: role || 'doctor',
             status: 'pending'
-        });
+        };
+
+        if (leaveData.role === 'doctor') {
+            let doctor = null;
+            if (mongoose.Types.ObjectId.isValid(doctorId)) {
+                doctor = await Doctor.findById(doctorId);
+            }
+            if (!doctor) {
+                doctor = await Doctor.findOne({ doctorId });
+            }
+            if (!doctor) return res.status(404).json({ success: false, error: 'Doctor not found' });
+            leaveData.doctor = doctor._id;
+            leaveData.doctorName = doctor.name;
+        } else {
+            let staff = null;
+            if (mongoose.Types.ObjectId.isValid(staffId)) {
+                staff = await Staff.findById(staffId);
+            }
+            if (!staff) {
+                staff = await Staff.findOne({ staffId });
+            }
+            if (!staff) return res.status(404).json({ success: false, error: 'Staff not found' });
+            leaveData.staff = staff._id;
+            leaveData.staffName = staff.name;
+        }
+        
+        const newLeave = new Leave(leaveData);
         await newLeave.save();
+
+        const nameForMsg = newLeave.role === 'doctor' ? newLeave.doctorName : newLeave.staffName;
+        await logActivity(`New leave requested by <strong>${nameForMsg}</strong> (${newLeave.role.toUpperCase()}) for <em>${leaveDate}</em>`, 'warning');
+
         res.status(201).json({ success: true, leave: newLeave });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
@@ -1400,7 +1634,10 @@ app.post('/api/leaves', async (req, res) => {
 
 app.get('/api/leaves', async (req, res) => {
     try {
-        const leaves = await Leave.find().populate('doctor', 'name specialization').sort({ createdAt: -1 });
+        const leaves = await Leave.find()
+            .populate('doctor', 'name specialization')
+            .populate('staff', 'name role')
+            .sort({ createdAt: -1 });
         res.json(leaves);
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
@@ -1408,7 +1645,7 @@ app.get('/api/leaves', async (req, res) => {
 });
 
 app.put('/api/leaves/:id', async (req, res) => {
-    const { status } = req.body; // 'approved' or 'rejected'
+    const { status } = req.body;
     try {
         const leave = await Leave.findById(req.params.id);
         if (!leave) return res.status(404).json({ success: false, error: 'Leave request not found' });
@@ -1416,16 +1653,18 @@ app.put('/api/leaves/:id', async (req, res) => {
         leave.status = status;
         await leave.save();
         
-        // If approved, set the doctor's isActive status to false
-        if (status === 'approved') {
+        if (status === 'approved' && leave.role === 'doctor' && leave.doctor) {
             await Doctor.findByIdAndUpdate(leave.doctor, { isActive: false });
         }
         
+        const nameToEmit = leave.role === 'doctor' ? leave.doctorName : leave.staffName;
         io.emit('admin_action', { 
             action: status === 'approved' ? 'leave_approved' : 'leave_rejected', 
-            targetName: leave.doctorName, 
+            targetName: nameToEmit, 
             details: leave.leaveDate 
         });
+
+        await logActivity(`Leave application for <strong>${nameToEmit}</strong> status updated to: <strong>${status.toUpperCase()}</strong>`, status === 'approved' ? 'success' : 'danger');
         
         res.json({ success: true, leave });
     } catch (err) {

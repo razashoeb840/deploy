@@ -275,6 +275,9 @@ body{
                 <a href="javascript:void(0)" onclick="openIdCard()" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:#475569; font-size:13px; text-decoration:none; font-weight:500; transition:0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
                     <i class="fas fa-id-card" style="color:#10b981;"></i> View ID Card
                 </a>
+                <a href="javascript:void(0)" onclick="openLeaveModal()" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:#475569; font-size:13px; text-decoration:none; font-weight:500; transition:0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                    <i class="fas fa-calendar-times" style="color:#01ca8b;"></i> Request Leave
+                </a>
                 <a href="javascript:void(0)" onclick="logout()" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:#ef4444; font-size:13px; text-decoration:none; font-weight:500; transition:0.2s; border-top:1px solid #f1f5f9;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
@@ -295,7 +298,7 @@ body{
         </div>
         <div class="sale-stat">
           <span class="sale-lbl">Yesterday</span>
-          <span class="sale-val">₹4,520.50</span>
+          <span class="sale-val" id="salesYesterday">₹0.00</span>
         </div>
         <button class="btn-history" onclick="openHistoryModal()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -388,6 +391,33 @@ body{
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('stockModal')">Cancel</button>
       <button class="btn-save" onclick="saveStock()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="leaveModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Apply Leave Request</h3>
+      <button class="modal-close" onclick="closeModal('leaveModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Start Date</label>
+        <input type="date" id="leaveStartDate">
+      </div>
+      <div class="form-group" style="margin-top:8px;">
+        <label>End Date</label>
+        <input type="date" id="leaveEndDate">
+      </div>
+      <div class="form-group" style="margin-top:8px;">
+        <label>Reason for Leave</label>
+        <textarea id="leaveReason" style="width: 100%; min-height: 80px; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; outline:none; font-family:inherit; font-size:13px; box-sizing:border-box;" placeholder="Enter details or reason for leave..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('leaveModal')">Cancel</button>
+      <button class="btn-save" onclick="submitLeaveRequest()">Submit Leave</button>
     </div>
   </div>
 </div>
@@ -1222,8 +1252,72 @@ async function saveStock() {
   }
 }
 
+async function fetchYesterdaySales() {
+  try {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const res = await fetch(`${API_BASE}/medicines/sales?date=${yesterdayStr}`);
+    if (res.ok) {
+      const data = await res.json();
+      const yesterdaySalesTotal = data.reduce((acc, sale) => acc + sale.totalPrice, 0);
+      const yesterdayEl = document.getElementById('salesYesterday');
+      if (yesterdayEl) {
+        yesterdayEl.textContent = `₹${yesterdaySalesTotal.toFixed(2)}`;
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching yesterday sales:', err);
+  }
+}
+
+function openLeaveModal() {
+  document.getElementById('leaveStartDate').value = '';
+  document.getElementById('leaveEndDate').value = '';
+  document.getElementById('leaveReason').value = '';
+  document.getElementById('leaveModal').classList.add('active');
+}
+
+async function submitLeaveRequest() {
+  const start = document.getElementById('leaveStartDate').value;
+  const end = document.getElementById('leaveEndDate').value;
+  const reason = document.getElementById('leaveReason').value.trim();
+
+  if (!start || !end || !reason) {
+    toast('Please fill all leave request fields', 'error');
+    return;
+  }
+
+  const staffId = localStorage.getItem('genericId') || 'PHA-001';
+
+  try {
+    const res = await fetch(`${API_BASE}/leaves`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        staffId,
+        role: 'pharmacy',
+        leaveDate: `${start} to ${end}`,
+        reason
+      })
+    });
+
+    if (res.ok) {
+      toast('Leave application submitted successfully!');
+      closeModal('leaveModal');
+    } else {
+      const data = await res.json();
+      toast(data.error || 'Failed to submit leave request', 'error');
+    }
+  } catch (err) {
+    console.error(err);
+    toast('Connection error', 'error');
+  }
+}
+
 fetchInventory();
 fetchTodaySales();
+fetchYesterdaySales();
 renderCart();
 
 // Profile Dropdown & Digital ID Card logic

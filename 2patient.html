@@ -1428,6 +1428,9 @@
                   <a href="javascript:void(0)" onclick="openIdCard()" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:#475569; font-size:13px; text-decoration:none; font-weight:500; transition:0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
                       <i class="fas fa-id-card" style="color:#10b981;"></i> View ID Card
                   </a>
+                  <a href="javascript:void(0)" onclick="openLeaveModal()" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:#475569; font-size:13px; text-decoration:none; font-weight:500; transition:0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                      <i class="fas fa-calendar-times" style="color:#01ca8b;"></i> Apply Leave
+                  </a>
                   <a href="javascript:void(0)" onclick="logout()" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:#ef4444; font-size:13px; text-decoration:none; font-weight:500; transition:0.2s; border-top:1px solid #f1f5f9;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">
                       <i class="fas fa-sign-out-alt"></i> Logout
                   </a>
@@ -1599,13 +1602,15 @@
               </svg></div>
             Register Patient
           </button>
-          <button class="qa-btn" onclick="genTok()">
+          <button class="qa-btn" onclick="openLeaveModal()">
             <div class="qico qi2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2">
-                <rect x="2" y="5" width="20" height="14" rx="2" />
-                <line x1="2" y1="10" x2="22" y2="10" />
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
               </svg></div>
-            Issue Token
+            Apply Leave
           </button>
           <button class="qa-btn" onclick="admitPt()">
             <div class="qico qi3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -1631,8 +1636,11 @@
               </svg>
               Live Operations & Cabin Activity Center
             </div>
-            <div style="display:flex; align-items:center; gap:6px; font-size:10px; color:#059669; font-weight:700; background:#ecfdf5; border:1px solid #a7f3d0; padding:3px 8px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px;">
-              <span style="width:6px; height:6px; background:#059669; border-radius:50%; display:inline-block; animation: blink 1.5s infinite;"></span> Live Monitor
+            <div style="display:flex; align-items:center; gap:12px;">
+              <input type="date" id="activityDateFilter" style="font-family: inherit; font-size: 12px; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: #fff; color: #334155;" />
+              <div style="display:flex; align-items:center; gap:6px; font-size:10px; color:#059669; font-weight:700; background:#ecfdf5; border:1px solid #a7f3d0; padding:3px 8px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px;">
+                <span style="width:6px; height:6px; background:#059669; border-radius:50%; display:inline-block; animation: blink 1.5s infinite;"></span> Live Monitor
+              </div>
             </div>
           </div>
           <div class="monitor-grid">
@@ -1660,13 +1668,16 @@
 
       <!-- New Full-Width Analytics Section -->
       <div class="panel" style="margin-top:24px">
-        <div class="ptitle" style="margin-bottom:20px; display:flex; align-items:center; gap:8px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#01ca8b" stroke-width="2">
-            <rect x="18" y="3" width="4" height="18" rx="1" />
-            <rect x="10" y="8" width="4" height="13" rx="1" />
-            <rect x="2" y="13" width="4" height="8" rx="1" />
-          </svg>
-          Hospital Live Analytics Center
+        <div class="ptitle" style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; width:100%">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#01ca8b" stroke-width="2">
+              <rect x="18" y="3" width="4" height="18" rx="1" />
+              <rect x="10" y="8" width="4" height="13" rx="1" />
+              <rect x="2" y="13" width="4" height="8" rx="1" />
+            </svg>
+            Hospital Live Analytics Center <span id="analyticsDateDisplay" style="font-size:12px; color:#64748b; font-weight:normal; margin-left:6px;"></span>
+          </div>
+          <input type="date" id="analyticsDateFilter" style="font-family: inherit; font-size: 12px; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: #fff; color: #334155;" />
         </div>
         <div class="charts-full-grid">
           <div class="chart-container-wrapper">
@@ -1804,6 +1815,49 @@
       <div class="modal-actions" style="margin-top:20px;">
         <button class="mbtn-sec" onclick="closeAdd()">Cancel</button>
         <button class="mbtn-pri" onclick="submitPt()">Register Patient</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEAVE REQUEST MODAL -->
+  <div id="leaveModal" class="ov-wrap" style="z-index: 200;">
+    <div class="modal" style="max-width: 450px; padding: 25px;">
+      <div class="modal-hd">
+        <h3>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#01ca8b" stroke-width="2.5">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          Apply Leave Request
+        </h3>
+        <button class="close-btn" onclick="closeLeaveModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="form-grid" style="margin-top: 15px;">
+        <div class="fg">
+          <label>Start Date</label>
+          <input type="date" id="leaveStartDate" style="width:100%; padding:8px; border-radius:6px; border:1.5px solid #cbd5e1; outline:none; font-size:12px; color:#334155;">
+        </div>
+        <div class="fg">
+          <label>End Date</label>
+          <input type="date" id="leaveEndDate" style="width:100%; padding:8px; border-radius:6px; border:1.5px solid #cbd5e1; outline:none; font-size:12px; color:#334155;">
+        </div>
+        <div class="fg full">
+          <label>Reason for Leave</label>
+          <textarea id="leaveReason" style="width: 100%; min-height: 80px; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; outline:none; font-family:inherit; font-size:13px; box-sizing:border-box;" placeholder="Enter details or reason for leave..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:20px;">
+        <button class="mbtn-sec" onclick="closeLeaveModal()">Cancel</button>
+        <button class="mbtn-pri" style="background:#01ca8b; border-color:#01ca8b;" onclick="submitLeaveRequest()">Submit Leave</button>
       </div>
     </div>
   </div>
@@ -2594,8 +2648,52 @@
       }
     }
 
-    function genTok() {
-      showToast('Token Generated for Queue updates');
+    function openLeaveModal() {
+      document.getElementById('leaveStartDate').value = '';
+      document.getElementById('leaveEndDate').value = '';
+      document.getElementById('leaveReason').value = '';
+      document.getElementById('leaveModal').classList.add('open');
+    }
+
+    function closeLeaveModal() {
+      document.getElementById('leaveModal').classList.remove('open');
+    }
+
+    async function submitLeaveRequest() {
+      const start = document.getElementById('leaveStartDate').value;
+      const end = document.getElementById('leaveEndDate').value;
+      const reason = document.getElementById('leaveReason').value.trim();
+
+      if (!start || !end || !reason) {
+        showToast('Please fill all leave request fields', 'err');
+        return;
+      }
+
+      const staffId = localStorage.getItem('genericId') || 'REC-001';
+
+      try {
+        const res = await fetch(`${API_BASE}/leaves`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            staffId,
+            role: 'receptionist',
+            leaveDate: `${start} to ${end}`,
+            reason
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          showToast('Leave request submitted successfully!');
+          closeLeaveModal();
+        } else {
+          showToast(data.error || 'Failed to submit leave request', 'err');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Connection error', 'err');
+      }
     }
 
     function admitPt() {
@@ -2779,22 +2877,56 @@
     // Socket.io setup for Live Logs
     const socket = io();
 
-    function addActivityLog(message, type = 'info', save = true) {
+    function isSelectedDateToday(dateString) {
+      const d = new Date();
+      const localToday = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      return dateString === localToday;
+    }
+
+    async function fetchActivityLogs() {
+      try {
+        const dateInput = document.getElementById('activityDateFilter');
+        if (!dateInput) return;
+        const selectedDate = dateInput.value;
+        const res = await fetch(`${API_BASE}/activity-logs?date=${selectedDate}`);
+        if (!res.ok) return;
+        const logs = await res.json();
+        
+        const logContainer = document.getElementById('activityLog');
+        if (!logContainer) return;
+        logContainer.innerHTML = '';
+        
+        if (logs.length === 0) {
+          logContainer.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px; font-size:12px;">No events found for this date.</div>';
+          return;
+        }
+
+        logs.forEach(log => {
+          appendSingleActivityLog(log, false);
+        });
+        logContainer.scrollTop = logContainer.scrollHeight;
+      } catch (err) {
+        console.error('Error fetching activity logs:', err);
+      }
+    }
+
+    function appendSingleActivityLog(log, prepend = false) {
       const logContainer = document.getElementById('activityLog');
       if (!logContainer) return;
-      if (logContainer.querySelector('.fa-satellite-dish')) {
+      if (logContainer.querySelector('.fa-satellite-dish') || logContainer.innerText.includes('No events found')) {
         logContainer.innerHTML = '';
       }
-      
-      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      let badgeColor = `var(--log-border-${type})`;
-      let badgeBg = `var(--log-bg-${type})`;
+
+      const d = new Date(log.timestamp);
+      const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      let badgeColor = `var(--log-border-${log.type})`;
+      let badgeBg = `var(--log-bg-${log.type})`;
       let icon = 'fa-info-circle';
 
-      if (type === 'success') icon = 'fa-check-circle';
-      else if (type === 'warning') icon = 'fa-exclamation-triangle';
-      else if (type === 'danger') icon = 'fa-heartbeat';
-      else if (type === 'primary') icon = 'fa-user-md';
+      if (log.type === 'success') icon = 'fa-check-circle';
+      else if (log.type === 'warning') icon = 'fa-exclamation-triangle';
+      else if (log.type === 'danger') icon = 'fa-heartbeat';
+      else if (log.type === 'primary') icon = 'fa-user-md';
 
       const logItem = document.createElement('div');
       logItem.className = 'activity-item';
@@ -2812,149 +2944,45 @@
       logItem.innerHTML = `
         <span style="font-size: 9.5px; font-weight:700; color:var(--log-time-color); margin-top:2px; white-space: nowrap;">${time}</span>
         <span style="color:${badgeColor}; font-size:11px; margin-top:2px;"><i class="fas ${icon}"></i></span>
-        <span style="color:var(--log-text-color); font-weight:500; font-size:11px; line-height:1.3; flex:1;">${message}</span>
+        <span style="color:var(--log-text-color); font-weight:500; font-size:11px; line-height:1.3; flex:1;">${log.message}</span>
       `;
 
-      logContainer.appendChild(logItem);
-      logContainer.scrollTop = logContainer.scrollHeight;
+      if (prepend) {
+        logContainer.insertBefore(logItem, logContainer.firstChild);
+      } else {
+        logContainer.appendChild(logItem);
+      }
 
-      while (logContainer.children.length > 20) {
+      while (logContainer.children.length > 100) {
         logContainer.removeChild(logContainer.firstChild);
       }
-
-      if (save) {
-        try {
-          const saved = JSON.parse(localStorage.getItem('medipulse_live_logs') || '[]');
-          saved.push({ message, type, time });
-          if (saved.length > 20) saved.shift();
-          localStorage.setItem('medipulse_live_logs', JSON.stringify(saved));
-        } catch (e) {
-          console.error('Error saving log to localStorage:', e);
-        }
-      }
     }
-
-    function loadSavedLogs() {
-      const logContainer = document.getElementById('activityLog');
-      if (!logContainer) return;
-      
-      try {
-        const saved = JSON.parse(localStorage.getItem('medipulse_live_logs') || '[]');
-        if (saved.length > 0) {
-          logContainer.innerHTML = '';
-          saved.forEach(item => {
-            const logItem = document.createElement('div');
-            logItem.className = 'activity-item';
-            
-            let badgeColor = `var(--log-border-${item.type})`;
-            let badgeBg = `var(--log-bg-${item.type})`;
-            let icon = 'fa-info-circle';
-
-            if (item.type === 'success') icon = 'fa-check-circle';
-            else if (item.type === 'warning') icon = 'fa-exclamation-triangle';
-            else if (item.type === 'danger') icon = 'fa-heartbeat';
-            else if (item.type === 'primary') icon = 'fa-user-md';
-
-            logItem.style.cssText = `
-              display: flex;
-              align-items: flex-start;
-              gap: 8px;
-              padding: 6px 8px;
-              border-radius: 6px;
-              background: ${badgeBg};
-              border-left: 3px solid ${badgeColor};
-            `;
-
-            logItem.innerHTML = `
-              <span style="font-size: 9.5px; font-weight:700; color:var(--log-time-color); margin-top:2px; white-space: nowrap;">${item.time}</span>
-              <span style="color:${badgeColor}; font-size:11px; margin-top:2px;"><i class="fas ${icon}"></i></span>
-              <span style="color:var(--log-text-color); font-weight:500; font-size:11px; line-height:1.3; flex:1;">${item.message}</span>
-            `;
-            logContainer.appendChild(logItem);
-          });
-          logContainer.scrollTop = logContainer.scrollHeight;
-        } else {
-          addActivityLog('Connected to hospital server stream. Monitoring events.', 'success', false);
-        }
-      } catch (e) {
-        console.error('Error loading logs from localStorage:', e);
-        addActivityLog('Connected to hospital server stream. Monitoring events.', 'success', false);
-      }
-    }
-
-    // Default status log loader
-    loadSavedLogs();
 
     // Socket listeners
     socket.on('patient_added', (patient) => {
-      const mode = (patient.address && patient.address.includes('Slot Booking')) ? 'Web Portal Slot Booking' : 'Walk-in Reception';
-      addActivityLog(`Token <strong>T-${patient.token}</strong> (${patient.name}) registered via <strong>${mode}</strong>`, 'success');
       fetchQueue();
     });
 
     socket.on('patient_updated', (patient) => {
-      const docName = (patient.assignedDoctor && patient.assignedDoctor.name)
-        ? patient.assignedDoctor.name
-        : (doctorsList.find(d => d._id === (patient.assignedDoctor?._id || patient.assignedDoctor))?.name || 'assigned Doctor');
-
-      if (patient.status === 'prescribed') {
-        const details = patient.prescriptionDetails;
-        let medText = '';
-        if (details && details.medicinesCount > 0) {
-          medText = ` (${details.medicinesCount} meds: ${details.medicinesSummary})`;
-        }
-        addActivityLog(`<strong>${docName}</strong> prescribed medicines${medText} for Token <strong>T-${patient.token}</strong>`, 'primary');
-      } else if (patient.status === 'completed') {
-        addActivityLog(`Billing completed for Token <strong>T-${patient.token}</strong> (${patient.name})`, 'success');
-      } else if (patient.inCabin) {
-        addActivityLog(`Token <strong>T-${patient.token}</strong> (${patient.name}) entered **${docName}'s** cabin`, 'warning');
-      } else {
-        addActivityLog(`Token <strong>T-${patient.token}</strong> (${patient.name}) status updated to: <em>${patient.status}</em>`, 'info');
-      }
       fetchQueue();
     });
 
     socket.on('bed_updated', (bed) => {
-      const patName = bed.patient && bed.patient.name ? bed.patient.name : 'patient';
-      if (bed.status === 'free') {
-        addActivityLog(`Bed <strong>${bed.bedId}</strong> discharged and is now available`, 'success');
-      } else {
-        const type = bed.status === 'emg' ? 'Emergency' : 'General';
-        addActivityLog(`Bed <strong>${bed.bedId}</strong> allocated to <strong>${patName}</strong> (${type})`, 'danger');
-      }
       fetchQueue();
     });
 
-    socket.on('admin_action', (data) => {
-      let msg = '';
-      let type = 'info';
-      if (data.action === 'register_doctor') {
-        msg = `Admin registered new Doctor: <strong>${data.targetName}</strong> (${data.details})`;
-        type = 'success';
-        fetchDoctors();
-      } else if (data.action === 'register_staff') {
-        msg = `Admin registered new Staff: <strong>${data.targetName}</strong> (${data.details})`;
-        type = 'success';
-      } else if (data.action === 'delete_staff') {
-        msg = `Admin removed staff member: <strong>${data.targetName}</strong>`;
-        type = 'danger';
-        fetchDoctors();
-      } else if (data.action === 'toggle_doctor_active') {
-        msg = `Admin updated <strong>${data.targetName}</strong> status to: <strong>${data.details}</strong>`;
-        type = 'warning';
-        fetchDoctors();
-      } else if (data.action === 'leave_approved') {
-        msg = `Admin approved leave for <strong>${data.targetName}</strong> on <em>${data.details}</em>`;
-        type = 'danger';
-        fetchDoctors();
-      } else if (data.action === 'leave_rejected') {
-        msg = `Admin rejected leave for <strong>${data.targetName}</strong> on <em>${data.details}</em>`;
-        type = 'success';
-        fetchDoctors();
+    socket.on('activity_log', (log) => {
+      const dateInput = document.getElementById('activityDateFilter');
+      if (dateInput && isSelectedDateToday(dateInput.value)) {
+        appendSingleActivityLog(log, false);
+        const logContainer = document.getElementById('activityLog');
+        if (logContainer) logContainer.scrollTop = logContainer.scrollHeight;
       }
-      
-      if (msg) {
-        addActivityLog(msg, type);
+    });
+
+    socket.on('admin_action', (data) => {
+      if (data.action === 'register_doctor' || data.action === 'delete_staff' || data.action === 'toggle_doctor_active' || data.action === 'leave_approved' || data.action === 'leave_rejected') {
+        fetchDoctors();
       }
     });
 
@@ -3011,20 +3039,28 @@
       if (!doctorLoadChart || !patientStatusChart) return;
       
       try {
-        // 1. Update Doctor Load Chart (Active queue waiting/emergency patients)
-        if (doctorsList.length > 0) {
+        const dateInput = document.getElementById('analyticsDateFilter');
+        if (!dateInput) return;
+        const selectedDate = dateInput.value;
+        
+        // Update display date
+        const displaySpan = document.getElementById('analyticsDateDisplay');
+        if (displaySpan) {
+          const dateObj = new Date(selectedDate);
+          displaySpan.textContent = `(${dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })})`;
+        }
+
+        // 1. Update Doctor Load Chart (Waiting Queue / Workload)
+        const loadRes = await fetch(`${API_BASE}/analytics/doctor-load?date=${selectedDate}`);
+        if (loadRes.ok) {
+          const loadData = await loadRes.json();
           const docNames = [];
           const docCounts = [];
 
-          doctorsList.forEach(doc => {
-            const shortName = doc.name.replace('Dr. ', '');
-            const waitingCount = patients.filter(p => 
-              (p.doctor === doc.name || p.doctor === doc.name + ' (' + doc.specialization + ')') && 
-              (p.status === 'waiting' || p.status === 'emergency')
-            ).length;
-
+          loadData.forEach(item => {
+            const shortName = item.doctorName.replace('Dr. ', '');
             docNames.push(shortName);
-            docCounts.push(waitingCount);
+            docCounts.push(item.count);
           });
 
           doctorLoadChart.data.labels = docNames;
@@ -3032,43 +3068,49 @@
           doctorLoadChart.update();
         }
 
-        // 2. Update Patient Admission Flow (Line - Hourly trend)
-        const res = await fetch('/api/patients');
-        if (res.ok) {
-          const allPatients = await res.json();
-
-          // Update Total Patients count card dynamically
-          document.getElementById('sc1').textContent = allPatients.length;
-          const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-          const inLastHour = allPatients.filter(p => new Date(p.createdAt) > oneHourAgo).length;
-          const sub1 = document.querySelector('.s1 .scard-sub');
-          if (sub1) sub1.innerHTML = `<span style="color:#01ca8b;font-weight:700">↑ ${inLastHour}</span> in last hour`;
-
-          // Calculate registrations trend by hour for the last 6 hours
-          const now = new Date();
+        // 2. Update Patient Admission Flow (Hourly trend)
+        const flowRes = await fetch(`${API_BASE}/analytics/patient-flow?date=${selectedDate}`);
+        if (flowRes.ok) {
+          const flowData = await flowRes.json();
           const labels = [];
-          const dataCounts = [];
           
-          for (let i = 5; i >= 0; i--) {
-            const hourTime = new Date(now.getTime() - i * 60 * 60 * 1000);
-            const hourLabel = hourTime.toLocaleTimeString([], { hour: 'numeric', hour12: true });
-            labels.push(hourLabel);
-            
-            // Count patients registered in this specific 1-hour window
-            const hourStart = new Date(hourTime.getFullYear(), hourTime.getMonth(), hourTime.getDate(), hourTime.getHours(), 0, 0);
-            const hourEnd = new Date(hourTime.getFullYear(), hourTime.getMonth(), hourTime.getDate(), hourTime.getHours() + 1, 0, 0);
-            
-            const count = allPatients.filter(p => {
-              const pDate = new Date(p.createdAt);
-              return pDate >= hourStart && pDate < hourEnd;
-            }).length;
-            
-            dataCounts.push(count);
+          for (let i = 0; i < 12; i++) {
+            const startHour = i * 2;
+            const ampm = startHour >= 12 ? 'PM' : 'AM';
+            const displayHour = startHour % 12 === 0 ? 12 : startHour % 12;
+            labels.push(`${displayHour} ${ampm}`);
           }
 
           patientStatusChart.data.labels = labels;
-          patientStatusChart.data.datasets[0].data = dataCounts;
+          patientStatusChart.data.datasets[0].data = flowData;
           patientStatusChart.update();
+        }
+
+        // Update Total Patients count card dynamically for selected date
+        const allPatientsRes = await fetch(`${API_BASE}/patients`);
+        if (allPatientsRes.ok) {
+          const allPatients = await allPatientsRes.json();
+          const targetDay = new Date(selectedDate);
+          
+          const filteredPatients = allPatients.filter(p => {
+            const pDate = new Date(p.createdAt);
+            return pDate.getFullYear() === targetDay.getFullYear() &&
+                   pDate.getMonth() === targetDay.getMonth() &&
+                   pDate.getDate() === targetDay.getDate();
+          });
+          
+          document.getElementById('sc1').textContent = filteredPatients.length;
+          
+          const sub1 = document.querySelector('.s1 .scard-sub');
+          if (sub1) {
+            if (isSelectedDateToday(selectedDate)) {
+              const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+              const inLastHour = filteredPatients.filter(p => new Date(p.createdAt) > oneHourAgo).length;
+              sub1.innerHTML = `<span style="color:#01ca8b;font-weight:700">↑ ${inLastHour}</span> in last hour`;
+            } else {
+              sub1.innerHTML = `total for this day`;
+            }
+          }
         }
       } catch (err) {
         console.error('Error updating charts:', err);
@@ -3383,7 +3425,23 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      // Set date filters default to today
+      const todayStr = new Date().toISOString().split('T')[0];
+      const activityDateInput = document.getElementById('activityDateFilter');
+      if (activityDateInput) {
+        activityDateInput.value = todayStr;
+        activityDateInput.addEventListener('change', fetchActivityLogs);
+      }
+      
+      const analyticsDateInput = document.getElementById('analyticsDateFilter');
+      if (analyticsDateInput) {
+        analyticsDateInput.value = todayStr;
+        analyticsDateInput.addEventListener('change', updateCharts);
+      }
+
       renderHeaderProfile();
+      fetchActivityLogs();
+      updateCharts();
       
       // Set up MutationObserver to watch for modal class changes
       const observer = new MutationObserver(() => {
