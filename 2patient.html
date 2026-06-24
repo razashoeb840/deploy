@@ -1179,12 +1179,26 @@
         grid-template-columns: 1fr;
       }
 
-      .chart-grid, .monitor-grid, .charts-full-grid {
+      .chart-grid, .monitor-grid {
         grid-template-columns: 1fr;
+      }
+
+      .charts-full-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
       }
     }
 
     @media (max-width: 768px) {
+      .charts-full-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px;
+      }
+
+      .charts-full-grid div[style*="height:240px"] {
+        height: 160px !important;
+      }
+
       .mp-header {
         flex-wrap: wrap;
         gap: 10px;

@@ -1817,10 +1817,19 @@ html.theme-dark-2 .ai-switch input:checked + .ai-slider {
 }
 
 @media (max-width: 768px) {
-    /* Stack form grids and columns */
-    .form-row, .grid-2, .grid-3, .stats-grid, .zone-grid, .billing-grid, .med-grid {
+    /* Stack form grids and columns (excluding stats-grid for 2-column layout) */
+    .form-row, .grid-2, .grid-3, .zone-grid, .billing-grid, .med-grid, .info-grid, .vitals-grid, .rx-row {
         grid-template-columns: 1fr !important;
         gap: 15px !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+
+    .rx-head-labels {
+        display: none !important;
     }
     
     /* Make tables scroll horizontally rather than overflow the viewport */
@@ -1834,7 +1843,11 @@ html.theme-dark-2 .ai-switch input:checked + .ai-slider {
     }
 
     table {
-        min-width: 600px !important; /* Forces scrollable view instead of wrapping header text */
+        display: block !important;
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        min-width: 700px !important; /* Forces scrollable view instead of wrapping header text */
     }
 
     /* Modal responsiveness */
