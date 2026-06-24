@@ -448,6 +448,11 @@ body{
       <h3>Sales History Ledger</h3>
       <button class="modal-close" onclick="closeModal('historyModal')">✕</button>
     </div>
+    <div style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; display:flex; align-items:center; gap:8px; background:#f8fafc;" class="ledger-filter-bar">
+      <label style="font-size:11px; font-weight:700; color:#475569; display:flex; align-items:center; gap:4px;"><i class="far fa-calendar-alt" style="color:#0ea5e9;"></i> Filter Date:</label>
+      <input type="date" id="historyDateFilter" onchange="fetchSalesHistory()" style="padding: 4px 8px; border-radius: 6px; border: 1.5px solid #cbd5e1; outline:none; font-family:inherit; font-size:11px; color:#1e293b;">
+      <button class="btn-cancel" onclick="clearSalesHistoryFilter()" style="padding: 4px 10px; font-size: 11px; height: 26px; border-radius: 6px; margin: 0; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight:600; font-family:inherit;">Clear</button>
+    </div>
     <div class="modal-body" style="max-height: 400px; overflow-y:auto; padding-right:5px;">
       <table class="history-table">
         <thead>
@@ -727,8 +732,7 @@ async function checkout() {
       });
     });
 
-    todaySalesTotal += window.currentTotal;
-    document.getElementById('salesToday').textContent = `₹${todaySalesTotal.toFixed(2)}`;
+    await fetchTodaySales();
 
     // Update patient status to 'completed'
     if(currentRxPatientId) {
@@ -923,30 +927,73 @@ function closeModal(id) {
   document.getElementById(id).classList.remove('active');
 }
 
-function openHistoryModal() {
+async function openHistoryModal() {
+    document.getElementById('historyModal').classList.add('active');
+    await fetchSalesHistory();
+}
+
+async function fetchSalesHistory() {
     const tbody = document.getElementById('historyTbody');
     const emptyMsg = document.getElementById('historyEmpty');
-    
-    tbody.innerHTML = '';
-    
-    if(salesHistory.length === 0) {
-        emptyMsg.style.display = 'block';
-    } else {
-        emptyMsg.style.display = 'none';
+    const dateInput = document.getElementById('historyDateFilter');
+    const dateVal = dateInput ? dateInput.value : '';
+
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Loading history...</td></tr>';
+    emptyMsg.style.display = 'none';
+
+    try {
+        let url = `${API_BASE}/medicines/sales`;
+        if (dateVal) {
+            url += `?date=${dateVal}`;
+        }
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Failed to fetch sales');
+        const data = await res.json();
         
-        [...salesHistory].reverse().forEach(record => {
-            tbody.innerHTML += `
-                <tr>
-                    <td style="color:#64748b">${record.time}</td>
-                    <td style="font-weight:700">${record.name}</td>
-                    <td>${record.qty}</td>
-                    <td style="color:#64748b">₹${record.price.toFixed(2)}</td>
-                    <td style="color:#01ca8b; font-weight:700">₹${record.total}</td>
-                </tr>
-            `;
-        });
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+            emptyMsg.style.display = 'block';
+            emptyMsg.textContent = dateVal ? 'No sales recorded for this date.' : 'No sales recorded yet. Complete a sale to see it here.';
+        } else {
+            emptyMsg.style.display = 'none';
+            data.forEach(record => {
+                const dateObj = new Date(record.soldAt);
+                const timeStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="color:#64748b">${timeStr}</td>
+                        <td style="font-weight:700">${record.medicineName}</td>
+                        <td>${record.quantity}</td>
+                        <td style="color:#64748b">₹${record.pricePerUnit.toFixed(2)}</td>
+                        <td style="color:#01ca8b; font-weight:700">₹${record.totalPrice.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+        }
+    } catch (err) {
+        console.error(err);
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:red;">Failed to load sales history.</td></tr>';
     }
-    document.getElementById('historyModal').classList.add('active');
+}
+
+function clearSalesHistoryFilter() {
+    const dateInput = document.getElementById('historyDateFilter');
+    if (dateInput) dateInput.value = '';
+    fetchSalesHistory();
+}
+
+async function fetchTodaySales() {
+  try {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const res = await fetch(`${API_BASE}/medicines/sales?date=${todayStr}`);
+    if (res.ok) {
+      const data = await res.json();
+      todaySalesTotal = data.reduce((acc, sale) => acc + sale.totalPrice, 0);
+      document.getElementById('salesToday').textContent = `₹${todaySalesTotal.toFixed(2)}`;
+    }
+  } catch (err) {
+    console.error('Error fetching today sales:', err);
+  }
 }
 
 async function openPrescriptionModal() {
@@ -1176,6 +1223,7 @@ async function saveStock() {
 }
 
 fetchInventory();
+fetchTodaySales();
 renderCart();
 
 // Profile Dropdown & Digital ID Card logic

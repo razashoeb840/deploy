@@ -15,6 +15,7 @@ const Prescription = require('./models/Prescription');
 const Staff = require('./models/Staff');
 const Message = require('./models/Message');
 const Leave = require('./models/Leave');
+const MedicineSale = require('./models/MedicineSale');
 
 const path = require('path');
 
@@ -922,15 +923,47 @@ app.post('/api/medicines/sell', async (req, res) => {
             }
         }
 
-        // Deduct stock
+        // Deduct stock and save sales transactions
         for (const item of items) {
+            const med = await Medicine.findOne({ name: { $regex: new RegExp('^' + item.name + '$', 'i') } });
             await Medicine.updateOne(
                 { name: { $regex: new RegExp('^' + item.name + '$', 'i') } },
                 { $inc: { stock: -item.quantity } }
             );
+            
+            const sale = new MedicineSale({
+                medicineName: med.name,
+                quantity: item.quantity,
+                pricePerUnit: med.price,
+                totalPrice: med.price * item.quantity,
+                soldAt: new Date()
+            });
+            await sale.save();
         }
 
         res.json({ success: true, message: 'Medicines sold successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/medicines/sales', async (req, res) => {
+    try {
+        const query = {};
+        if (req.query.date) {
+            const startOfDay = new Date(req.query.date);
+            startOfDay.setHours(0, 0, 0, 0);
+
+            const endOfDay = new Date(req.query.date);
+            endOfDay.setHours(23, 59, 59, 999);
+
+            query.soldAt = {
+                $gte: startOfDay,
+                $lte: endOfDay
+            };
+        }
+        const sales = await MedicineSale.find(query).sort({ soldAt: -1 });
+        res.json(sales);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -1283,8 +1316,22 @@ app.post('/api/messages', async (req, res) => {
 
 app.get('/api/messages/:role', async (req, res) => {
     try {
-        // Fetch last 50 messages for the role
-        const messages = await Message.find({ receiverRole: req.params.role }).sort({ timestamp: -1 }).limit(50);
+        const query = { receiverRole: req.params.role };
+        
+        if (req.query.date) {
+            const startOfDay = new Date(req.query.date);
+            startOfDay.setHours(0, 0, 0, 0);
+
+            const endOfDay = new Date(req.query.date);
+            endOfDay.setHours(23, 59, 59, 999);
+
+            query.timestamp = {
+                $gte: startOfDay,
+                $lte: endOfDay
+            };
+        }
+        
+        const messages = await Message.find(query).sort({ timestamp: -1 }).limit(100);
         res.json(messages);
     } catch(err) {
         res.status(500).json({ error: err.message });

@@ -3197,6 +3197,11 @@
         <button class="rec-msg-close"
           onclick="document.getElementById('recMsgModal').classList.remove('open')">&times;</button>
       </div>
+      <div style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; display:flex; align-items:center; gap:8px; background:#f8fafc;" class="msg-filter-bar">
+        <label style="font-size:11px; font-weight:700; color:#475569; display:flex; align-items:center; gap:4px;"><i class="far fa-calendar-alt" style="color:#01ca8b;"></i> Filter Date:</label>
+        <input type="date" id="msgDateFilter" onchange="fetchReceptionMessages()" style="padding: 4px 8px; border-radius: 6px; border: 1.5px solid #cbd5e1; outline:none; font-family:inherit; font-size:11px; color:#1e293b;">
+        <button class="add-btn" onclick="clearMsgDateFilter()" style="padding: 4px 10px; font-size: 11px; height: 26px; border-radius: 6px;">Clear</button>
+      </div>
       <div id="recMsgContainer">
         <div style="text-align:center; color:#94a3b8; padding:20px;">Loading messages...</div>
       </div>
@@ -3208,20 +3213,28 @@
 
     async function fetchReceptionMessages() {
       try {
-        const res = await fetch(`${API_BASE}/messages/Receptionist`);
+        const dateInput = document.getElementById('msgDateFilter');
+        const dateVal = dateInput ? dateInput.value : '';
+        let url = `${API_BASE}/messages/Receptionist`;
+        if (dateVal) {
+          url += `?date=${dateVal}`;
+        }
+        
+        const res = await fetch(url);
         if (!res.ok) return;
         const messages = await res.json();
 
-        if (messages.length > lastMessageCount) {
-          document.getElementById('msgBadge').style.display = 'flex';
-          document.getElementById('msgBadge').innerText = messages.length;
+        if (!dateVal) {
+          if (messages.length > lastMessageCount) {
+            document.getElementById('msgBadge').style.display = 'flex';
+            document.getElementById('msgBadge').innerText = messages.length;
+          }
+          lastMessageCount = messages.length;
         }
-
-        lastMessageCount = messages.length;
 
         const container = document.getElementById('recMsgContainer');
         if (messages.length === 0) {
-          container.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">No messages from doctors yet.</div>';
+          container.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">No notifications found for this date.</div>';
           return;
         }
 
@@ -3240,6 +3253,12 @@
         });
         container.innerHTML = html;
       } catch (e) { console.error('Error fetching messages', e); }
+    }
+
+    function clearMsgDateFilter() {
+      const dateInput = document.getElementById('msgDateFilter');
+      if (dateInput) dateInput.value = '';
+      fetchReceptionMessages();
     }
 
     function openReceptionistMessagesModal() {
