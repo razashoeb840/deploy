@@ -1199,71 +1199,16 @@
 
     /* --- Responsive Adjustments --- */
     @media (max-width: 1200px) {
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .bot-grid {
-        grid-template-columns: 1fr;
-      }
+      /* Keep stats-grid and bot-grid horizontal, no layout overrides needed */
     }
 
     @media (max-width: 992px) {
-      .mid-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .chart-grid, .monitor-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .charts-full-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
-      }
+      /* Keep mid-grid, chart-grid, monitor-grid horizontal, no layout overrides needed */
     }
 
     @media (max-width: 768px) {
-      .charts-full-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 12px;
-      }
-
-      .charts-full-grid div[style*="height:240px"] {
-        height: 160px !important;
-      }
-
-      .mp-header {
-        flex-wrap: wrap;
-        gap: 10px;
-        padding: 10px 15px;
-      }
-
-      .mp-search {
-        max-width: 100%;
-        margin-left: 0;
-        order: 3;
-      }
-
-      .mp-hactions {
-        margin-left: auto;
-        order: 2;
-      }
-
       .mp-content {
         padding: 15px;
-      }
-
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-      }
-
-      .next-row {
-        flex-direction: column;
-      }
-
-      .bot-grid {
-        gap: 15px;
       }
 
       .form-grid {
@@ -1294,19 +1239,16 @@
       }
       
       .patient-mobile-cards {
-        display: none;
+        display: none !important;
       }
     }
     
     @media (max-width: 768px) {
       .ptbl-container {
-        display: none !important;
+        display: block !important;
       }
       .patient-mobile-cards {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-top: 15px;
+        display: none !important;
       }
     }
   </style>
@@ -1603,11 +1545,11 @@
         <div class="charts-full-grid">
           <div class="chart-container-wrapper">
             <div class="chart-lbl" style="margin-bottom: 12px; font-weight: 600; font-size: 13px;">Doctor Load (Waiting Queue)</div>
-            <div style="position:relative;height:240px;width:100%"><canvas id="hc"></canvas></div>
+            <div style="position:relative;height:180px;width:100%"><canvas id="hc"></canvas></div>
           </div>
           <div class="chart-container-wrapper">
             <div class="chart-lbl" style="margin-bottom: 12px; font-weight: 600; font-size: 13px;">Patient Admission Flow (Hourly)</div>
-            <div style="position:relative;height:240px;width:100%"><canvas id="qc"></canvas></div>
+            <div style="position:relative;height:180px;width:100%"><canvas id="qc"></canvas></div>
           </div>
         </div>
       </div>
