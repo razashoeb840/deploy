@@ -1327,16 +1327,13 @@
         margin-bottom: 0 !important;
       }
 
-      /* Patient Directory Clean Cards */
-      .ptbl-container {
+      /* Patient Directory Hide & Mobile Button Display */
+      #patientDirectoryPanel {
         display: none !important;
       }
 
-      .patient-mobile-cards {
+      .mobile-only-btn {
         display: flex !important;
-        flex-direction: column !important;
-        gap: 12px !important;
-        width: 100% !important;
       }
 
       /* Monitor Grid and Charts Stacking */
@@ -1527,9 +1524,10 @@
               <div class="emg-row"><span>Baby (6mo) — High Fever</span><span class="emg-badge">HIGH</span></div>
             </div>
           </div>
+          <button class="add-btn mobile-only-btn" onclick="openMobilePtblModal()" style="display:none; width: 100%; margin-top: 16px; justify-content: center; gap: 8px;"><i class="fas fa-list"></i> Patient Directory</button>
         </div>
 
-        <div class="panel">
+        <div class="panel" id="patientDirectoryPanel">
           <div class="phead">
             <div class="ptitle" style="margin-bottom:0">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#01ca8b" stroke-width="2">
@@ -1680,7 +1678,7 @@
     </div>
   </div>
 
-  <div id="addModal" class="ov-wrap">
+  <div id="addModal" class="ov-wrap" style="z-index: 200;">
     <div class="modal" style="max-height: 90vh; overflow-y: auto;">
       <div class="modal-hd">
         <h3>
@@ -1806,7 +1804,7 @@
   </div>
 
   <!-- EMERGENCY MODAL -->
-  <div id="emgModal" class="ov-wrap">
+  <div id="emgModal" class="ov-wrap" style="z-index: 200;">
     <div class="modal" style="max-width: 400px; padding: 25px;">
       <div class="modal-hd">
         <h3>🚨 Flag Patient Emergency</h3>
@@ -1831,7 +1829,7 @@
   </div>
 
   <!-- EDIT VITALS MODAL -->
-  <div id="editVitalsModal" class="ov-wrap">
+  <div id="editVitalsModal" class="ov-wrap" style="z-index: 200;">
     <div class="modal" style="max-width: 500px; padding: 25px;">
       <div class="modal-hd">
         <h3>
@@ -1888,7 +1886,7 @@
     </div>
   </div>
 
-  <div id="delModal" class="del-confirm-wrap">
+  <div id="delModal" class="del-confirm-wrap" style="z-index: 200;">
     <div class="del-modal">
       <div
         style="background:#fef2f2;width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto">
@@ -1940,6 +1938,50 @@
       <div class="modal-actions" style="justify-content: flex-end;">
         <button class="mbtn-sec"
           onclick="document.getElementById('rxViewModal').classList.remove('open')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE PATIENT DIRECTORY MODAL (Exact Desktop view format) -->
+  <div id="mobilePtblModal" class="ov-wrap" style="z-index: 110;">
+    <div class="modal" style="width: 95%; max-width: 1100px; max-height: 90vh; overflow-y: auto; padding: 24px;">
+      <div class="modal-hd" style="display: flex; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 style="margin: 0; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; color: #0f172a;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#01ca8b" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+          </svg>
+          Patient Directory
+        </h3>
+        <button class="add-btn" onclick="openAdd()" style="margin-left: auto; margin-right: 12px; padding: 8px 16px; font-size: 12px; height: 34px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          New Registration
+        </button>
+        <button class="close-btn" onclick="closeMobilePtblModal()" style="background: none; border: none; cursor: pointer; color: #64748b; padding: 4px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      
+      <div style="overflow-x: auto; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; scrollbar-width: thin;">
+        <table class="ptbl" style="min-width: 900px; table-layout: auto;">
+          <thead>
+            <tr>
+              <th style="width:22%">Patient Name</th>
+              <th style="width:12%">Token</th>
+              <th style="width:18%">Diagnosis</th>
+              <th style="width:14%">Assigned To</th>
+              <th style="width:12%">Ward</th>
+              <th style="width:12%">Status</th>
+              <th style="width:10%">Action</th>
+            </tr>
+          </thead>
+          <tbody id="mobilePtbody"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -2188,6 +2230,12 @@
           }).join('');
         }
       }
+
+      // Sync the Mobile Patient Table modal with the same rendered HTML
+      const mobilePtbody = document.getElementById('mobilePtbody');
+      if (mobilePtbody) {
+        mobilePtbody.innerHTML = document.getElementById('ptbody').innerHTML;
+      }
     }
 
     let filterTimeout;
@@ -2209,6 +2257,13 @@
     function closeAdd() {
       document.getElementById('addModal').classList.remove('open');
       togglePatientType('new');
+    }
+
+    function openMobilePtblModal() {
+      document.getElementById('mobilePtblModal').classList.add('open');
+    }
+    function closeMobilePtblModal() {
+      document.getElementById('mobilePtblModal').classList.remove('open');
     }
 
     function selPrio(v) {
