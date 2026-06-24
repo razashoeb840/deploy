@@ -2139,7 +2139,7 @@
           </td>
           <td style="color:#01ca8b;font-weight:700">${p.token}</td>
           <td>${p.problem}</td>
-          <td>${p.doctor}<br><span style="font-size:11px; color:#01ca8b; font-weight:700;">₹${p.fee || 500}</span></td>
+          <td>${p.doctor}</td>
           <td>${p.ward}</td>
           <td><span class="sbadge ${p.status === 'prescribed' ? 'sw' : (p.status === 'waiting' ? 'sw' : 'sa')}">${p.status.toUpperCase()}</span></td>
           <td style="white-space:nowrap">
@@ -2172,7 +2172,7 @@
                   <div style="font-size:14px; font-weight:800; color:#01ca8b; background:rgba(1,202,139,0.08); padding:4px 8px; border-radius:6px;">${p.token}</div>
                 </div>
                 <div style="font-size:13px; color:#334155;"><strong>Diagnosis:</strong> ${p.problem}</div>
-                <div style="font-size:13px; color:#334155;"><strong>Assigned:</strong> ${p.doctor} <span style="font-weight:700; color:#01ca8b; margin-left:6px;">₹${p.fee || 500}</span></div>
+                <div style="font-size:13px; color:#334155;"><strong>Assigned:</strong> ${p.doctor}</div>
                 <div style="font-size:13px; color:#334155;"><strong>Ward:</strong> ${p.ward}</div>
                 <div style="display:flex; align-items:center; gap:8px; margin-top:4px; flex-wrap:wrap;">
                   <span class="sbadge ${p.status === 'prescribed' ? 'sw' : (p.status === 'waiting' ? 'sw' : 'sa')}" style="padding:2px 8px; font-size:10px;">${p.status.toUpperCase()}</span>
@@ -2933,7 +2933,7 @@
                 <div>
                   <div style="font-weight:600; font-size:12.5px; line-height:1.2;">${d.name}</div>
                   <div style="font-size:10.5px; color:#64748b; font-weight:500; margin-top:2px;">
-                    ${d.specialization} | Cabin: ${d.cabin || 'Gen OPD'} | Fee: <span style="font-weight:700; color:#01ca8b;">₹${d.fee || 500}</span>
+                    ${d.specialization} | Cabin: ${d.cabin || 'Gen OPD'}
                   </div>
                 </div>
               </div>
