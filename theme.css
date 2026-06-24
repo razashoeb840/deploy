@@ -1797,4 +1797,62 @@ html.theme-dark-2 .ai-switch input:checked + .ai-slider {
     background-color: #00f0ff !important;
 }
 
+/* --- GLOBAL MOBILE RESPONSIVENESS OVERRIDES --- */
+@media (max-width: 991px) {
+    #cur, #cur-ring {
+        display: none !important;
+    }
+    html.theme-dark-1 body,
+    html.theme-dark-2 body {
+        cursor: auto !important;
+    }
+    html.theme-dark-1:has(#cur) *,
+    html.theme-dark-2:has(#cur) * {
+        cursor: auto !important;
+    }
+    html.theme-dark-1:has(#cur) a, html.theme-dark-1:has(#cur) button, html.theme-dark-1:has(#cur) select, html.theme-dark-1:has(#cur) input,
+    html.theme-dark-2:has(#cur) a, html.theme-dark-2:has(#cur) button, html.theme-dark-2:has(#cur) select, html.theme-dark-2:has(#cur) input {
+        cursor: pointer !important;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Stack form grids and columns */
+    .form-row, .grid-2, .grid-3, .stats-grid, .zone-grid, .billing-grid, .med-grid {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
+    
+    /* Make tables scroll horizontally rather than overflow the viewport */
+    .table-container, .table-responsive {
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        margin-bottom: 15px !important;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+
+    table {
+        min-width: 600px !important; /* Forces scrollable view instead of wrapping header text */
+    }
+
+    /* Modal responsiveness */
+    .modal-content, .custom-modal {
+        width: 95% !important;
+        margin: 20px auto !important;
+        padding: 15px !important;
+    }
+
+    /* Padding overrides for small screens */
+    .panel-body, .form-container, .billing-section, .dashboard-card, .login-box, .detail-panel {
+        padding: 15px !important;
+    }
+    
+    /* Adjust text size for readability */
+    h1 { font-size: 24px !important; }
+    h2 { font-size: 20px !important; }
+    h3 { font-size: 16px !important; }
+}
+
 

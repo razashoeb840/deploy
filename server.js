@@ -489,19 +489,25 @@ app.post('/api/patients/signup', async (req, res) => {
             return res.status(400).json({ error: 'All fields (Name, Age, Contact, Aadhaar, Password) are required' });
         }
 
-        // Check if patient with this Aadhaar or Contact already has a password set
+        // Enforce strict password validation
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>\-_])[A-Za-z\d!@#$%^&*(),.?":{}|<>\-_]{8,}$/;
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character.' });
+        }
+
+        // Check if patient with this Aadhaar already has a password set (unique Aadhaar account limit)
         const existingWithPassword = await Patient.findOne({
-            $or: [{ aadhar: aadhar.trim() }, { contact: contact.trim() }],
+            aadhar: aadhar.trim(),
             password: { $exists: true, $ne: "" }
         });
 
         if (existingWithPassword) {
-            return res.status(400).json({ error: 'An account already exists with this Aadhaar or Contact. Please log in.' });
+            return res.status(400).json({ error: 'An account already exists with this Aadhaar number. Please log in.' });
         }
 
-        // Check if there is an existing patient record (without password)
+        // Check if there is an existing patient record (without password) with same Aadhaar
         const existingRecord = await Patient.findOne({
-            $or: [{ aadhar: aadhar.trim() }, { contact: contact.trim() }]
+            aadhar: aadhar.trim()
         });
 
         const salt = await bcrypt.genSalt(10);

@@ -365,6 +365,43 @@ html,body{width:100%;height:100%;overflow:hidden;background:#03060f;font-family:
 @keyframes scanl{0%{top:0}100%{top:100%}}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+@media (max-width: 991px) {
+    #cur, #cur-ring {
+        display: none !important;
+    }
+    * {
+        cursor: auto !important;
+    }
+    a, button, select, input, .mw, .btn-home {
+        cursor: pointer !important;
+    }
+    #wheelWrap {
+        transform: scale(0.7) !important;
+    }
+    .topbar {
+        padding: 15px 20px !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        background: rgba(3, 6, 15, 0.98) !important;
+    }
+    .status-row {
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+    #stage {
+        padding-top: 100px !important;
+    }
+}
+@media (max-width: 480px) {
+    #wheelWrap {
+        transform: scale(0.55) !important;
+    }
+    .brand {
+        font-size: 20px !important;
+        letter-spacing: 3px !important;
+    }
+}
 </style>
 </head>
 <body>
