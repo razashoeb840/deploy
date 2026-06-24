@@ -26,14 +26,14 @@
       min-height: 100vh;
       font-family: 'Poppins', sans-serif;
       color: #334155;
-      overflow-x: auto;
+      overflow-x: hidden;
     }
 
     .mp-wrap {
       display: flex;
       flex-direction: column;
       min-height: 100vh;
-      min-width: 1200px;
+      width: 100%;
     }
 
     /* Header - Matched White & Green Theme */
@@ -1208,48 +1208,166 @@
     }
 
     @media (max-width: 768px) {
+      body {
+        overflow-x: hidden !important;
+      }
+      
+      .mp-wrap {
+        min-width: 100% !important;
+        width: 100% !important;
+      }
+
+      .mp-header {
+        padding: 8px 12px !important;
+        flex-wrap: wrap;
+        gap: 8px !important;
+      }
+
+      .mp-search {
+        order: 3;
+        margin-left: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin-top: 4px;
+        padding: 8px 12px !important;
+      }
+
+      .mp-hactions {
+        margin-left: auto;
+        gap: 8px !important;
+      }
+
+      .hidden-xs {
+        display: none !important;
+      }
+
       .mp-content {
-        padding: 15px;
+        padding: 12px !important;
+        width: 100% !important;
+        max-width: 100% !important;
       }
 
+      /* Stats Cards Stacking */
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+        margin-bottom: 16px !important;
+      }
+
+      .scard {
+        padding: 12px !important;
+        border-radius: 12px !important;
+      }
+
+      .scard-val {
+        font-size: 22px !important;
+      }
+
+      .scard-ico {
+        top: 12px !important;
+        right: 12px !important;
+        font-size: 18px !important;
+        padding: 6px !important;
+      }
+
+      /* Main Grids Stacking */
+      .mid-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        margin-bottom: 16px !important;
+      }
+
+      .bot-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+      }
+
+      .panel {
+        padding: 16px !important;
+        border-radius: 12px !important;
+      }
+
+      /* Live Queue Horizontal Layout on Mobile */
+      .queue-flex-container {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 12px !important;
+        align-items: stretch !important;
+      }
+
+      .queue-flex-container > * {
+        flex: 1 1 240px !important;
+        margin-bottom: 0 !important;
+      }
+
+      .tok-box {
+        padding: 16px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+      }
+
+      .upcoming-section {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+      }
+
+      html[class*="theme-dark"] .upcoming-section {
+        background: rgba(15, 23, 42, 0.4) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+      }
+
+      .upcoming-section .next-row {
+        margin-bottom: 0 !important;
+      }
+
+      /* Patient Directory Clean Cards */
+      .ptbl-container {
+        display: none !important;
+      }
+
+      .patient-mobile-cards {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        width: 100% !important;
+      }
+
+      /* Monitor Grid and Charts Stacking */
+      .monitor-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+      }
+
+      .charts-full-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+      }
+
+      /* Form Vitals, etc. */
       .form-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .ptbl {
-        min-width: 800px;
-      }
-
-      .panel>div[style*="overflow-x:auto"] {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        grid-template-columns: 1fr !important;
       }
 
       .del-modal {
-        width: 90%;
-        padding: 20px;
+        width: 95% !important;
+        padding: 16px !important;
       }
 
       .modal {
-        padding: 20px;
-        width: 95%;
+        padding: 16px !important;
+        width: 95% !important;
       }
 
       .prio-row {
-        flex-direction: column;
-      }
-      
-      .patient-mobile-cards {
-        display: none !important;
-      }
-    }
-    
-    @media (max-width: 768px) {
-      .ptbl-container {
-        display: block !important;
-      }
-      .patient-mobile-cards {
-        display: none !important;
+        flex-direction: column !important;
+        gap: 8px !important;
       }
     }
   </style>
@@ -1373,37 +1491,41 @@
             </svg>
             Live Queue Status
           </div>
-          <div class="tok-box">
-            <div class="tok-lbl">Now Serving</div>
-            <div class="tok-num" id="tokNum">12</div>
-            <div class="tok-name" id="tokName">Ramesh Kumar</div>
-            <div class="tok-wait" id="tokWait">Est. wait: ~8 min</div>
-          </div>
-          <div style="font-size:12px;color:#0f172a;margin-bottom:12px;font-weight:700">Upcoming Tokens</div>
-          <div class="next-row">
-            <div class="ntpill">
-              <div class="nn" id="nt1">13</div>
-              <div class="nl">Next</div>
+          <div class="queue-flex-container">
+            <div class="tok-box">
+              <div class="tok-lbl">Now Serving</div>
+              <div class="tok-num" id="tokNum">12</div>
+              <div class="tok-name" id="tokName">Ramesh Kumar</div>
+              <div class="tok-wait" id="tokWait">Est. wait: ~8 min</div>
             </div>
-            <div class="ntpill">
-              <div class="nn" id="nt2">14</div>
-              <div class="nl">Later</div>
+            <div class="upcoming-section">
+              <div style="font-size:12px;color:#0f172a;margin-bottom:12px;font-weight:700">Upcoming Tokens</div>
+              <div class="next-row">
+                <div class="ntpill">
+                  <div class="nn" id="nt1">13</div>
+                  <div class="nl">Next</div>
+                </div>
+                <div class="ntpill">
+                  <div class="nn" id="nt2">14</div>
+                  <div class="nl">Later</div>
+                </div>
+                <div class="ntpill">
+                  <div class="nn" id="nt3">15</div>
+                  <div class="nl">Soon</div>
+                </div>
+              </div>
             </div>
-            <div class="ntpill">
-              <div class="nn" id="nt3">15</div>
-              <div class="nl">Soon</div>
+            <div class="emg-box">
+              <div class="emg-hd">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#ef4444">
+                  <path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V9h2v4z" />
+                </svg>
+                Emergency Attention
+              </div>
+              <div class="emg-row"><span>Sunita Devi — Chest Pain</span><span class="emg-badge">CRITICAL</span></div>
+              <div class="emg-row"><span>Anil Sharma — Head Injury</span><span class="emg-badge">HIGH</span></div>
+              <div class="emg-row"><span>Baby (6mo) — High Fever</span><span class="emg-badge">HIGH</span></div>
             </div>
-          </div>
-          <div class="emg-box">
-            <div class="emg-hd">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="#ef4444">
-                <path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V9h2v4z" />
-              </svg>
-              Emergency Attention
-            </div>
-            <div class="emg-row"><span>Sunita Devi — Chest Pain</span><span class="emg-badge">CRITICAL</span></div>
-            <div class="emg-row"><span>Anil Sharma — Head Injury</span><span class="emg-badge">HIGH</span></div>
-            <div class="emg-row"><span>Baby (6mo) — High Fever</span><span class="emg-badge">HIGH</span></div>
           </div>
         </div>
 
