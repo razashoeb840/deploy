@@ -1376,8 +1376,8 @@ function openIdCard() {
   document.getElementById('idCardRole').textContent = role.toUpperCase();
   document.getElementById('idCardStaffId').textContent = genericId;
   document.getElementById('idCardPhone').textContent = phone;
-  const bloodGroup = localStorage.getItem('userBloodGroup') || 'N/A';
-  document.getElementById('idCardBloodGroup').textContent = bloodGroup;
+  const address = localStorage.getItem('userAddress') || 'N/A';
+  document.getElementById('idCardAddress').textContent = address;
 
   const specDiv = document.getElementById('idCardSpecDiv');
   const specEl = document.getElementById('idCardSpec');
@@ -1472,8 +1472,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span id="idCardSpec" style="font-weight: 700; color: #10b981;">N/A</span>
                 </div>
                 <div style="grid-column: 1 / -1;">
-                    <label style="display: block; font-size: 8.5px; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px;">Blood Group</label>
-                    <span id="idCardBloodGroup" style="font-weight: 700; color: #10b981; font-size: 14px;">N/A</span>
+                    <label style="display: block; font-size: 8.5px; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px;">Residential Address</label>
+                    <span id="idCardAddress" style="font-weight: 600; color: white; font-size: 11px;">N/A</span>
                 </div>
             </div>
             

@@ -1353,7 +1353,7 @@ app.post('/api/auth/login', async (req, res) => {
             fee: user.fee || 500,
             contactNumber: user.contactNumber || 'N/A',
             specialization: user.specialization || '',
-            bloodGroup: user.bloodGroup || 'N/A'
+            address: user.address || 'N/A'
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
