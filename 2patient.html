@@ -828,8 +828,8 @@
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
       border-radius: 20px;
       padding: 32px;
-      width: 100%;
-      max-width: 620px;
+      width: calc(100% - 40px);
+      max-width: 680px;
       max-height: 90vh;
       overflow-y: auto;
       overflow-x: hidden;
@@ -1749,12 +1749,12 @@
           <input type="number" id="fage" placeholder="e.g. 34" min="1" max="120">
         </div>
 
-        <div class="fg">
+        <div class="fg full">
           <label>Gender</label>
-          <div class="radio-group" style="display:flex; gap:15px; margin-top:6px;">
-            <label style="font-weight:500; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:4px;"><input type="radio" name="gender" value="Male" checked> Male</label>
-            <label style="font-weight:500; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:4px;"><input type="radio" name="gender" value="Female"> Female</label>
-            <label style="font-weight:500; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:4px;"><input type="radio" name="gender" value="Other"> Other</label>
+          <div class="radio-group" style="display:flex; gap:20px; margin-top:6px; flex-wrap:wrap;">
+            <label style="font-weight:500; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="radio" name="gender" value="Male" checked> Male</label>
+            <label style="font-weight:500; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="radio" name="gender" value="Female"> Female</label>
+            <label style="font-weight:500; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:6px;"><input type="radio" name="gender" value="Other"> Other</label>
           </div>
         </div>
 
@@ -1766,7 +1766,7 @@
           <label>Residential Address (Optional)</label>
           <input type="text" id="fcaddr" placeholder="e.g. Mumbai, MH">
         </div>
-        <div class="fg">
+        <div class="fg full">
           <label>Aadhar ID Proof (Optional)</label>
           <input type="text" id="fcaadhar" placeholder="xxxx-xxxx-xxxx">
         </div>
