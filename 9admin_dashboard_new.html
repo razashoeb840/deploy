@@ -1327,14 +1327,17 @@
             if (!doc) return;
             document.getElementById('docPatientsTitle').innerHTML = `<i class="fas fa-user-injured" style="color:#0b8b5e;"></i> Patients of ${doc.name}`;
             const tbody = document.getElementById('docPatientsTableBody');
-            if (!doc.patients || !doc.patients.length) { tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No patients seen</td></tr>'; return; }
-            tbody.innerHTML = doc.patients.map(p => `
-                <tr>
-                    <td style="font-weight:600;">${p.name}</td>
-                    <td>${p.date ? new Date(p.date).toLocaleString() : 'N/A'}</td>
-                    <td><span class="status-badge ${p.status === 'completed' ? 'present' : 'pending'}">${p.status.toUpperCase()}</span></td>
-                </tr>
-            `).join('');
+            if (!doc.patients || !doc.patients.length) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No patients seen</td></tr>';
+            } else {
+                tbody.innerHTML = doc.patients.map(p => `
+                    <tr>
+                        <td style="font-weight:600;">${p.name}</td>
+                        <td>${p.date ? new Date(p.date).toLocaleString() : 'N/A'}</td>
+                        <td><span class="status-badge ${p.status === 'completed' ? 'present' : 'pending'}">${p.status.toUpperCase()}</span></td>
+                    </tr>
+                `).join('');
+            }
             openModal('doctorPatientsModal');
         }
 
