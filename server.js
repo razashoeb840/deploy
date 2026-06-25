@@ -20,6 +20,7 @@ const ActivityLog = require('./models/ActivityLog');
 const Attendance = require('./models/Attendance');
 const SalaryHistory = require('./models/SalaryHistory');
 const Expense = require('./models/Expense');
+const Announcement = require('./models/Announcement');
 
 const path = require('path');
 
@@ -1470,6 +1471,33 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
+// --- VERIFY PASSWORD API ---
+app.post('/api/auth/verify-password', async (req, res) => {
+    const { id, password, role } = req.body;
+    try {
+        if (role === 'guest') {
+            return res.json({ success: true });
+        }
+        let user = null;
+        if (role === 'doctor') {
+            user = await Doctor.findOne({ doctorId: id });
+        } else {
+            user = await Staff.findOne({ staffId: id, role });
+        }
+        if (!user) {
+            return res.json({ success: false, message: 'User not found' });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (isMatch) {
+            res.json({ success: true });
+        } else {
+            res.json({ success: false, message: 'Incorrect password' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/auth/change-password', async (req, res) => {
     const { id, oldPassword, newPassword, role } = req.body;
     try {
@@ -2084,6 +2112,34 @@ app.delete('/api/expenses/:id', async (req, res) => {
         if (!exp) return res.status(404).json({ error: 'Expense record not found' });
         await logActivity(`Manual expense deleted: <strong>${exp.description}</strong> for ₹${exp.amount}`, 'info');
         res.json({ success: true, message: 'Expense deleted successfully.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- ANNOUNCEMENT API ENDPOINTS ---
+
+app.get('/api/announcements/latest', async (req, res) => {
+    try {
+        const latest = await Announcement.findOne({ active: true }).sort({ createdAt: -1 });
+        res.json(latest || { text: '' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/announcements', async (req, res) => {
+    const { text } = req.body;
+    try {
+        if (!text) {
+            await Announcement.updateMany({ active: true }, { active: false });
+            return res.json({ success: true, message: 'Announcements cleared.' });
+        }
+        await Announcement.updateMany({ active: true }, { active: false });
+        const ann = new Announcement({ text, active: true });
+        await ann.save();
+        await logActivity(`New hospital announcement broadcast: <strong>${text}</strong>`, 'info');
+        res.json({ success: true, announcement: ann });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

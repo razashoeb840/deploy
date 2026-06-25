@@ -510,11 +510,117 @@
 
         /* Print ID Card */
         @media print {
-            body > * { display: none !important; }
-            #tab-idcard { display: block !important; position: absolute !important; top: 0; left: 0; width: 100%; height: auto; background: transparent !important; z-index: 99999 !important; }
+            .sidebar, .top-bar { display: none !important; }
+            .main-content { margin-left: 0 !important; padding: 0 !important; background: transparent !important; }
+            #contentArea > .tab-content:not(#tab-idcard) { display: none !important; }
+            #tab-idcard { display: block !important; background: transparent !important; }
             #tab-idcard .panel { border: none !important; box-shadow: none !important; background: transparent !important; padding: 0 !important; max-width: 100% !important; }
             #tab-idcard .panel-header, #tab-idcard button { display: none !important; }
-            #tab-idcard .panel-body > div { margin: auto !important; background: #0f172a !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+
+        /* Custom Toggle Switch for Attendance */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ef4444; /* Absent = Red */
+            transition: .3s;
+            border-radius: 24px;
+        }
+        .switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px; left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        .switch input:checked + .switch-slider {
+            background-color: #0b8b5e; /* Present = Green */
+        }
+        .switch input:checked + .switch-slider:before {
+            transform: translateX(24px);
+        }
+        .switch input:disabled + .switch-slider {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .switch-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .switch-label.present { color: #0b8b5e; }
+        .switch-label.absent { color: #dc2626; }
+        .switch-label.leave { color: #d97706; }
+
+        /* Toasts & Alerts */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #01ca8b;
+            color: #ffffff;
+            border-radius: 10px;
+            padding: 16px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 25px rgba(1, 202, 139, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2000;
+        }
+
+        .toast.err {
+            background: #ef4444;
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3)
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1
+        }
+
+        /* Mobile responsiveness for Attendance Tab */
+        @media (max-width: 600px) {
+            #tab-attendance .panel-header {
+                flex-direction: column;
+                align-items: stretch !important;
+            }
+            #tab-attendance .panel-header .actions {
+                flex-direction: column;
+                align-items: stretch !important;
+                width: 100%;
+            }
+            #tab-attendance .panel-header .actions > * {
+                width: 100%;
+                text-align: center;
+                box-sizing: border-box;
+            }
+            #tab-attendance .panel-header .actions .btn-layout {
+                flex: 1;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -534,8 +640,8 @@
             <a data-tab="expenses"><i class="fas fa-receipt"></i> Expenses</a>
             <a data-tab="idcard"><i class="fas fa-id-card"></i> My ID Card</a>
             <div class="nav-label" style="margin-top:16px;">Finance</div>
-            <a data-tab="ledger" onclick="openFinancialLedger()"><i class="fas fa-coins"></i> Ledger</a>
-            <a data-tab="performance" onclick="openModal('performanceModal')"><i class="fas fa-chart-line"></i> Performance</a>
+            <a data-tab="ledger"><i class="fas fa-coins"></i> Ledger</a>
+            <a data-tab="performance"><i class="fas fa-chart-line"></i> Performance</a>
         </nav>
         <div class="sidebar-footer">
             <div class="user-card">
@@ -577,7 +683,7 @@
                 <div class="stats-grid" id="statsGrid">
                     <div class="stat-card"><div class="icon green"><i class="fas fa-user-injured"></i></div><div class="info"><div class="label">Total Patients</div><div class="value" id="stat-patients">...</div></div></div>
                     <div class="stat-card"><div class="icon blue"><i class="fas fa-procedures"></i></div><div class="info"><div class="label">Bed Occupancy</div><div class="value" id="stat-beds">...</div></div></div>
-                    <div class="stat-card" onclick="openFinancialLedger()" style="cursor:pointer;"><div class="icon amber"><i class="fas fa-coins"></i></div><div class="info"><div class="label">Net Profit</div><div class="value" id="stat-inventory">₹...</div></div></div>
+                    <div class="stat-card" onclick="switchTab('ledger')" style="cursor:pointer;"><div class="icon amber"><i class="fas fa-coins"></i></div><div class="info"><div class="label">Net Profit</div><div class="value" id="stat-inventory">₹...</div></div></div>
                     <div class="stat-card"><div class="icon purple"><i class="fas fa-user-md"></i></div><div class="info"><div class="label">Total Staff</div><div class="value" id="stat-staff">...</div></div></div>
                 </div>
 
@@ -602,6 +708,21 @@
                         <button class="btn btn-outline" onclick="switchTab('personnel')"><i class="fas fa-users"></i> Manage Personnel</button>
                         <button class="btn btn-outline" onclick="switchTab('attendance')"><i class="fas fa-calendar-check"></i> Attendance</button>
                         <button class="btn btn-outline" onclick="window.location.href='7patient_history.html'"><i class="fas fa-history"></i> Patient History</button>
+                    </div>
+                </div>
+
+                <!-- Broadcast Announcement -->
+                <div class="panel" style="margin-top:24px;">
+                    <div class="panel-header"><h3><i class="fas fa-bullhorn" style="color:#0b8b5e;"></i> Broadcast Hospital Announcement</h3></div>
+                    <div class="panel-body">
+                        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                            <input type="text" id="announcementInput" placeholder="Type general announcement here... e.g. Free health checkup camp on Sunday!" style="flex:1; min-width:200px; padding:10px 14px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; outline:none; font-family:inherit; color:#0f172a; background:white;">
+                            <button class="btn btn-primary" onclick="postAnnouncement()"><i class="fas fa-paper-plane"></i> Broadcast</button>
+                            <button class="btn btn-outline" onclick="clearAnnouncement()" style="border-color:#cbd5e1; background:white; color:#0f172a;"><i class="fas fa-eraser"></i> Clear</button>
+                        </div>
+                        <div id="currentAnnouncementStatus" style="margin-top:12px; font-size:12.5px; color:#64748b; font-weight:600; display:flex; align-items:center; gap:6px;">
+                            <i class="fas fa-info-circle"></i> Loading active announcement...
+                        </div>
                     </div>
                 </div>
             </div>
@@ -638,15 +759,42 @@
             <!-- ===== ATTENDANCE TAB ===== -->
             <div id="tab-attendance" class="tab-content">
                 <div class="panel">
-                    <div class="panel-header">
+                    <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
                         <h3><i class="fas fa-calendar-check"></i> Daily Attendance</h3>
-                        <div class="actions">
-                            <input type="date" id="attDate" onchange="loadAttendanceSheet()" style="padding:6px 12px; border:1.5px solid #e2e8f0; border-radius:6px; font-family:inherit; font-size:13px; outline:none;">
-                            <button class="btn btn-primary btn-sm" onclick="saveAttendanceSheet()"><i class="fas fa-save"></i> Save</button>
+                        <div class="actions" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <!-- Layout Switcher -->
+                            <div style="display: inline-flex; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; background: #f8fafc; padding: 2px;">
+                                <button id="btnViewTable" onclick="setAttendanceView('table')" class="btn-layout active" style="border: none; background: #0b8b5e; color: white; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600; border-radius: 6px; display: flex; align-items: center; gap: 4px; transition: 0.15s; outline: none;"><i class="fas fa-table"></i> Table</button>
+                                <button id="btnViewCards" onclick="setAttendanceView('cards')" class="btn-layout" style="border: none; background: transparent; color: #64748b; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 600; border-radius: 6px; display: flex; align-items: center; gap: 4px; transition: 0.15s; outline: none;"><i class="fas fa-th-large"></i> Cards</button>
+                            </div>
+                            <span id="attendanceStatusBadge" class="status-badge pending" style="padding: 5px 12px; font-size: 12px;">Draft</span>
+                            <input type="date" id="attDate" onchange="loadAttendanceSheet()" style="padding:6px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-family:inherit; font-size:13px; outline:none; background:white; color:#0f172a;">
+                            <button id="btnUnlockAttendance" class="btn btn-outline btn-sm" onclick="unlockAttendance()" style="display:none; border-color:#cbd5e1; background:white; color:#0f172a; padding:6px 12px; font-size:12.5px; border-radius:6px; font-weight:600;"><i class="fas fa-unlock"></i> Unlock Edit</button>
+                            <button id="btnSaveAttendance" class="btn btn-primary btn-sm" onclick="saveAttendanceSheet()"><i class="fas fa-save"></i> Save</button>
                         </div>
                     </div>
                     <div class="panel-body" style="padding:0;">
-                        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Remarks</th></tr></thead><tbody id="attendanceTableBody"><tr><td colspan="4" class="text-center text-muted">Select a date</td></tr></tbody></table></div>
+                        <!-- Table View Container -->
+                        <div id="attendanceTableView" class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendanceTableBody">
+                                    <tr><td colspan="4" class="text-center text-muted">Select a date</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Card View Container -->
+                        <div id="attendanceCardView" style="display:none; padding:20px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+                            <div style="grid-column:1/-1; text-align:center; padding:20px; color:#64748b;">Select a date</div>
+                        </div>
                     </div>
                 </div>
 
@@ -747,6 +895,115 @@
                 </div>
             </div>
 
+            <!-- ===== LEDGER TAB ===== -->
+            <div id="tab-ledger" class="tab-content">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-file-invoice-dollar" style="color:#f59e0b;"></i> Hospital Financial Ledger</h3>
+                        <div class="actions" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                            <span style="font-weight:600; font-size:13px; color:#475569;"><i class="fas fa-filter"></i> Filter:</span>
+                            <input type="date" id="ledgerFilterDate" style="padding:6px 10px; border:1px solid #e2e8f0; border-radius:6px; font-family:inherit; font-size:12px;" onchange="document.getElementById('ledgerFilterMonth').value=''">
+                            <input type="month" id="ledgerFilterMonth" style="padding:6px 10px; border:1px solid #e2e8f0; border-radius:6px; font-family:inherit; font-size:12px;" onchange="document.getElementById('ledgerFilterDate').value=''">
+                            <button class="btn btn-primary btn-sm" onclick="applyLedgerFilter()">Apply</button>
+                            <button class="btn btn-outline btn-sm" onclick="clearLedgerFilter()">Clear</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div style="background:linear-gradient(135deg,#0b8b5e,#0a7a52); color:#fff; padding:20px; border-radius:10px; text-align:center; margin-bottom:16px;">
+                            <div style="font-size:13px; opacity:0.9; text-transform:uppercase; font-weight:600;">Net Balance</div>
+                            <div style="font-size:30px; font-weight:800;" id="ledgerNetProfit">₹0</div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+                            <div style="display:flex; justify-content:space-between; padding:8px 12px; background:#ecfdf5; border-radius:6px;"><span style="font-weight:600;">Patient OPD Income</span><span style="font-weight:700; color:#0b8b5e;" id="ledgerPatientIncome">+ ₹0</span></div>
+                            <div style="display:flex; justify-content:space-between; padding:8px 12px; background:#ecfdf5; border-radius:6px;"><span style="font-weight:600;">Pharmacy Sales</span><span style="font-weight:700; color:#0b8b5e;" id="ledgerMedicineIncome">+ ₹0</span></div>
+                            <div style="display:flex; justify-content:space-between; padding:8px 12px; background:#fee2e2; border-radius:6px;"><span style="font-weight:600;">Medicine COGS</span><span style="font-weight:700; color:#dc2626;" id="ledgerMedicineExpense">- ₹0</span></div>
+                            <div style="display:flex; justify-content:space-between; padding:8px 12px; background:#fee2e2; border-radius:6px;"><span style="font-weight:600;">Salaries Paid</span><span style="font-weight:700; color:#dc2626;" id="ledgerSalaryExpense">- ₹0</span></div>
+                            <div style="display:flex; justify-content:space-between; padding:8px 12px; background:#fee2e2; border-radius:6px;"><span style="font-weight:600;">Manual Expenses</span><span style="font-weight:700; color:#dc2626;" id="ledgerManualExpense">- ₹0</span></div>
+                        </div>
+                        <div style="background:#f8fafc; border-radius:10px; padding:15px; font-size:12.5px; text-align:left; display:flex; flex-direction:column; gap:10px; box-sizing:border-box; margin-bottom:16px;">
+                            <div style="font-weight:700; color:#0f172a;"><i class="fas fa-chart-pie"></i> Detailed Department-wise OPD Income</div>
+                            <div style="max-height:120px; overflow-y:auto; border:1px solid #cbd5e1; border-radius:6px; background:white;">
+                                <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                                    <thead>
+                                        <tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1;">
+                                            <th style="padding:6px; text-align:left; font-weight:600; color:#475569;">Department</th>
+                                            <th style="padding:6px; text-align:right; font-weight:600; color:#475569;">OPD Income</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ledgerDeptIncomeTable">
+                                        <tr><td colspan="2" style="text-align:center; padding:10px; color:#94a3b8;">No income recorded</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div style="font-weight:700; color:#0f172a; margin-top:10px;"><i class="fas fa-hand-holding-usd"></i> Role-wise Salaries Paid</div>
+                            <div style="max-height:120px; overflow-y:auto; border:1px solid #cbd5e1; border-radius:6px; background:white;">
+                                <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                                    <thead>
+                                        <tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1;">
+                                            <th style="padding:6px; text-align:left; font-weight:600; color:#475569;">Staff Role</th>
+                                            <th style="padding:6px; text-align:right; font-weight:600; color:#475569;">Salaries Paid</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ledgerRoleSalariesTable">
+                                        <tr><td colspan="2" style="text-align:center; padding:10px; color:#94a3b8;">No salaries paid yet</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div style="font-weight:700; color:#0f172a; margin-top:10px;"><i class="fas fa-receipt"></i> Detailed Manual Expenses</div>
+                            <div style="max-height:120px; overflow-y:auto; border:1px solid #cbd5e1; border-radius:6px; background:white;">
+                                <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                                    <thead>
+                                        <tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1;">
+                                            <th style="padding:6px; text-align:left; font-weight:600; color:#475569;">Expense Category</th>
+                                            <th style="padding:6px; text-align:right; font-weight:600; color:#475569;">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ledgerCategoryExpensesTable">
+                                        <tr><td colspan="2" style="text-align:center; padding:10px; color:#94a3b8;">No manual expenses recorded</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div style="background:#f8fafc; border-radius:8px; padding:12px; font-size:13px;">
+                            <div style="font-weight:700; margin-bottom:6px;">Stock Valuation</div>
+                            <div style="display:flex; justify-content:space-between;"><span>Wholesale Asset</span><strong id="ledgerStockWholesale">₹0</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>Retail Valuation</span><strong id="ledgerStockRetail">₹0</strong></div>
+                            <div style="display:flex; justify-content:space-between; margin-top:6px; padding-top:6px; border-top:1px solid #e2e8f0;"><span>Cash Flow Balance</span><strong id="ledgerCashFlowBalance">₹0</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PERFORMANCE TAB ===== -->
+            <div id="tab-performance" class="tab-content">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-chart-line" style="color:#0b8b5e;"></i> Doctor Performance</h3>
+                    </div>
+                    <div class="panel-body" style="padding:0;">
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Specialization</th>
+                                        <th style="text-align:center;">Patients</th>
+                                        <th style="text-align:center;">Avg Time</th>
+                                        <th style="text-align:right;">Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="performanceTableBody">
+                                    <tr><td colspan="6" class="text-center text-muted">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div><!-- /content-area -->
     </div><!-- /main-content -->
 
@@ -826,14 +1083,7 @@
         </div>
     </div>
 
-    <!-- Performance Modal -->
-    <div class="modal-overlay" id="performanceModal">
-        <div class="modal-content wide">
-            <button class="close" onclick="closeModal('performanceModal')">&times;</button>
-            <h3><i class="fas fa-chart-line" style="color:#0b8b5e;"></i> Doctor Performance</h3>
-            <div class="table-wrap"><table><thead><tr><th>ID</th><th>Name</th><th>Specialization</th><th style="text-align:center;">Patients</th><th style="text-align:center;">Avg Time</th><th style="text-align:right;">Revenue</th></tr></thead><tbody id="performanceTableBody"><tr><td colspan="6" class="text-center text-muted">Loading...</td></tr></tbody></table></div>
-        </div>
-    </div>
+
 
     <!-- Doctor Patients Modal -->
     <div class="modal-overlay" id="doctorPatientsModal">
@@ -844,83 +1094,34 @@
         </div>
     </div>
 
-    <!-- Financial Ledger Modal -->
-    <div class="modal-overlay" id="financialLedgerModal">
-        <div class="modal-content wide" style="max-width:700px;">
-            <button class="close" onclick="closeModal('financialLedgerModal')">&times;</button>
-            <h3><i class="fas fa-file-invoice-dollar" style="color:#f59e0b;"></i> Financial Ledger</h3>
-            <div style="background:#f8fafc; border-radius:8px; padding:12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:16px;">
-                <span style="font-weight:600; font-size:13px; color:#475569;"><i class="fas fa-filter"></i> Filter:</span>
-                <input type="date" id="ledgerFilterDate" style="padding:6px 10px; border:1px solid #e2e8f0; border-radius:6px; font-family:inherit; font-size:12px;" onchange="document.getElementById('ledgerFilterMonth').value=''">
-                <input type="month" id="ledgerFilterMonth" style="padding:6px 10px; border:1px solid #e2e8f0; border-radius:6px; font-family:inherit; font-size:12px;" onchange="document.getElementById('ledgerFilterDate').value=''">
-                <button class="btn btn-primary btn-sm" onclick="applyLedgerFilter()">Apply</button>
-                <button class="btn btn-outline btn-sm" onclick="clearLedgerFilter()">Clear</button>
+    <!-- Password Verification Modal for Attendance Unlock -->
+    <div class="modal-overlay" id="unlockAttendanceModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <button class="close" onclick="closeUnlockModal()">&times;</button>
+            <h3 style="margin-top: 0; color: #0f172a;"><i class="fas fa-lock" style="color: #ef4444;"></i> Unlock Attendance</h3>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Enter Administrator Password to unlock and edit attendance sheet:</p>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="unlockPasswordInput" style="font-weight: 600; font-size: 12px; margin-bottom: 6px; display: block; color: #475569;">Admin Password</label>
+                <input type="password" id="unlockPasswordInput" placeholder="••••••••" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; box-sizing: border-box; outline: none; font-size: 14px;" />
             </div>
-            <div style="background:linear-gradient(135deg,#0b8b5e,#0a7a52); color:#fff; padding:20px; border-radius:10px; text-align:center; margin-bottom:16px;">
-                <div style="font-size:13px; opacity:0.9; text-transform:uppercase; font-weight:600;">Net Balance</div>
-                <div style="font-size:30px; font-weight:800;" id="ledgerNetProfit">₹0</div>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
-                <div style="display:flex; justify-content:space-between; padding:8px 12px; background:#ecfdf5; border-radius:6px;"><span style="font-weight:600;">Patient OPD Income</span><span style="font-weight:700; color:#0b8b5e;" id="ledgerPatientIncome">+ ₹0</span></div>
-                <div style="display:flex; justify-content:space-between; padding:8px 12px; background:#ecfdf5; border-radius:6px;"><span style="font-weight:600;">Pharmacy Sales</span><span style="font-weight:700; color:#0b8b5e;" id="ledgerMedicineIncome">+ ₹0</span></div>
-                <div style="display:flex; justify-content:space-between; padding:8px 12px; background:#fee2e2; border-radius:6px;"><span style="font-weight:600;">Medicine COGS</span><span style="font-weight:700; color:#dc2626;" id="ledgerMedicineExpense">- ₹0</span></div>
-                <div style="display:flex; justify-content:space-between; padding:8px 12px; background:#fee2e2; border-radius:6px;"><span style="font-weight:600;">Salaries Paid</span><span style="font-weight:700; color:#dc2626;" id="ledgerSalaryExpense">- ₹0</span></div>
-                <div style="display:flex; justify-content:space-between; padding:8px 12px; background:#fee2e2; border-radius:6px;"><span style="font-weight:600;">Manual Expenses</span><span style="font-weight:700; color:#dc2626;" id="ledgerManualExpense">- ₹0</span></div>
-            </div>
-            <div style="background:#f8fafc; border-radius:10px; padding:15px; font-size:12.5px; text-align:left; display:flex; flex-direction:column; gap:10px; box-sizing:border-box; margin-bottom:16px;">
-                <div style="font-weight:700; color:#0f172a;"><i class="fas fa-chart-pie"></i> Detailed Department-wise OPD Income</div>
-                <div style="max-height:120px; overflow-y:auto; border:1px solid #cbd5e1; border-radius:6px; background:white;">
-                    <table style="width:100%; border-collapse:collapse; font-size:11px;">
-                        <thead>
-                            <tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1;">
-                                <th style="padding:6px; text-align:left; font-weight:600; color:#475569;">Department</th>
-                                <th style="padding:6px; text-align:right; font-weight:600; color:#475569;">OPD Income</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ledgerDeptIncomeTable">
-                            <tr><td colspan="2" style="text-align:center; padding:10px; color:#94a3b8;">No income recorded</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div style="font-weight:700; color:#0f172a; margin-top:10px;"><i class="fas fa-hand-holding-usd"></i> Role-wise Salaries Paid</div>
-                <div style="max-height:120px; overflow-y:auto; border:1px solid #cbd5e1; border-radius:6px; background:white;">
-                    <table style="width:100%; border-collapse:collapse; font-size:11px;">
-                        <thead>
-                            <tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1;">
-                                <th style="padding:6px; text-align:left; font-weight:600; color:#475569;">Staff Role</th>
-                                <th style="padding:6px; text-align:right; font-weight:600; color:#475569;">Salaries Paid</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ledgerRoleSalariesTable">
-                            <tr><td colspan="2" style="text-align:center; padding:10px; color:#94a3b8;">No salaries paid yet</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div style="font-weight:700; color:#0f172a; margin-top:10px;"><i class="fas fa-receipt"></i> Detailed Manual Expenses</div>
-                <div style="max-height:120px; overflow-y:auto; border:1px solid #cbd5e1; border-radius:6px; background:white;">
-                    <table style="width:100%; border-collapse:collapse; font-size:11px;">
-                        <thead>
-                            <tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1;">
-                                <th style="padding:6px; text-align:left; font-weight:600; color:#475569;">Expense Category</th>
-                                <th style="padding:6px; text-align:right; font-weight:600; color:#475569;">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ledgerCategoryExpensesTable">
-                            <tr><td colspan="2" style="text-align:center; padding:10px; color:#94a3b8;">No manual expenses recorded</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div style="background:#f8fafc; border-radius:8px; padding:12px; font-size:13px;">
-                <div style="font-weight:700; margin-bottom:6px;">Stock Valuation</div>
-                <div style="display:flex; justify-content:space-between;"><span>Wholesale Asset</span><strong id="ledgerStockWholesale">₹0</strong></div>
-                <div style="display:flex; justify-content:space-between;"><span>Retail Valuation</span><strong id="ledgerStockRetail">₹0</strong></div>
-                <div style="display:flex; justify-content:space-between; margin-top:6px; padding-top:6px; border-top:1px solid #e2e8f0;"><span>Cash Flow Balance</span><strong id="ledgerCashFlowBalance">₹0</strong></div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-secondary" onclick="closeUnlockModal()" style="padding: 8px 16px; border: 1px solid #cbd5e1; background: #fff; color: #475569; border-radius: 8px; font-weight: 600; cursor: pointer;">Cancel</button>
+                <button class="btn btn-primary" onclick="submitUnlockAttendance()" style="padding: 8px 16px; border: none; background: #ef4444; color: #fff; border-radius: 8px; font-weight: 600; cursor: pointer;">Unlock</button>
             </div>
         </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div id="toastEl" class="toast">
+        <span id="toastIcon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12" />
+            </svg>
+        </span>
+        <span id="toastMsg"></span>
+    </div>
+
+
 
 
 
@@ -929,6 +1130,40 @@
         // API & CONFIG
         // ============================================================
         const API_BASE = '/api/admin';
+
+        // Toast implementation
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toastEl');
+            const m = document.getElementById('toastMsg');
+            const icon = document.getElementById('toastIcon');
+            if (!t || !m) return;
+            
+            m.textContent = msg;
+            
+            // Set type class
+            if (type === 'err' || type === 'danger') {
+                t.className = 'toast show err';
+                icon.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+            } else {
+                t.className = 'toast show';
+                icon.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            }
+            
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                t.classList.remove('show');
+            }, 3000);
+        }
+
+        // Override window.alert
+        window.alert = function(msg) {
+            const lower = String(msg).toLowerCase();
+            let type = 'err';
+            if (lower.includes('success') || lower.includes('saved') || lower.includes('logged') || lower.includes('cleared') || lower.includes('complete') || lower.includes('dispatched') || lower.includes('successfully') || lower.includes('broadcasted')) {
+                type = 'success';
+            }
+            showToast(msg, type);
+        };
 
         function checkUserRole(roles) { /* stub */ }
         checkUserRole(['admin']);
@@ -986,6 +1221,12 @@
             }
             if (tab === 'idcard') {
                 renderMyIdCard();
+            }
+            if (tab === 'ledger') {
+                openFinancialLedger();
+            }
+            if (tab === 'performance') {
+                fetchDoctorPerformance();
             }
             
             // Close sidebar on mobile
@@ -1342,31 +1583,173 @@
         // ATTENDANCE & SALARY
         // ============================================================
         let attendanceData = [];
+        let attendanceViewMode = 'table'; // 'table' or 'cards'
+        let isAttendanceSaved = false;
+
+        function setAttendanceView(view) {
+            attendanceViewMode = view;
+            const btnTable = document.getElementById('btnViewTable');
+            const btnCards = document.getElementById('btnViewCards');
+            
+            if (view === 'table') {
+                btnTable.style.background = '#0b8b5e';
+                btnTable.style.color = 'white';
+                btnCards.style.background = 'transparent';
+                btnCards.style.color = '#64748b';
+                
+                document.getElementById('attendanceTableView').style.display = 'block';
+                document.getElementById('attendanceCardView').style.display = 'none';
+            } else {
+                btnCards.style.background = '#0b8b5e';
+                btnCards.style.color = 'white';
+                btnTable.style.background = 'transparent';
+                btnTable.style.color = '#64748b';
+                
+                document.getElementById('attendanceTableView').style.display = 'none';
+                document.getElementById('attendanceCardView').style.display = 'grid';
+            }
+            renderAttendanceSheet();
+        }
 
         async function loadAttendanceSheet() {
-            const date = document.getElementById('attDate').value;
+            const dateInput = document.getElementById('attDate');
+            const date = dateInput.value;
             if (!date) return;
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            dateInput.max = todayStr;
+            if (date > todayStr) {
+                alert("Cannot mark attendance for future dates!");
+                dateInput.value = todayStr;
+                loadAttendanceSheet();
+                return;
+            }
+
             const tbody = document.getElementById('attendanceTableBody');
+            const cardview = document.getElementById('attendanceCardView');
             tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Loading...</td></tr>';
+            cardview.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:#64748b;">Loading...</div>';
+            
             try {
                 const res = await fetch(`/api/attendance/date/${date}`);
                 attendanceData = await res.json();
-                if (!attendanceData.length) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No staff found</td></tr>'; return; }
-                tbody.innerHTML = attendanceData.map((rec, i) => `
+                
+                if (!attendanceData.length) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No staff found</td></tr>';
+                    cardview.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:#64748b;">No staff found</div>';
+                    return;
+                }
+                
+                isAttendanceSaved = attendanceData.some(rec => rec._id);
+                
+                const badge = document.getElementById('attendanceStatusBadge');
+                const saveBtn = document.getElementById('btnSaveAttendance');
+                const unlockBtn = document.getElementById('btnUnlockAttendance');
+                if (isAttendanceSaved) {
+                    badge.textContent = 'Saved (View Only)';
+                    badge.className = 'status-badge present';
+                    if (saveBtn) saveBtn.style.display = 'none';
+                    if (unlockBtn) unlockBtn.style.display = 'inline-block';
+                } else {
+                    badge.textContent = 'Draft (Unsaved)';
+                    badge.className = 'status-badge pending';
+                    if (saveBtn) saveBtn.style.display = 'inline-block';
+                    if (unlockBtn) unlockBtn.style.display = 'none';
+                }
+                
+                renderAttendanceSheet();
+            } catch(e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Error loading</td></tr>';
+                cardview.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:#64748b;">Error loading data</div>';
+            }
+        }
+
+        function renderAttendanceSheet() {
+            const tbody = document.getElementById('attendanceTableBody');
+            const cardview = document.getElementById('attendanceCardView');
+            
+            if (!attendanceData || !attendanceData.length) return;
+            
+            // Table View
+            tbody.innerHTML = attendanceData.map((rec, i) => {
+                let statusHtml = '';
+                if (rec.status === 'Leave') {
+                    statusHtml = `<span class="status-badge leave"><i class="fas fa-calendar-times"></i> On Leave</span>`;
+                } else {
+                    statusHtml = `
+                        <div class="switch-container">
+                            <label class="switch">
+                                <input type="checkbox" onchange="updateAttendanceState(${i}, this.checked)" ${rec.status === 'Present' ? 'checked' : ''} ${isAttendanceSaved ? 'disabled' : ''}>
+                                <span class="switch-slider"></span>
+                            </label>
+                            <span class="switch-label ${rec.status === 'Present' ? 'present' : 'absent'}" id="attLabel-${i}">${rec.status}</span>
+                        </div>
+                    `;
+                }
+                
+                return `
                     <tr>
                         <td style="font-weight:600;">${rec.name}</td>
                         <td><span class="role-badge">${rec.role}</span></td>
-                        <td>
-                            <select onchange="attendanceData[${i}].status = this.value" style="padding:4px 8px; border:1px solid #e2e8f0; border-radius:4px; font-family:inherit; font-size:12px;">
-                                <option value="Present" ${rec.status === 'Present' ? 'selected' : ''}>Present</option>
-                                <option value="Absent" ${rec.status === 'Absent' ? 'selected' : ''}>Absent</option>
-                                <option value="Leave" ${rec.status === 'Leave' ? 'selected' : ''}>Leave</option>
-                            </select>
-                        </td>
-                        <td><input type="text" value="${rec.remarks || ''}" onchange="attendanceData[${i}].remarks = this.value" placeholder="Note" style="padding:4px 8px; border:1px solid #e2e8f0; border-radius:4px; font-family:inherit; font-size:12px; width:100%;"></td>
+                        <td>${statusHtml}</td>
+                        <td><input type="text" value="${rec.remarks || ''}" onchange="attendanceData[${i}].remarks = this.value" placeholder="Note" style="padding:6px 10px; border:1px solid #e2e8f0; border-radius:6px; font-family:inherit; font-size:12.5px; width:100%; outline:none; box-sizing:border-box;" ${isAttendanceSaved || rec.status === 'Leave' ? 'disabled' : ''}></td>
                     </tr>
-                `).join('');
-            } catch(e) { console.error(e); tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Error loading</td></tr>'; }
+                `;
+            }).join('');
+            
+            // Card View
+            cardview.innerHTML = attendanceData.map((rec, i) => {
+                let statusHtml = '';
+                if (rec.status === 'Leave') {
+                    statusHtml = `<span class="status-badge leave" style="font-size:11px; padding:4px 10px;"><i class="fas fa-calendar-times"></i> On Leave</span>`;
+                } else {
+                    statusHtml = `
+                        <div class="switch-container">
+                            <label class="switch">
+                                <input type="checkbox" onchange="updateAttendanceState(${i}, this.checked)" ${rec.status === 'Present' ? 'checked' : ''} ${isAttendanceSaved ? 'disabled' : ''}>
+                                <span class="switch-slider"></span>
+                            </label>
+                            <span class="switch-label ${rec.status === 'Present' ? 'present' : 'absent'}" id="attCardLabel-${i}">${rec.status}</span>
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="panel" style="margin-bottom:0; display:flex; flex-direction:column; gap:12px; padding:16px; border:1px solid #e2e8f0; border-radius:12px; background:white; position:relative; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+                        <div style="display:flex; justify-content:space-between; align-items:start;">
+                            <div>
+                                <h4 style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:2px;">${rec.name}</h4>
+                                <span class="role-badge">${rec.role}</span>
+                            </div>
+                            <div>
+                                ${statusHtml}
+                            </div>
+                        </div>
+                        <div style="margin-top:auto;">
+                            <label style="font-size:11px; font-weight:600; color:#64748b; display:block; margin-bottom:4px;">Remarks</label>
+                            <input type="text" value="${rec.remarks || ''}" onchange="attendanceData[${i}].remarks = this.value" placeholder="Add remarks..." style="padding:6px 10px; border:1.5px solid #e2e8f0; border-radius:8px; font-family:inherit; font-size:12px; width:100%; outline:none; box-sizing:border-box;" ${isAttendanceSaved || rec.status === 'Leave' ? 'disabled' : ''}>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateAttendanceState(index, isChecked) {
+            const newStatus = isChecked ? 'Present' : 'Absent';
+            attendanceData[index].status = newStatus;
+            
+            // Sync status labels
+            const labelTable = document.getElementById(`attLabel-${index}`);
+            if (labelTable) {
+                labelTable.textContent = newStatus;
+                labelTable.className = `switch-label ${newStatus.toLowerCase()}`;
+            }
+            const labelCard = document.getElementById(`attCardLabel-${index}`);
+            if (labelCard) {
+                labelCard.textContent = newStatus;
+                labelCard.className = `switch-label ${newStatus.toLowerCase()}`;
+            }
         }
 
         async function saveAttendanceSheet() {
@@ -1379,9 +1762,90 @@
                     body: JSON.stringify({ date, records: attendanceData })
                 });
                 const result = await res.json();
-                if (result.success) { alert('Saved!'); loadAttendanceSheet(); }
+                if (result.success) {
+                    alert('Daily Attendance Saved Successfully!');
+                    loadAttendanceSheet();
+                }
                 else alert('Save failed: ' + result.error);
             } catch(e) { alert('Connection error'); }
+        }
+
+        async function unlockAttendance() {
+            openUnlockModal();
+        }
+
+        function openUnlockModal() {
+            const pwdInput = document.getElementById('unlockPasswordInput');
+            if (pwdInput) pwdInput.value = '';
+            const modal = document.getElementById('unlockAttendanceModal');
+            if (modal) modal.classList.add('active');
+            if (pwdInput) pwdInput.focus();
+        }
+
+        function closeUnlockModal() {
+            const modal = document.getElementById('unlockAttendanceModal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        // Handle enter key on password input
+        setTimeout(() => {
+            const pwdInput = document.getElementById('unlockPasswordInput');
+            if (pwdInput) {
+                pwdInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        submitUnlockAttendance();
+                    }
+                });
+            }
+        }, 1000);
+
+        async function submitUnlockAttendance() {
+            const pwdInput = document.getElementById('unlockPasswordInput');
+            if (!pwdInput) return;
+            const password = pwdInput.value;
+            if (!password.trim()) {
+                showToast("Password cannot be empty!", "err");
+                return;
+            }
+            
+            const role = localStorage.getItem('userRole') || 'admin';
+            if (role === 'guest') {
+                isAttendanceSaved = false;
+                document.getElementById('attendanceStatusBadge').textContent = 'Draft (Editing Saved)';
+                document.getElementById('attendanceStatusBadge').className = 'status-badge pending';
+                document.getElementById('btnUnlockAttendance').style.display = 'none';
+                document.getElementById('btnSaveAttendance').style.display = 'inline-block';
+                
+                renderAttendanceSheet();
+                closeUnlockModal();
+                showToast("Guest Access: Attendance sheet unlocked!", "success");
+                return;
+            }
+            
+            try {
+                const genericId = localStorage.getItem('genericId') || 'ADM-001';
+                const res = await fetch('/api/auth/verify-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: genericId, password, role })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    isAttendanceSaved = false;
+                    document.getElementById('attendanceStatusBadge').textContent = 'Draft (Editing Saved)';
+                    document.getElementById('attendanceStatusBadge').className = 'status-badge pending';
+                    document.getElementById('btnUnlockAttendance').style.display = 'none';
+                    document.getElementById('btnSaveAttendance').style.display = 'inline-block';
+                    
+                    renderAttendanceSheet();
+                    closeUnlockModal();
+                    showToast("Attendance sheet unlocked for editing!", "success");
+                } else {
+                    showToast("Incorrect password! Access denied.", "err");
+                }
+            } catch (e) {
+                showToast("Error connecting for verification.", "err");
+            }
         }
 
         let salaryData = [];
@@ -1581,7 +2045,6 @@
                         }
                     }
                 }
-                openModal('financialLedgerModal');
             } catch(e) { alert('Error loading ledger'); }
         }
 
@@ -1624,6 +2087,67 @@
         }
 
         // ============================================================
+        // ANNOUNCEMENT
+        // ============================================================
+        async function fetchActiveAnnouncement() {
+            try {
+                const res = await fetch('/api/announcements/latest');
+                const data = await res.json();
+                const statusDiv = document.getElementById('currentAnnouncementStatus');
+                if (data && data.text) {
+                    statusDiv.innerHTML = `<i class="fas fa-bullhorn" style="color:#0b8b5e;"></i> Current Active: <strong style="color:#0f172a;">"${data.text}"</strong>`;
+                    document.getElementById('announcementInput').value = data.text;
+                } else {
+                    statusDiv.innerHTML = `<i class="fas fa-info-circle"></i> No active announcement broadcasted.`;
+                    document.getElementById('announcementInput').value = '';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function postAnnouncement() {
+            const text = document.getElementById('announcementInput').value.trim();
+            if (!text) {
+                alert("Please enter announcement text or click Clear to remove announcements!");
+                return;
+            }
+            try {
+                const res = await fetch('/api/announcements', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("Announcement broadcasted successfully!");
+                    fetchActiveAnnouncement();
+                } else {
+                    alert("Broadcast failed: " + data.message);
+                }
+            } catch (e) {
+                alert("Connection error.");
+            }
+        }
+
+        async function clearAnnouncement() {
+            try {
+                const res = await fetch('/api/announcements', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: '' })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("Active announcement cleared.");
+                    fetchActiveAnnouncement();
+                }
+            } catch (e) {
+                alert("Connection error.");
+            }
+        }
+
+        // ============================================================
         // INIT
         // ============================================================
         renderHeaderProfile();
@@ -1632,6 +2156,7 @@
         fetchLeaves();
         fetchAlerts();
         fetchDoctorPerformance();
+        fetchActiveAnnouncement();
 
         // Set default dates
         const today = new Date().toISOString().split('T')[0];
@@ -1643,9 +2168,7 @@
         setInterval(fetchLeaves, 5000);
         setInterval(fetchAlerts, 5000);
         setInterval(fetchDoctorPerformance, 5000);
-
-        // Click on stat card to open ledger
-        document.querySelector('.stat-card[onclick*="openFinancialLedger"]')?.addEventListener('click', () => openFinancialLedger());
+        setInterval(fetchActiveAnnouncement, 5000);
 
         console.log('✅ MediPulse Admin Dashboard loaded successfully!');
     </script>

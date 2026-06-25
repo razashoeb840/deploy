@@ -943,18 +943,14 @@ const MODS = [
    ]},
    {title:'Doctor Performance',titleHi:'Doctor Performance',secs:[
     {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
-     body:'View detailed performance analytics for every doctor: Patients Handled, Average Consultation Time (minutes), and Revenue Generated (₹). Click on any doctor to see their complete patient history with dates.',
-     bodyHi:'Har doctor ke liye detailed performance analytics dekho — Patients Handled, Average Consultation Time (minutes), aur Revenue Generated (₹). Kisi bhi doctor ka naam click karo — unke saare patients ki complete history dates ke saath dikhegi.'},
+     body:'View detailed performance analytics for every doctor directly inside a native page tab: Patients Handled, Average Consultation Time (minutes), and Revenue Generated (₹). Click on any doctor to see their complete patient history with dates.',
+     bodyHi:'Har doctor ke liye detailed performance analytics dekho directly page tab ke andar — Patients Handled, Average Consultation Time (minutes), aur Revenue Generated (₹). Kisi bhi doctor ka naam click karo — unke saare patients ki complete history dates ke saath dikhegi.'},
     {t:'flow',h:'Performance View',hHi:'Performance Kaise Dekhen',i:'fa-project-diagram',
      steps:[
-      {l:'Click "See Doctor Performance"',lHi:'"See Doctor Performance" Click Karo',d:'Opens the performance analytics modal.',dHi:'Performance analytics modal khulta hai.'},
-      {l:'View Summary Table',lHi:'Summary Table Dekho',d:'Each doctor shows: patients count, avg consult time, total revenue.',dHi:'Har doctor ke liye: patient count, average consultation time, total revenue.'},
-      {l:'Click Doctor Name',lHi:'Doctor Name Click Karo',d:'Opens nested modal listing every patient consulted with date/time.',dHi:'Nested modal mein doctor ne jitnon ko dekha — unki list date/time ke saath.'},
-      {l:'Revenue Calculation',lHi:'Revenue Calculation',d:'Revenue = Patients Handled × Doctor\'s Consultation Fee.',dHi:'Revenue = Patients Handled × Doctor ki Consultation Fee.'}
-     ]},
-    {t:'example',h:'Real-World Example',hHi:'Real Example',i:'fa-stethoscope',
-     body:'Dr. Rohan Sharma — 3 patients handled, Average 10.1 mins consultation, ₹1,500 revenue. Click to see: Ravi Kumar (Jun 21, 10:15 AM - PRESCRIBED), Priya Singh (Jun 21, 11:30 AM - COMPLETED).',
-     bodyHi:'Dr. Rohan Sharma — 3 patients dekhe, Average 10.1 mins consultation, ₹1,500 revenue. Click karo toh: Ravi Kumar (Jun 21, 10:15 AM - PRESCRIBED), Priya Singh (Jun 21, 11:30 AM - COMPLETED).'}
+      {l:'Click "Performance" in Sidebar',lHi:'Sidebar mein "Performance" click karo',d:'Switches the main screen to the Doctor Performance view natively.',dHi:'Screen par Doctor Performance tab load hota hai.'},
+      {l:'View Performance Summary',lHi:'Summary Table Dekho',d:'Inspect doctor metrics: total patients handled, average consultation duration, and total fee revenue.',dHi:'Doctor details check karo: patients handled, average consultation duration, aur revenue.'},
+      {l:'Click Doctor Name',lHi:'Doctor Name Click Karo',d:'Opens a patient list modal showing all patients seen by the doctor, consultation date/time, and appointment status.',dHi:'Modal khulega jismein doctor ne jin patients ko dekha unki list details ke saath dikhegi.'}
+     ]}
    ]},
    {title:'Staff & Doctor Management',titleHi:'Staff & Doctor Management',secs:[
     {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
@@ -964,6 +960,29 @@ const MODS = [
      items:['Set accurate consultation fees — these feed into Revenue Analytics','Approve doctor leaves promptly — delays can cause patient routing issues'],
      itemsHi:['Doctor ki consultation fee sahi daalo — Revenue Analytics mein use hoti hai','Doctor ki leave request turant approve karo — delay se patient routing affect hoti hai']}
    ]},
+   {title:'Hospital Financial Ledger',titleHi:'Hospital Financial Ledger',secs:[
+    {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
+     body:'Access the complete hospital income and expense ledger directly inside a page tab. Shows Net Hospital Profit calculated dynamically from patient OPD fees, pharmacy sales, medicine wholesale cost (COGS), staff salaries, and manual expenses.',
+     bodyHi:'Hospital ka total income aur expense statement directly page tab par access karo. Dynamic net profit card ke saath patient OPD fees, medicine sales, COGS, staff salaries aur manual expenses calculate karke detailed breakdown tables mein show hoten hain.'},
+    {t:'flow',h:'How to Use Ledger',hHi:'Ledger Use Karne Ka Tarika',i:'fa-project-diagram',
+     steps:[
+      {l:'Click "Ledger" in Sidebar',lHi:'Sidebar mein "Ledger" click karo',d:'Opens the full financial ledger panel directly on the main page.',dHi:'Financial Ledger tab select hota hai.'},
+      {l:'Apply Date/Month Filter',lHi:'Date/Month Filter Lagao',d:'Select an exact Date (YYYY-MM-DD) or choose a Month (YYYY-MM) from inputs, and click "Apply" to dynamically query filtered statistics.',dHi:'Date ya Month input select karke "Apply" click karo, ledger data refresh ho jayega.'},
+      {l:'Inspect Breakdown Tables',lHi:'Detailed Tables Dekho',d:'Scroll down to view Department-wise OPD Income, Role-wise Salaries Paid, and Category-wise manual expenses.',dHi:'Tables mein check karo kaunse department se kitni income aayi aur kis role ko kitna salary pay kiya.'}
+     ]}
+   ]},
+   {title:'Daily Attendance Tracker',titleHi:'Daily Attendance Tracker',secs:[
+    {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
+     body:'A modernized attendance registry. Replace standard dropdowns with interactive sliders: slide to present (green) or absent (red). Approved leaves are highlighted. Supports switching layout layouts between Table view and responsive Card view.',
+     bodyHi:'Naya attendance registry system. Absent/Present marks karne ke liye modern sliders check karo: left (red for absent) aur right (green for present). Staff leaves auto-display hoti hain. Table layout aur Card layout options available hain.'},
+    {t:'flow',h:'Marking Attendance',hHi:'Attendance Kaise Lagayein',i:'fa-project-diagram',
+     steps:[
+      {l:'Select Date',lHi:'Date Select Karo',d:'Choose the target date from calendar input to load the list of registered personnel.',dHi:'Calendar input se target date select karo, list load ho jayegi.'},
+      {l:'Toggle Sliders',lHi:'Sliders Toggle Karo',d:'Slide right to mark Present (green, status = Present) or slide left to mark Absent (red, status = Absent). Staff on approved leave will display "Leave" automatically.',dHi:'Slide right karo present (green) mark karne ke liye ya left absent (red) ke liye. Jo staff approved leave par hain waha slider disable hoga aur Leave badge dikhega.'},
+      {l:'Click Save & Lock View',lHi:'Save and Lock View',d:'Click the "Save" button to save attendance. Once saved, the edit mode closes and locks, presenting only the View options.',dHi:'Save button click karke record update karo. Save hone ke baad edit forms freeze ho jayenge aur sirf visual summary display hogi.'},
+      {l:'Toggle Layout Formats',lHi:'Layouts Toggle Karo',d:'Click the top buttons to switch format styles: "Table View" for desktop alignment or "Card View" for mobile card layout.',dHi:'Top toggle buttons se layout change karo: "Table View" ya modern grid-based "Card View" format.'}
+     ]}
+    ]},
    {title:'Notifications & Alerts',titleHi:'Notifications & Alerts',secs:[
     {t:'what',h:'What It Does',hHi:'Ye Kya Karta Hai',i:'fa-info-circle',
      body:'The Smart Alerts system continuously monitors hospital conditions and triggers automated notifications: medicine stock below 10 units, bed occupancy exceeding 90%, emergency patients in waiting queue, and doctors on leave with pending appointments.',
