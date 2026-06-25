@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="theme.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script>
     checkUserRole(['receptionist']);
@@ -1435,6 +1436,9 @@
                   <a href="javascript:void(0)" onclick="openLeaveModal()" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:#475569; font-size:13px; text-decoration:none; font-weight:500; transition:0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
                       <i class="fas fa-calendar-times" style="color:#01ca8b;"></i> Apply Leave
                   </a>
+                  <a href="javascript:void(0)" onclick="openMyAttendanceSalaryModal()" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:#475569; font-size:13px; text-decoration:none; font-weight:500; transition:0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                      <i class="fas fa-calendar-check" style="color:#0ea5e9;"></i> Attendance & Salary
+                  </a>
                   <a href="javascript:void(0)" onclick="logout()" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:#ef4444; font-size:13px; text-decoration:none; font-weight:500; transition:0.2s; border-top:1px solid #f1f5f9;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">
                       <i class="fas fa-sign-out-alt"></i> Logout
                   </a>
@@ -1555,23 +1559,57 @@
               New Registration
             </button>
           </div>
-          <div class="ptbl-container" style="overflow-x:auto">
-            <table class="ptbl">
-              <thead>
-                <tr>
-                  <th style="width:22%">Patient Name</th>
-                  <th style="width:12%">Token</th>
-                  <th style="width:18%">Diagnosis</th>
-                  <th style="width:14%">Assigned To</th>
-                  <th style="width:12%">Ward</th>
-                  <th style="width:12%">Status</th>
-                  <th style="width:10%">Action</th>
-                </tr>
-              </thead>
-              <tbody id="ptbody"></tbody>
-            </table>
+          
+          <!-- SUB-TABS -->
+          <div style="display:flex; gap:15px; border-bottom:1.5px solid #e2e8f0; margin-bottom:15px; padding-bottom:5px;">
+              <button id="pTabBtnActive" onclick="switchPatientTab('active')" style="background:none; border:none; padding:8px 16px; font-size:14px; font-weight:700; color:#01ca8b; border-bottom:3px solid #01ca8b; cursor:pointer; outline:none; font-family:inherit; transition:0.2s;">
+                  <i class="fas fa-clock"></i> Active Queue
+              </button>
+              <button id="pTabBtnCompleted" onclick="switchPatientTab('completed')" style="background:none; border:none; padding:8px 16px; font-size:14px; font-weight:600; color:#64748b; border-bottom:3px solid transparent; cursor:pointer; outline:none; font-family:inherit; transition:0.2s;">
+                  <i class="fas fa-check-double"></i> Prescribed & Completed
+              </button>
           </div>
-          <div class="patient-mobile-cards" id="pmobilecards"></div>
+
+          <div id="activeQueueSection">
+              <div class="ptbl-container" style="overflow-x:auto">
+                <table class="ptbl">
+                  <thead>
+                    <tr>
+                      <th style="width:22%">Patient Name</th>
+                      <th style="width:12%">Token</th>
+                      <th style="width:18%">Diagnosis</th>
+                      <th style="width:14%">Assigned To</th>
+                      <th style="width:12%">Ward</th>
+                      <th style="width:12%">Status</th>
+                      <th style="width:10%">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ptbody"></tbody>
+                </table>
+              </div>
+              <div class="patient-mobile-cards" id="pmobilecards"></div>
+          </div>
+
+          <div id="completedSection" style="display:none;">
+              <div class="ptbl-container" style="overflow-x:auto">
+                <table class="ptbl">
+                  <thead>
+                    <tr>
+                      <th style="width:25%">Patient Name</th>
+                      <th style="width:12%">Token</th>
+                      <th style="width:18%">Diagnosis</th>
+                      <th style="width:18%">Assigned To</th>
+                      <th style="width:12%">Status</th>
+                      <th style="width:15%; text-align:center;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="completedTbody">
+                      <tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">Loading recently prescribed patients...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="patient-mobile-cards" id="completedMobileCards"></div>
+          </div>
         </div>
       </div>
 
@@ -2450,13 +2488,22 @@
             const rxStr = item.prescription 
               ? item.prescription.medicines.map(m => `${m.medicineName} (${m.dosage})`).join(', ')
               : 'No prescription written';
+            
+            const escapedName = (item.visit.name || 'Patient').replace(/'/g, "\\'");
+            const actionBtns = item.prescription 
+              ? `<div style="margin-top:8px; display:flex; gap:10px;">
+                  <button class="mbtn-sec" style="padding:4px 8px; font-size:10.5px; cursor:pointer; display:inline-flex; align-items:center; gap:4px;" onclick="exportPrescriptionPDFFromId('${item.visit._id}', '${escapedName}')"><i class="fas fa-file-pdf" style="color:#ef4444;"></i> Download Rx</button>
+                  <button class="mbtn-sec" style="padding:4px 8px; font-size:10.5px; cursor:pointer; border-color:#0ea5e9; color:#0ea5e9; display:inline-flex; align-items:center; gap:4px;" onclick="openSendRxModal('${item.visit._id}', '${escapedName}', '${item.visit.contact || ''}')"><i class="fas fa-paper-plane"></i> Send Rx</button>
+                 </div>`
+              : '';
 
             html += `
-              <div style="border-left:3px solid #01ca8b; padding-left:10px; background:#f8fafc; padding:8px; border-radius:6px; text-align:left;">
+              <div style="border-left:3px solid #01ca8b; padding-left:10px; background:#f8fafc; padding:10px; border-radius:6px; text-align:left; margin-bottom:10px;">
                 <strong>Date:</strong> ${date} | <strong>Doctor:</strong> ${docName} | <strong>Status:</strong> ${item.visit.status.toUpperCase()}<br>
                 <strong>Vitals:</strong> BP: ${item.visit.bp} | Temp: ${item.visit.temperature} | Pulse: ${item.visit.pulseRate}<br>
                 <strong>Diagnosis/Complaint:</strong> ${item.visit.problem}<br>
                 <strong>Prescribed:</strong> ${rxStr}
+                ${actionBtns}
               </div>
             `;
           });
@@ -3469,6 +3516,436 @@
       // Initial check
       updateBodyScrollLock();
     });
+
+    // --- RECEPTIONIST CUSTOM LOGIC FOR TABS, PRESCRIPTIONS, ATTENDANCE & SALARY ---
+    
+    async function switchPatientTab(tab) {
+        const activeBtn = document.getElementById('pTabBtnActive');
+        const completedBtn = document.getElementById('pTabBtnCompleted');
+        const activeSec = document.getElementById('activeQueueSection');
+        const completedSec = document.getElementById('completedSection');
+        
+        if (tab === 'active') {
+            activeBtn.style.color = '#01ca8b';
+            activeBtn.style.borderBottomColor = '#01ca8b';
+            completedBtn.style.color = '#64748b';
+            completedBtn.style.borderBottomColor = 'transparent';
+            activeSec.style.display = 'block';
+            completedSec.style.display = 'none';
+        } else {
+            completedBtn.style.color = '#01ca8b';
+            completedBtn.style.borderBottomColor = '#01ca8b';
+            activeBtn.style.color = '#64748b';
+            activeBtn.style.borderBottomColor = 'transparent';
+            activeSec.style.display = 'none';
+            completedSec.style.display = 'block';
+            await fetchCompletedPatients();
+        }
+    }
+
+    async function fetchCompletedPatients() {
+        const tbody = document.getElementById('completedTbody');
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px;">Loading prescribed patients...</td></tr>';
+        
+        try {
+            const res = await fetch(`${API_BASE}/patients`);
+            const data = await res.json();
+            
+            // Filter status: prescribed or completed
+            const list = data.filter(p => p.status === 'prescribed' || p.status === 'completed');
+            
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">No prescribed or completed patients found.</td></tr>';
+                document.getElementById('completedMobileCards').innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">No prescribed patients found.</div>';
+                return;
+            }
+            
+            tbody.innerHTML = list.map(p => {
+                const docName = p.assignedDoctor ? p.assignedDoctor.name : 'N/A';
+                const escapedName = p.name.replace(/'/g, "\\'");
+                return `
+                    <tr>
+                        <td style="font-weight:600; text-align:left;">
+                            ${p.name}<br>
+                            <span style="font-size:11px; color:#64748b; font-weight:500;">ID: ${p.patientId} | ${p.gender} | ${p.age} Yrs</span>
+                        </td>
+                        <td style="color:#01ca8b; font-weight:700;">T-${p.token}</td>
+                        <td style="text-align:left;">${p.problem}</td>
+                        <td style="text-align:left;">${docName}</td>
+                        <td><span class="sbadge ${p.status === 'completed' ? 'sa' : 'sw'}">${p.status.toUpperCase()}</span></td>
+                        <td style="white-space:nowrap; text-align:center;">
+                            <button class="action-icon-btn" style="color:#10b981; margin-right:8px;" onclick="exportPrescriptionPDFFromId('${p._id}', '${escapedName}')" title="Download Prescription"><i class="fas fa-file-pdf"></i></button>
+                            <button class="action-icon-btn" style="color:#0ea5e9;" onclick="openSendRxModal('${p._id}', '${escapedName}', '${p.contact || ''}')" title="Send Report"><i class="fas fa-paper-plane"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('completedMobileCards').innerHTML = list.map(p => {
+                const docName = p.assignedDoctor ? p.assignedDoctor.name : 'N/A';
+                const escapedName = p.name.replace(/'/g, "\\'");
+                return `
+                    <div class="patient-mobile-card" style="background: white; border: 1px solid rgba(1, 202, 139, 0.15); border-radius: 12px; padding: 15px; text-align: left; display:flex; flex-direction:column; gap:8px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:8px;">
+                            <div>
+                                <strong>${p.name}</strong>
+                                <span style="display:block; font-size:11px; color:#64748b;">ID: ${p.patientId} | T-${p.token}</span>
+                            </div>
+                            <span class="sbadge ${p.status === 'completed' ? 'sa' : 'sw'}" style="padding:2px 8px; font-size:10px;">${p.status.toUpperCase()}</span>
+                        </div>
+                        <div style="font-size:12.5px;"><strong>Doctor:</strong> ${docName}</div>
+                        <div style="font-size:12.5px;"><strong>Diagnosis:</strong> ${p.problem}</div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:5px;">
+                            <button class="mbtn-sec" onclick="exportPrescriptionPDFFromId('${p._id}', '${escapedName}')"><i class="fas fa-file-pdf"></i> Download Rx</button>
+                            <button class="mbtn-sec" onclick="openSendRxModal('${p._id}', '${escapedName}', '${p.contact || ''}')" style="border-color:#0ea5e9; color:#0ea5e9;"><i class="fas fa-paper-plane"></i> Send Rx</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#ef4444;">Failed to load completed patients list.</td></tr>';
+        }
+    }
+
+    async function exportPrescriptionPDFFromId(patientId, patientName) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        try {
+            const res = await fetch(`${API_BASE}/prescriptions/patient/${patientId}`);
+            const data = await res.json();
+            
+            if(!data.success || !data.prescription) {
+                alert('No prescription details found to export.');
+                return false;
+            }
+            
+            const rx = data.prescription;
+            
+            // Header Banner Background (Navy Blue)
+            doc.setFillColor(15, 23, 42); // #0f172a
+            doc.rect(0, 0, 210, 32, 'F');
+            
+            // Green Accent Line
+            doc.setFillColor(1, 202, 139); // #01ca8b
+            doc.rect(0, 32, 210, 2, 'F');
+            
+            // Header Text
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(20);
+            doc.setTextColor(255, 255, 255);
+            doc.text("MEDIPULSE HOSPITAL", 14, 18);
+            
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(203, 213, 225); // Slate 300
+            doc.text("Where Patient Flow Meets Smart Technology | Consultation Division", 14, 25);
+            
+            // Document Title
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(14);
+            doc.setTextColor(15, 23, 42); // Slate 900
+            doc.text("PATIENT PRESCRIPTION & CLINICAL CASE REPORT", 14, 45);
+            
+            // Two-Column Grid for Metadata (Report ID, Patient ID, Version, Date)
+            doc.setFillColor(248, 250, 252); // Slate 50
+            doc.rect(14, 50, 182, 16, 'F');
+            doc.setDrawColor(226, 232, 240); // Slate 200
+            doc.setLineWidth(0.3);
+            doc.rect(14, 50, 182, 16);
+            
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(8.5);
+            doc.setTextColor(71, 85, 105); // Slate 600
+            
+            doc.text("REPORT ID:", 18, 56);
+            doc.text("PATIENT ID:", 18, 62);
+            doc.text("VERSION:", 110, 56);
+            doc.text("DATE & TIME:", 110, 62);
+            
+            doc.setFont("Helvetica", "normal");
+            doc.setTextColor(15, 23, 42); // Slate 900
+            doc.text(rx.reportId || 'REP-N/A', 40, 56);
+            doc.text(rx.patientId?.patientId || 'PID-N/A', 40, 62);
+            doc.text(`v${rx.version || 1}`, 130, 56);
+            doc.text(rx.createdAt ? new Date(rx.createdAt).toLocaleString() : new Date().toLocaleString(), 130, 62);
+            
+            // Patient Demographics & Consultant Info
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(15, 23, 42);
+            doc.text("1. Patient Demographics & Consultant Information", 14, 75);
+            
+            doc.setFontSize(9.5);
+            doc.setFont("Helvetica", "normal");
+            
+            doc.text(`Patient Name:`, 14, 83);
+            doc.setFont("Helvetica", "bold");
+            doc.text(rx.patientId?.name || patientName, 40, 83);
+            
+            doc.setFont("Helvetica", "normal");
+            doc.text(`Age / Gender:`, 14, 89);
+            doc.text(`${rx.patientId?.age || 'N/A'} Yrs / ${rx.patientId?.gender || 'Male'}`, 40, 89);
+            
+            doc.text(`Contact No:`, 14, 95);
+            doc.text(rx.patientId?.contact || 'N/A', 40, 95);
+            
+            doc.text(`Consultant:`, 110, 83);
+            doc.setFont("Helvetica", "bold");
+            doc.text(rx.doctorId?.name || 'Dr. Consultant', 132, 83);
+            
+            doc.setFont("Helvetica", "normal");
+            doc.text(`Specialization:`, 110, 89);
+            doc.text(rx.doctorId?.specialization || 'Clinical Generalist', 132, 89);
+            
+            doc.text(`Primary Complaint:`, 110, 95);
+            doc.text(rx.patientId?.problem || 'N/A', 142, 95, { maxWidth: 54 });
+            
+            doc.line(14, 102, 196, 102);
+            
+            // Clinical Vitals
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text("2. Patient Clinical Vitals (Recorded at Reception)", 14, 110);
+            
+            doc.setFillColor(248, 250, 252);
+            doc.rect(14, 114, 182, 12, 'F');
+            doc.rect(14, 114, 182, 12);
+            doc.line(14, 120, 196, 120);
+            doc.line(44, 114, 44, 126);
+            doc.line(74, 114, 74, 126);
+            doc.line(104, 114, 104, 126);
+            doc.line(134, 114, 134, 126);
+            doc.line(164, 114, 164, 126);
+            
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(8);
+            doc.setTextColor(71, 85, 105);
+            
+            doc.text("BLOOD PRESSURE", 16, 118);
+            doc.text("TEMPERATURE", 46, 118);
+            doc.text("PULSE RATE", 76, 118);
+            doc.text("SPO2 LEVEL", 106, 118);
+            doc.text("WEIGHT", 136, 118);
+            doc.text("HEIGHT", 166, 118);
+            
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(9);
+            doc.setTextColor(15, 23, 42);
+            doc.text(rx.patientId?.bp || '120/80', 16, 124);
+            doc.text(rx.patientId?.temperature || '98.6°F', 46, 124);
+            doc.text(rx.patientId?.pulseRate || '72 bpm', 76, 124);
+            doc.text(rx.patientId?.oxygenLevel || '98%', 106, 124);
+            doc.text(rx.patientId?.weight || 'N/A', 136, 124);
+            doc.text(rx.patientId?.height || 'N/A', 166, 124);
+            
+            if (rx.patientId?.vitalsNotes) {
+                doc.setFont("Helvetica", "normal");
+                doc.setFontSize(8.5);
+                doc.setTextColor(100, 116, 139);
+                doc.text(`Vitals Notes: ${rx.patientId.vitalsNotes}`, 14, 131, { maxWidth: 182 });
+            }
+            
+            doc.line(14, 137, 196, 137);
+            
+            // Prescribed Medicines
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(15, 23, 42);
+            doc.text("3. Rx - Prescribed Pharmacotherapy", 14, 144);
+            
+            let yOffset = 152;
+            if (rx.medicines && rx.medicines.length > 0) {
+                doc.setFillColor(248, 250, 252);
+                doc.rect(14, 148, 182, 8, 'F');
+                doc.rect(14, 148, 182, 8);
+                doc.setFont("Helvetica", "bold");
+                doc.setFontSize(8.5);
+                doc.setTextColor(71, 85, 105);
+                
+                doc.text("MEDICINE NAME", 18, 153);
+                doc.text("DOSAGE", 80, 153);
+                doc.text("FREQUENCY", 120, 153);
+                doc.text("DURATION", 160, 153);
+                
+                doc.setFont("Helvetica", "normal");
+                doc.setTextColor(15, 23, 42);
+                doc.setFontSize(9);
+                
+                rx.medicines.forEach((m, idx) => {
+                    doc.rect(14, yOffset, 182, 8);
+                    doc.text(m.medicineName, 18, yOffset + 5);
+                    doc.text(m.dosage, 80, yOffset + 5);
+                    doc.text(m.frequency || '1-0-1', 120, yOffset + 5);
+                    doc.text(m.duration, 160, yOffset + 5);
+                    yOffset += 8;
+                });
+            } else {
+                doc.setFont("Helvetica", "italic");
+                doc.setFontSize(10);
+                doc.text("No medicines prescribed.", 18, yOffset);
+                yOffset += 8;
+            }
+            
+            yOffset += 10;
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text("4. Clinical Remarks & Follow-up Instructions", 14, yOffset);
+            
+            yOffset += 6;
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(9.5);
+            doc.text(`Observations: ${rx.observations || 'None'}`, 14, yOffset, { maxWidth: 182 });
+            
+            yOffset += 10;
+            doc.text(`Instructions: ${rx.instructions || 'None'}`, 14, yOffset, { maxWidth: 182 });
+            
+            yOffset += 10;
+            doc.text(`Remarks / Follow-up: ${rx.remarks || 'None'}`, 14, yOffset, { maxWidth: 182 });
+            
+            // Doctor Signature Area
+            yOffset += 25;
+            doc.line(130, yOffset, 196, yOffset);
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(9);
+            doc.text("CONSULTING CLINICIAN", 130, yOffset + 5);
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(8);
+            doc.text(rx.doctorId?.name || 'Authorized Signatory', 130, yOffset + 9);
+            
+            if(rx.doctorId?.signature) {
+                try {
+                    doc.addImage(rx.doctorId.signature, 'PNG', 130, yOffset - 22, 50, 20);
+                } catch(e) {
+                    console.error('Failed to embed clinician signature in PDF', e);
+                }
+            }
+            
+            doc.save(`Prescription_${patientName.replace(/\s+/g, '_')}.pdf`);
+            return true;
+        } catch (err) {
+            console.error(err);
+            alert('Error exporting PDF.');
+            return false;
+        }
+    }
+
+    function openSendRxModal(id, name, contact) {
+        document.getElementById('sendRxPatientId').value = id;
+        document.getElementById('sendRxPatientName').value = name;
+        document.getElementById('sendRxDisplayPatientName').textContent = name;
+        
+        // Auto-fill details
+        document.getElementById('sendRxEmail').value = name.toLowerCase().replace(/\s+/g, '') + '@example.com';
+        document.getElementById('sendRxPhone').value = contact || '+91 ';
+        
+        document.getElementById('sendRxModal').classList.add('open');
+    }
+    function closeSendRxModal() {
+        document.getElementById('sendRxModal').classList.remove('open');
+    }
+    async function submitSendRx() {
+        const id = document.getElementById('sendRxPatientId').value;
+        const name = document.getElementById('sendRxPatientName').value;
+        const email = document.getElementById('sendRxEmail').value.trim();
+        const phone = document.getElementById('sendRxPhone').value.trim();
+        
+        if (!email && !phone) {
+            alert('Please enter at least an Email address or WhatsApp number.');
+            return;
+        }
+        
+        // Download prescription locally
+        const success = await exportPrescriptionPDFFromId(id, name);
+        if (success) {
+            alert(`Prescription successfully dispatched to ${name}!\n- Sent to Email: ${email || 'N/A'}\n- Sent to WhatsApp: ${phone || 'N/A'}`);
+            closeSendRxModal();
+        }
+    }
+
+    async function openMyAttendanceSalaryModal() {
+        const attBody = document.getElementById('myAttendanceListBody');
+        const salBody = document.getElementById('mySalaryListBody');
+        attBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Loading records...</td></tr>';
+        salBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Loading payouts...</td></tr>';
+        
+        document.getElementById('myAttendanceSalaryModal').classList.add('open');
+        
+        try {
+            const myId = localStorage.getItem('genericId');
+            if (!myId) {
+                attBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#ef4444;">Generic ID not found. Log in again.</td></tr>';
+                salBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#ef4444;">Generic ID not found.</td></tr>';
+                return;
+            }
+            
+            // Fetch Attendance
+            const attRes = await fetch(`/api/attendance/user/${myId}`);
+            const attData = await attRes.json();
+            
+            let presentCount = 0, absentCount = 0, leaveCount = 0;
+            if (attData.length === 0) {
+                attBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#64748b;">No attendance logged yet.</td></tr>';
+            } else {
+                attBody.innerHTML = attData.map(a => {
+                    if (a.status === 'Present') presentCount++;
+                    else if (a.status === 'Absent') absentCount++;
+                    else if (a.status === 'Leave') leaveCount++;
+                    
+                    let badgeBg = '#d1fae5', badgeColor = '#065f46';
+                    if (a.status === 'Absent') { badgeBg = '#fee2e2'; badgeColor = '#991b1b'; }
+                    else if (a.status === 'Leave') { badgeBg = '#ffedd5'; badgeColor = '#9a3412'; }
+                    
+                    return `
+                        <tr>
+                            <td style="padding:6px; font-weight:600;">${a.date}</td>
+                            <td style="padding:6px;">
+                                <span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:10px; font-weight:700; background:${badgeBg}; color:${badgeColor}; text-transform:uppercase;">
+                                    ${a.status}
+                                </span>
+                            </td>
+                            <td style="padding:6px; color:#64748b; font-size:11.5px;">${a.remarks || '-'}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            document.getElementById('myAttPresent').textContent = presentCount;
+            document.getElementById('myAttAbsent').textContent = absentCount;
+            document.getElementById('myAttLeave').textContent = leaveCount;
+            
+            // Fetch Salary History
+            const salRes = await fetch(`/api/salaries/user/${myId}`);
+            const salData = await salRes.json();
+            if (salData.length === 0) {
+                salBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#64748b;">No salary history found.</td></tr>';
+            } else {
+                salBody.innerHTML = salData.map(s => {
+                    let badgeBg = s.status === 'Paid' ? '#d1fae5' : '#fee2e2';
+                    let badgeColor = s.status === 'Paid' ? '#065f46' : '#991b1b';
+                    const datePaid = s.paidAt ? ` (Paid: ${new Date(s.paidAt).toLocaleDateString()})` : '';
+                    return `
+                        <tr>
+                            <td style="padding:6px; font-weight:600;">${s.month}</td>
+                            <td style="padding:6px; font-weight:700; text-align:right;">₹${s.amount.toLocaleString()}</td>
+                            <td style="padding:6px; text-align:center;">
+                                <span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:10px; font-weight:700; background:${badgeBg}; color:${badgeColor}; text-transform:uppercase;" title="${datePaid}">
+                                    ${s.status}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        } catch (err) {
+            console.error(err);
+            attBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#ef4444;">Error loading logs.</td></tr>';
+            salBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#ef4444;">Error loading payouts.</td></tr>';
+        }
+    }
+    function closeMyAttendanceSalaryModal() {
+        document.getElementById('myAttendanceSalaryModal').classList.remove('open');
+    }
   </script>
 
   <!-- DIGITAL ID CARD MODAL -->
@@ -3523,6 +4000,98 @@
           </div>
       </div>
   </div>
+
+    <!-- MY ATTENDANCE & SALARY MODAL -->
+    <div class="ov-wrap" id="myAttendanceSalaryModal" style="z-index: 1010; overflow-y: auto;">
+        <div style="background: white; border-radius: 16px; width: 95%; max-width: 600px; padding: 25px; margin: auto; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; font-family: 'Poppins', sans-serif; box-sizing: border-box;">
+            <button onclick="closeMyAttendanceSalaryModal()" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #64748b; font-size: 24px; cursor: pointer;">&times;</button>
+            <h3 style="margin-bottom:20px; font-size:18px; color:#0f172a; display:flex; align-items:center; gap:8px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+                <i class="fas fa-calendar-alt" style="color:#01ca8b;"></i> My Attendance & Salary Payouts
+            </h3>
+            <div style="display:flex; flex-direction:column; gap:20px;">
+                <!-- Attendance Log Summary -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:10px;">
+                    <div style="font-weight:700; color:#334155; font-size:14px; margin-bottom:10px; text-align: left;"><i class="fas fa-calendar-check" style="color:#01ca8b;"></i> Attendance Record</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; text-align:center; margin-bottom:15px;">
+                        <div style="background:#d1fae5; color:#065f46; padding:10px; border-radius:8px;">
+                            <div style="font-size:20px; font-weight:800;" id="myAttPresent">0</div>
+                            <div style="font-size:11px; font-weight:600;">Days Present</div>
+                        </div>
+                        <div style="background:#fee2e2; color:#991b1b; padding:10px; border-radius:8px;">
+                            <div style="font-size:20px; font-weight:800;" id="myAttAbsent">0</div>
+                            <div style="font-size:11px; font-weight:600;">Days Absent</div>
+                        </div>
+                        <div style="background:#ffedd5; color:#9a3412; padding:10px; border-radius:8px;">
+                            <div style="font-size:20px; font-weight:800;" id="myAttLeave">0</div>
+                            <div style="font-size:11px; font-weight:600;">Days on Leave</div>
+                        </div>
+                    </div>
+                    <div style="max-height:180px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px; background:white;">
+                        <table style="width:100%; border-collapse:collapse;">
+                            <thead>
+                                <tr style="background:#f1f5f9;">
+                                    <th style="padding:6px; font-size:11px; text-transform:uppercase; color:#475569; text-align:left;">Date</th>
+                                    <th style="padding:6px; font-size:11px; text-transform:uppercase; color:#475569; text-align:left;">Status</th>
+                                    <th style="padding:6px; font-size:11px; text-transform:uppercase; color:#475569; text-align:left;">Note</th>
+                                </tr>
+                            </thead>
+                            <tbody id="myAttendanceListBody" style="font-size:12px;">
+                                <tr><td colspan="3" style="text-align:center; padding:10px;">Loading logs...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Salary Payouts Summary -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:10px;">
+                    <div style="font-weight:700; color:#334155; font-size:14px; margin-bottom:10px; text-align: left;"><i class="fas fa-hand-holding-usd" style="color:#0ea5e9;"></i> Salary Payout History</div>
+                    <div style="max-height:180px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px; background:white;">
+                        <table style="width:100%; border-collapse:collapse;">
+                            <thead>
+                                <tr style="background:#f1f5f9;">
+                                    <th style="padding:6px; font-size:11px; text-transform:uppercase; color:#475569; text-align:left;">Month</th>
+                                    <th style="padding:6px; font-size:11px; text-transform:uppercase; color:#475569; text-align:right;">Amount</th>
+                                    <th style="padding:6px; font-size:11px; text-transform:uppercase; color:#475569; text-align:center;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mySalaryListBody" style="font-size:12px;">
+                                <tr><td colspan="3" style="text-align:center; padding:10px;">Loading salary payouts...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEND PRESCRIPTION / REPORT MODAL -->
+    <div class="ov-wrap" id="sendRxModal" style="z-index: 1010;">
+        <div style="background:white; border-radius:16px; width:95%; max-width:450px; padding:25px; margin: auto; position:relative; box-shadow:0 25px 50px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; font-family: 'Poppins', sans-serif; box-sizing:border-box;">
+            <button onclick="closeSendRxModal()" style="position:absolute; top:15px; right:20px; font-size:24px; color:#64748b; cursor:pointer; border:none; background:transparent;">&times;</button>
+            <h3 style="margin-bottom:20px; font-size:17px; color:#0f172a; display:flex; align-items:center; gap:8px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; text-align: left;">
+                <i class="fas fa-paper-plane" style="color:#0ea5e9;"></i> Send Clinical Report / Rx
+            </h3>
+            <input type="hidden" id="sendRxPatientId" />
+            <input type="hidden" id="sendRxPatientName" />
+            
+            <div style="display:flex; flex-direction:column; gap:15px; text-align: left;">
+                <div style="font-size:13px; color:#64748b;">
+                    Send the official clinical report and doctor signed prescription to <strong><span id="sendRxDisplayPatientName">Patient</span></strong>.
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <label style="font-size:12px; font-weight:700; color:#475569;">Patient Email Address</label>
+                    <input type="email" id="sendRxEmail" placeholder="patient@example.com" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:13px; outline: none; width:100%; box-sizing:border-box;" />
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <label style="font-size:12px; font-weight:700; color:#475569;">Patient WhatsApp Number</label>
+                    <input type="text" id="sendRxPhone" placeholder="+91 xxxxx xxxxx" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:13px; outline: none; width:100%; box-sizing:border-box;" />
+                </div>
+                <button onclick="submitSendRx()" class="btn-submit" style="background:#0ea5e9; border:none; color:white; padding:12px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; width: 100%; margin-top: 10px;">
+                    <i class="fas fa-share-square"></i> Send & Download Copy
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

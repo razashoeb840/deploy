@@ -1054,6 +1054,9 @@
                 <a href="javascript:void(0)" onclick="openIdCard()" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:#475569; font-size:13px; text-decoration:none; font-weight:500; transition:0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
                     <i class="fas fa-id-card" style="color:#10b981;"></i> View ID Card
                 </a>
+                <a href="javascript:void(0)" onclick="openMyAttendanceSalaryModal()" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:#475569; font-size:13px; text-decoration:none; font-weight:500; transition:0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                    <i class="fas fa-calendar-check" style="color:#0ea5e9;"></i> Attendance & Salary
+                </a>
                 <a href="javascript:void(0)" onclick="logout()" style="display:flex; align-items:center; gap:8px; padding:10px 16px; color:#ef4444; font-size:13px; text-decoration:none; font-weight:500; transition:0.2s; border-top:1px solid #f1f5f9;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
@@ -2635,6 +2638,89 @@
     function closeIdCardModal() {
       document.getElementById('idCardModal').classList.remove('open');
     }
+
+    async function openMyAttendanceSalaryModal() {
+        const myId = currentDoctor ? currentDoctor._id : localStorage.getItem('genericId');
+        if (!myId) {
+            alert('Doctor profile not loaded. Please log in first.');
+            return;
+        }
+        
+        const attBody = document.getElementById('myAttendanceListBody');
+        const salBody = document.getElementById('mySalaryListBody');
+        attBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Loading logs...</td></tr>';
+        salBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Loading payouts...</td></tr>';
+        
+        document.getElementById('myAttendanceSalaryModal').classList.add('open');
+        
+        try {
+            // Fetch Attendance
+            const attRes = await fetch(`/api/attendance/user/${myId}`);
+            const attData = await attRes.json();
+            
+            let presentCount = 0, absentCount = 0, leaveCount = 0;
+            if (attData.length === 0) {
+                attBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--slate-400);">No attendance logged yet.</td></tr>';
+            } else {
+                attBody.innerHTML = attData.map(a => {
+                    if (a.status === 'Present') presentCount++;
+                    else if (a.status === 'Absent') absentCount++;
+                    else if (a.status === 'Leave') leaveCount++;
+                    
+                    let badgeBg = '#d1fae5', badgeColor = '#065f46';
+                    if (a.status === 'Absent') { badgeBg = '#fee2e2'; badgeColor = '#991b1b'; }
+                    else if (a.status === 'Leave') { badgeBg = '#ffedd5'; badgeColor = '#9a3412'; }
+                    
+                    return `
+                        <tr>
+                            <td style="padding:6px; font-weight:600;">${a.date}</td>
+                            <td style="padding:6px;">
+                                <span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:10px; font-weight:700; background:${badgeBg}; color:${badgeColor}; text-transform:uppercase;">
+                                    ${a.status}
+                                </span>
+                            </td>
+                            <td style="padding:6px; color:var(--slate-600); font-size:11.5px;">${a.remarks || '-'}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            document.getElementById('myAttPresent').textContent = presentCount;
+            document.getElementById('myAttAbsent').textContent = absentCount;
+            document.getElementById('myAttLeave').textContent = leaveCount;
+            
+            // Fetch Salary History
+            const salRes = await fetch(`/api/salaries/user/${myId}`);
+            const salData = await salRes.json();
+            if (salData.length === 0) {
+                salBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--slate-400);">No salary payouts recorded yet.</td></tr>';
+            } else {
+                salBody.innerHTML = salData.map(s => {
+                    let badgeBg = s.status === 'Paid' ? '#d1fae5' : '#fee2e2';
+                    let badgeColor = s.status === 'Paid' ? '#065f46' : '#991b1b';
+                    const datePaid = s.paidAt ? ` (Paid: ${new Date(s.paidAt).toLocaleDateString()})` : '';
+                    return `
+                        <tr>
+                            <td style="padding:6px; font-weight:600;">${s.month}</td>
+                            <td style="padding:6px; font-weight:700; text-align:right;">₹${s.amount.toLocaleString()}</td>
+                            <td style="padding:6px; text-align:center;">
+                                <span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:10px; font-weight:700; background:${badgeBg}; color:${badgeColor}; text-transform:uppercase;" title="${datePaid}">
+                                    ${s.status}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        } catch (err) {
+            console.error(err);
+            attBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--red);">Error loading logs.</td></tr>';
+            salBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--red);">Error loading payouts.</td></tr>';
+        }
+    }
+    
+    function closeMyAttendanceSalaryModal() {
+        document.getElementById('myAttendanceSalaryModal').classList.remove('open');
+    }
   </script>
 
   <!-- Leave Modal Markup -->
@@ -2708,6 +2794,71 @@
               </button>
           </div>
       </div>
+  </div>
+  <!-- MY ATTENDANCE & SALARY MODAL -->
+  <div class="dr-modal-overlay" id="myAttendanceSalaryModal" style="z-index: 1010;">
+    <div class="dr-modal" style="max-width:600px; max-height:85vh; overflow-y:auto; padding:25px; background: white; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); border: 1px solid var(--slate-200); position: relative; width: 95%; margin: auto;">
+      <div class="dr-modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--slate-200); padding-bottom:12px; margin-bottom:20px;">
+        <h3 style="margin:0; font-size:18px; color:var(--slate-900); display:flex; align-items:center; gap:8px;">
+          <i class="fas fa-calendar-alt" style="color:var(--green)"></i> My Attendance & Salary Payouts
+        </h3>
+        <button class="dr-modal-close" onclick="closeMyAttendanceSalaryModal()" style="background:none; border:none; font-size:24px; color:var(--slate-400); cursor:pointer;">&times;</button>
+      </div>
+      
+      <div style="display:flex; flex-direction:column; gap:20px; font-family:'Poppins', sans-serif;">
+        <!-- Attendance Record -->
+        <div style="background:var(--slate-50); border:1px solid var(--slate-200); padding:15px; border-radius:10px; box-sizing:border-box;">
+          <div style="font-weight:700; color:var(--slate-800); font-size:14px; margin-bottom:10px; text-align:left;"><i class="fas fa-calendar-check" style="color:var(--green);"></i> Attendance History</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; text-align:center; margin-bottom:15px;">
+              <div style="background:#d1fae5; color:#065f46; padding:10px; border-radius:8px;">
+                  <div style="font-size:20px; font-weight:800;" id="myAttPresent">0</div>
+                  <div style="font-size:11px; font-weight:600;">Present</div>
+              </div>
+              <div style="background:#fee2e2; color:#991b1b; padding:10px; border-radius:8px;">
+                  <div style="font-size:20px; font-weight:800;" id="myAttAbsent">0</div>
+                  <div style="font-size:11px; font-weight:600;">Absent</div>
+              </div>
+              <div style="background:#ffedd5; color:#9a3412; padding:10px; border-radius:8px;">
+                  <div style="font-size:20px; font-weight:800;" id="myAttLeave">0</div>
+                  <div style="font-size:11px; font-weight:600;">Leave</div>
+              </div>
+          </div>
+          <div style="max-height:180px; overflow-y:auto; border:1px solid var(--slate-200); border-radius:8px; background:white;">
+              <table style="width:100%; border-collapse:collapse; text-align:left;">
+                  <thead>
+                      <tr style="background:var(--slate-100);">
+                          <th style="padding:6px; font-size:11px; text-transform:uppercase; color:var(--slate-600);">Date</th>
+                          <th style="padding:6px; font-size:11px; text-transform:uppercase; color:var(--slate-600);">Status</th>
+                          <th style="padding:6px; font-size:11px; text-transform:uppercase; color:var(--slate-600);">Remarks</th>
+                      </tr>
+                  </thead>
+                  <tbody id="myAttendanceListBody" style="font-size:12px;">
+                      <tr><td colspan="3" style="text-align:center; padding:10px;">Loading logs...</td></tr>
+                  </tbody>
+              </table>
+          </div>
+        </div>
+
+        <!-- Salary Payouts -->
+        <div style="background:var(--slate-50); border:1px solid var(--slate-200); padding:15px; border-radius:10px; box-sizing:border-box;">
+          <div style="font-weight:700; color:var(--slate-800); font-size:14px; margin-bottom:10px; text-align:left;"><i class="fas fa-hand-holding-usd" style="color:var(--blue);"></i> Salary Payout history</div>
+          <div style="max-height:180px; overflow-y:auto; border:1px solid var(--slate-200); border-radius:8px; background:white;">
+              <table style="width:100%; border-collapse:collapse; text-align:left;">
+                  <thead>
+                      <tr style="background:var(--slate-100);">
+                          <th style="padding:6px; font-size:11px; text-transform:uppercase; color:var(--slate-600);">Month</th>
+                          <th style="padding:6px; font-size:11px; text-transform:uppercase; color:var(--slate-600); text-align:right;">Amount</th>
+                          <th style="padding:6px; font-size:11px; text-transform:uppercase; color:var(--slate-600); text-align:center;">Status</th>
+                      </tr>
+                  </thead>
+                  <tbody id="mySalaryListBody" style="font-size:12px;">
+                      <tr><td colspan="3" style="text-align:center; padding:10px;">Loading payouts...</td></tr>
+                  </tbody>
+              </table>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 </html>

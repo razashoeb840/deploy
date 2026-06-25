@@ -17,6 +17,9 @@ const Message = require('./models/Message');
 const Leave = require('./models/Leave');
 const MedicineSale = require('./models/MedicineSale');
 const ActivityLog = require('./models/ActivityLog');
+const Attendance = require('./models/Attendance');
+const SalaryHistory = require('./models/SalaryHistory');
+const Expense = require('./models/Expense');
 
 const path = require('path');
 
@@ -1078,9 +1081,17 @@ app.get('/api/medicines/sales', async (req, res) => {
 
 // --- ADMIN APIS ---
 app.post('/api/medicines', async (req, res) => {
-    const { name, stock, price, category, illness, salesPerDay } = req.body;
+    const { name, stock, price, purchasePrice, category, illness, salesPerDay } = req.body;
     try {
-        const newMed = new Medicine({ name, stock: parseInt(stock)||0, price: parseFloat(price)||0, category, illness, salesPerDay: parseInt(salesPerDay)||5 });
+        const newMed = new Medicine({ 
+            name, 
+            stock: parseInt(stock)||0, 
+            price: parseFloat(price)||0, 
+            purchasePrice: purchasePrice !== undefined && purchasePrice !== '' ? parseFloat(purchasePrice) : undefined,
+            category, 
+            illness, 
+            salesPerDay: parseInt(salesPerDay)||5 
+        });
         await newMed.save();
         res.status(201).json({ success: true, medicine: newMed });
     } catch (err) {
@@ -1089,12 +1100,13 @@ app.post('/api/medicines', async (req, res) => {
 });
 
 app.put('/api/medicines/:id', async (req, res) => {
-    const { price, stockChange } = req.body;
+    const { price, purchasePrice, stockChange } = req.body;
     try {
         const medicine = await Medicine.findById(req.params.id);
         if (!medicine) return res.status(404).json({ error: 'Medicine not found' });
         
         if (price !== undefined && price !== '') medicine.price = parseFloat(price);
+        if (purchasePrice !== undefined && purchasePrice !== '') medicine.purchasePrice = parseFloat(purchasePrice);
         if (stockChange !== undefined && stockChange !== '') medicine.stock += parseInt(stockChange, 10);
         
         await medicine.save();
@@ -1105,13 +1117,96 @@ app.put('/api/medicines/:id', async (req, res) => {
 });
 
 app.get('/api/admin/stats', async (req, res) => {
+    const { date, month } = req.query;
     try {
         const patientCount = await Patient.countDocuments();
         const docCount = await Doctor.countDocuments();
         const staffCount = await Staff.countDocuments();
         
+        let patientFilter = { paymentStatus: 'Paid' };
+        let salesFilter = {};
+        let salaryFilter = { status: 'Paid' };
+        let expenseFilter = {};
+        
+        if (date) {
+            const start = new Date(`${date}T00:00:00.000Z`);
+            const end = new Date(`${date}T23:59:59.999Z`);
+            patientFilter.createdAt = { $gte: start, $lte: end };
+            salesFilter.soldAt = { $gte: start, $lte: end };
+            salaryFilter.paidAt = { $gte: start, $lte: end };
+            expenseFilter.date = date;
+        } else if (month) {
+            const [year, m] = month.split('-');
+            const start = new Date(Date.UTC(parseInt(year, 10), parseInt(m, 10) - 1, 1));
+            const end = new Date(Date.UTC(parseInt(year, 10), parseInt(m, 10), 0, 23, 59, 59, 999));
+            patientFilter.createdAt = { $gte: start, $lte: end };
+            salesFilter.soldAt = { $gte: start, $lte: end };
+            salaryFilter.month = month;
+            expenseFilter.date = new RegExp(`^${month}`);
+        }
+        
+        // Calculate Patient Income (from completed/paid consultations)
+        const paidPatients = await Patient.find(patientFilter).populate('assignedDoctor');
+        const patientIncome = paidPatients.reduce((sum, p) => sum + (p.assignedDoctor ? (p.assignedDoctor.fee || 500) : 500), 0);
+        
+        // Group patient fees department-wise
+        const departmentIncome = {};
+        paidPatients.forEach(p => {
+            const dept = p.assignedDoctor ? p.assignedDoctor.specialization : 'General Medicine';
+            const fee = p.assignedDoctor ? (p.assignedDoctor.fee || 500) : 500;
+            departmentIncome[dept] = (departmentIncome[dept] || 0) + fee;
+        });
+
+        // Calculate Medicine Income (from sales)
+        const sales = await MedicineSale.find(salesFilter);
+        const medicineIncome = sales.reduce((sum, s) => sum + (s.totalPrice || 0), 0);
+        
+        // Calculate Medicine Expenditures (using stock + sold quantities multiplied by purchasePrice)
         const rawMeds = await Medicine.find();
-        const totalMedStock = rawMeds.reduce((acc, med) => acc + (med.stock * med.price), 0);
+        const salesGroup = await MedicineSale.aggregate([
+            { $match: salesFilter },
+            { $group: { _id: { $toLower: "$medicineName" }, totalQty: { $sum: "$quantity" } } }
+        ]);
+        const salesMap = {};
+        salesGroup.forEach(item => {
+            salesMap[item._id] = item.totalQty;
+        });
+        
+        let medicineExpense = 0;
+        let cogs = 0;
+        let currentStockRetailValue = 0;
+        let currentStockWholesaleValue = 0;
+        rawMeds.forEach(med => {
+            const soldQty = salesMap[med.name.toLowerCase()] || 0;
+            const pPrice = med.purchasePrice || (med.price * 0.6);
+            medicineExpense += (med.stock + soldQty) * pPrice;
+            cogs += soldQty * pPrice;
+            currentStockRetailValue += med.stock * med.price;
+            currentStockWholesaleValue += med.stock * pPrice;
+        });
+
+        // Calculate Salary Expenditures (paid salaries)
+        const paidSalaries = await SalaryHistory.find(salaryFilter);
+        const salaryExpense = paidSalaries.reduce((sum, s) => sum + s.amount, 0);
+        
+        // Group salaries by role
+        const roleSalaries = {};
+        paidSalaries.forEach(s => {
+            roleSalaries[s.role] = (roleSalaries[s.role] || 0) + s.amount;
+        });
+
+        // Calculate Manual Expenditures
+        const manualExpenses = await Expense.find(expenseFilter);
+        const totalManualExpense = manualExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+
+        // Group manual expenses by category
+        const categoryExpenses = {};
+        manualExpenses.forEach(e => {
+            categoryExpenses[e.category] = (categoryExpenses[e.category] || 0) + e.amount;
+        });
+
+        const netProfit = (patientIncome + medicineIncome) - (cogs + salaryExpense + totalManualExpense);
+        const cashFlowBalance = (patientIncome + medicineIncome) - (medicineExpense + salaryExpense + totalManualExpense);
         
         const beds = await Bed.find();
         const occupiedBeds = beds.filter(b => b.status !== 'free').length;
@@ -1121,12 +1216,27 @@ app.get('/api/admin/stats', async (req, res) => {
             patients: patientCount,
             doctors: docCount,
             staff: staffCount,
-            inventoryValue: totalMedStock,
-            bedOccupancyPercentage: totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0
+            inventoryValue: netProfit, // Set inventoryValue to netProfit so it represents real operational profit
+            bedOccupancyPercentage: totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0,
+            ledger: {
+                patientIncome,
+                medicineIncome,
+                medicineExpense, // Total wholesale cost of all inventory
+                cogs, // Wholesale cost of only sold medicines
+                salaryExpense,
+                manualExpense: totalManualExpense,
+                netProfit,
+                cashFlowBalance,
+                currentStockRetailValue,
+                currentStockWholesaleValue,
+                departmentIncome,
+                roleSalaries,
+                categoryExpenses
+            }
         });
     } catch(err) {
          res.status(500).json({ error: err.message });
-    }
+     }
 });
 
 app.get('/api/admin/staff', async (req, res) => {
@@ -1764,6 +1874,218 @@ CRITICAL: Return your response ONLY as a strict, valid JSON object with the keys
     } catch (err) {
         console.error('AI Analysis Error:', err);
         res.status(500).json({ error: 'Failed to analyze symptoms: ' + err.message });
+    }
+});
+
+// --- ATTENDANCE & SALARY API ENDPOINTS ---
+
+app.get('/api/attendance/date/:date', async (req, res) => {
+    const { date } = req.params;
+    try {
+        const doctors = await Doctor.find({ isActive: { $ne: false } }).lean();
+        const staff = await Staff.find().lean(); // fetch all staff
+        
+        const employees = [
+            ...doctors.map(d => ({ _id: d._id, id: d.doctorId, name: d.name, role: 'doctor', model: 'Doctor' })),
+            ...staff.map(s => ({ _id: s._id, id: s.staffId, name: s.name, role: s.role, model: 'Staff' }))
+        ];
+        
+        const result = [];
+        for (const emp of employees) {
+            let att = await Attendance.findOne({ date, user: emp._id });
+            if (att) {
+                result.push(att);
+            } else {
+                // Check approved leaves
+                const leaveQuery = {
+                    status: 'approved',
+                    $or: [
+                        { doctor: emp._id },
+                        { staff: emp._id }
+                    ]
+                };
+                const leaves = await Leave.find(leaveQuery);
+                let isOnLeave = false;
+                let leaveReason = '';
+                for (const lv of leaves) {
+                    if (lv.leaveDate.includes(date) || (date >= lv.leaveDate.split(' to ')[0] && date <= (lv.leaveDate.split(' to ')[1] || lv.leaveDate.split(' to ')[0]))) {
+                        isOnLeave = true;
+                        leaveReason = lv.reason;
+                        break;
+                    }
+                }
+                
+                result.push({
+                    user: emp._id,
+                    userModel: emp.model,
+                    name: emp.name,
+                    role: emp.role,
+                    date,
+                    status: isOnLeave ? 'Leave' : 'Present',
+                    remarks: isOnLeave ? `On Approved Leave: ${leaveReason}` : ''
+                });
+            }
+        }
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/attendance', async (req, res) => {
+    const { date, records } = req.body;
+    try {
+        if (!date || !Array.isArray(records)) {
+            return res.status(400).json({ error: 'Date and records are required.' });
+        }
+        for (const rec of records) {
+            await Attendance.findOneAndUpdate(
+                { date, user: rec.user },
+                { 
+                    userModel: rec.userModel, 
+                    name: rec.name, 
+                    role: rec.role, 
+                    status: rec.status, 
+                    remarks: rec.remarks || '' 
+                },
+                { upsert: true, new: true }
+            );
+        }
+        await logActivity(`Attendance sheet updated for <strong>${date}</strong>`, 'info');
+        res.json({ success: true, message: 'Attendance updated successfully.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/attendance/user/:userId', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        let userObjId = userId;
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            const doc = await Doctor.findOne({ doctorId: userId });
+            const stf = await Staff.findOne({ staffId: userId });
+            userObjId = doc ? doc._id : (stf ? stf._id : null);
+        }
+        if (!userObjId) return res.json([]);
+        const history = await Attendance.find({ user: userObjId }).sort({ date: -1 });
+        res.json(history);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/salaries/:month', async (req, res) => {
+    const { month } = req.params;
+    try {
+        const doctors = await Doctor.find({ isActive: { $ne: false } }).lean();
+        const staff = await Staff.find().lean();
+        
+        const employees = [
+            ...doctors.map(d => ({ _id: d._id, name: d.name, role: 'doctor', model: 'Doctor', defaultSal: 120000 })),
+            ...staff.map(s => ({ _id: s._id, name: s.name, role: s.role, model: 'Staff', defaultSal: 35000 }))
+        ];
+        
+        const result = [];
+        for (const emp of employees) {
+            let sal = await SalaryHistory.findOne({ month, user: emp._id });
+            if (!sal) {
+                sal = new SalaryHistory({
+                    user: emp._id,
+                    userModel: emp.model,
+                    name: emp.name,
+                    role: emp.role,
+                    month,
+                    amount: emp.defaultSal,
+                    status: 'Pending'
+                });
+                await sal.save();
+            }
+            result.push(sal);
+        }
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/salaries/toggle', async (req, res) => {
+    const { salaryId, status, amount } = req.body;
+    try {
+        const sal = await SalaryHistory.findById(salaryId);
+        if (!sal) return res.status(404).json({ error: 'Salary record not found' });
+        
+        sal.status = status;
+        if (amount !== undefined) sal.amount = Number(amount);
+        if (status === 'Paid') {
+            sal.paidAt = new Date();
+            await logActivity(`Salary of ₹${sal.amount} paid to <strong>${sal.name}</strong> for ${sal.month}`, 'success');
+        } else {
+            sal.paidAt = undefined;
+        }
+        await sal.save();
+        res.json({ success: true, salary: sal });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/salaries/user/:userId', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        let userObjId = userId;
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            const doc = await Doctor.findOne({ doctorId: userId });
+            const stf = await Staff.findOne({ staffId: userId });
+            userObjId = doc ? doc._id : (stf ? stf._id : null);
+        }
+        if (!userObjId) return res.json([]);
+        const history = await SalaryHistory.find({ user: userObjId }).sort({ month: -1 });
+        res.json(history);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- MANUAL EXPENSES API ENDPOINTS ---
+
+app.get('/api/expenses', async (req, res) => {
+    const { date, month } = req.query;
+    try {
+        let filter = {};
+        if (date) filter.date = date;
+        else if (month) filter.date = new RegExp(`^${month}`);
+        
+        const list = await Expense.find(filter).sort({ date: -1 });
+        res.json(list);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/expenses', async (req, res) => {
+    const { description, amount, date, category } = req.body;
+    try {
+        if (!description || !amount || !date) {
+            return res.status(400).json({ error: 'Description, amount and date are required.' });
+        }
+        const exp = new Expense({ description, amount: Number(amount), date, category: category || 'Other' });
+        await exp.save();
+        await logActivity(`Manual expense added: <strong>${description}</strong> for ₹${amount}`, 'danger');
+        res.json({ success: true, expense: exp });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/expenses/:id', async (req, res) => {
+    try {
+        const exp = await Expense.findByIdAndDelete(req.params.id);
+        if (!exp) return res.status(404).json({ error: 'Expense record not found' });
+        await logActivity(`Manual expense deleted: <strong>${exp.description}</strong> for ₹${exp.amount}`, 'info');
+        res.json({ success: true, message: 'Expense deleted successfully.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
